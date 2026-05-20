@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'shalat_page.dart';
+import 'main_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -13,12 +13,12 @@ class _SplashPageState extends State<SplashPage> {
   void initState() {
     super.initState();
     
-    // Berpindah ke ShalatPage setelah 2 detik
+    // Berpindah ke MainPage setelah 2 detik
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const ShalatPage(),
+            builder: (context) => const MainPage(),
           ),
         );
       }
