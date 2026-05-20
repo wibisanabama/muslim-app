@@ -88,7 +88,7 @@ class _ShalatPageState extends State<ShalatPage> {
 
             return ListView.separated(
               itemCount: vm.schedules.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (context, index) => const SizedBox(height: 10),
               itemBuilder: (context, i) {
                 final d = vm.schedules[i];
                 return Card(

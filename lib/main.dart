@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'repository/shalat_repository.dart';
 import 'viewmodel/shalat_view_model.dart';
-import 'view/shalat_page.dart';
+import 'view/splash_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,8 +30,8 @@ class MyApp extends StatelessWidget {
         title: 'Jadwal Shalat MVVM',
         theme: ThemeData(useMaterial3: true),
 
-        // Langsung ke ShalatPage
-        home: const ShalatPage(),
+        // Splash Screen sebagai pintu masuk utama
+        home: const SplashPage(),
       ),
     );
   }
