@@ -38,91 +38,113 @@ class _ShalatPageState extends State<ShalatPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Jadwal Shalat'),
-        actions: [
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed: () =>
-                context.read<ShalatViewModel>().fetchMonthlySchedule(
-                      cityId: cityId,
-                      year: year,
-                      month: month,
-                    ),
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Builder(
-          builder: (_) {
-            if (vm.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+      body: RefreshIndicator(
+        onRefresh: () => context.read<ShalatViewModel>().fetchMonthlySchedule(
+              cityId: cityId,
+              year: year,
+              month: month,
+            ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Builder(
+            builder: (context) {
+              if (vm.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-            if (vm.error != null) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Gagal memuat data:\n${vm.error}',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    FilledButton(
-                      onPressed: () =>
-                          context.read<ShalatViewModel>().fetchMonthlySchedule(
-                                cityId: cityId,
-                                year: year,
-                                month: month,
-                              ),
-                      child: const Text('Coba Lagi'),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            if (vm.schedules.isEmpty) {
-              return const Center(child: Text('Data kosong'));
-            }
-
-            return ListView.builder(
-              itemCount: vm.schedules.length,
-              itemBuilder: (context, i) {
-                final d = vm.schedules[i];
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => ShalatDetailPage(schedule: d),
+              if (vm.error != null) {
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
                         ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            d.tanggal,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Gagal memuat data:\n${vm.error}',
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+                              FilledButton(
+                                onPressed: () =>
+                                    context.read<ShalatViewModel>().fetchMonthlySchedule(
+                                          cityId: cityId,
+                                          year: year,
+                                          month: month,
+                                        ),
+                                child: const Text('Coba Lagi'),
+                              ),
+                            ],
                           ),
-                          const Icon(Icons.chevron_right),
-                        ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }
+
+              if (vm.schedules.isEmpty) {
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: const Center(
+                          child: Text('Data kosong'),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }
+
+              return ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: vm.schedules.length,
+                itemBuilder: (context, i) {
+                  final d = vm.schedules[i];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => ShalatDetailPage(schedule: d),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              d.tanggal,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
+                  );
+                },
+              );
             },
-            );
-          },
+          ),
         ),
       ),
     );
