@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodel/shalat_view_model.dart';
+import 'shalat_detail_page.dart';
 
 class ShalatPage extends StatefulWidget {
   static const routeName = '/shalat';
@@ -92,56 +93,34 @@ class _ShalatPageState extends State<ShalatPage> {
                 final d = vm.schedules[i];
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          d.tanggal,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => ShalatDetailPage(schedule: d),
                         ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            d.tanggal,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right),
+                        ],
                       ),
-                      const Divider(height: 1),
-                      ListTile(
-                        title: const Text('Imsak'),
-                        trailing: Text(d.imsak),
-                      ),
-                      ListTile(
-                        title: const Text('Subuh'),
-                        trailing: Text(d.subuh),
-                      ),
-                      ListTile(
-                        title: const Text('Terbit'),
-                        trailing: Text(d.terbit),
-                      ),
-                      ListTile(
-                        title: const Text('Dhuha'),
-                        trailing: Text(d.dhuha),
-                      ),
-                      ListTile(
-                        title: const Text('Dzuhur'),
-                        trailing: Text(d.dzuhur),
-                      ),
-                      ListTile(
-                        title: const Text('Ashar'),
-                        trailing: Text(d.ashar),
-                      ),
-                      ListTile(
-                        title: const Text('Maghrib'),
-                        trailing: Text(d.maghrib),
-                      ),
-                      ListTile(
-                        title: const Text('Isya'),
-                        trailing: Text(d.isya),
-                      ),
-                    ],
+                    ),
                   ),
                 );
-              },
+            },
             );
           },
         ),
