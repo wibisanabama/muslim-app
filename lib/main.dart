@@ -7,6 +7,7 @@ import 'repository/quran_repository.dart';
 import 'viewmodel/quran_view_model.dart';
 import 'repository/doa_repository.dart';
 import 'viewmodel/doa_view_model.dart';
+import 'viewmodel/ramadhan_view_model.dart';
 import 'view/splash_page.dart';
 
 void main() {
@@ -43,6 +44,9 @@ class MyApp extends StatelessWidget {
           create: (context) => DoaViewModel(
             context.read<DoaRepository>(),
           ),
+        ),
+        ChangeNotifierProvider<RamadhanViewModel>(
+          create: (_) => RamadhanViewModel(),
         ),
       ],
       child: MaterialApp(
