@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'home_page.dart';
 import 'shalat_page.dart';
 import 'quran_page.dart';
 import 'doa_page.dart';
@@ -15,15 +16,8 @@ class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    // Halaman Beranda (Polos)
-    const Scaffold(
-      body: Center(
-        child: Text(
-          'Halaman Beranda',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-        ),
-      ),
-    ),
+    // Halaman Beranda
+    const HomePage(),
     
     // Halaman Jadwal Shalat (Menggunakan ShalatPage)
     const ShalatPage(),
