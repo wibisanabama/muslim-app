@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/quran_view_model.dart';
+import 'quran_detail_page.dart';
 
 class QuranPage extends StatefulWidget {
   const QuranPage({super.key});
@@ -84,7 +85,15 @@ class _QuranPageState extends State<QuranPage> {
                   ),
                 ),
                 onTap: () {
-                  // Dibiarkan default terlebih dahulu (atau jika ada detail nanti)
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QuranDetailPage(
+                        nomorSurah: s.nomor,
+                        namaLatin: s.namaLatin,
+                      ),
+                    ),
+                  );
                 },
               );
             },
