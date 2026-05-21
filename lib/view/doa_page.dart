@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/doa_view_model.dart';
+import 'doa_detail_page.dart';
 
 class DoaPage extends StatefulWidget {
   const DoaPage({super.key});
@@ -66,48 +67,26 @@ class _DoaPageState extends State<DoaPage> {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             itemCount: vm.doas.length,
-            separatorBuilder: (context, index) => const Divider(height: 24),
+            separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final d = vm.doas[i];
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    d.doa,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+              return ListTile(
+                title: Text(
+                  d.doa,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    d.ayat,
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      height: 1.8,
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DoaDetailPage(doa: d),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    d.latin,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    d.artinya,
-                    style: const TextStyle(
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
+                  );
+                },
               );
             },
           );
