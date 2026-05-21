@@ -86,35 +86,59 @@ class _ShalatPageState extends State<ShalatPage> {
               return const Center(child: Text('Data kosong'));
             }
 
-            return ListView.separated(
+            return ListView.builder(
               itemCount: vm.schedules.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 10),
               itemBuilder: (context, i) {
                 final d = vm.schedules[i];
                 return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
+                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
                           d.tanggal,
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        _row('Imsak', d.imsak),
-                        _row('Subuh', d.subuh),
-                        _row('Terbit', d.terbit),
-                        _row('Dhuha', d.dhuha),
-                        _row('Dzuhur', d.dzuhur),
-                        _row('Ashar', d.ashar),
-                        _row('Maghrib', d.maghrib),
-                        _row('Isya', d.isya),
-                      ],
-                    ),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        title: const Text('Imsak'),
+                        trailing: Text(d.imsak),
+                      ),
+                      ListTile(
+                        title: const Text('Subuh'),
+                        trailing: Text(d.subuh),
+                      ),
+                      ListTile(
+                        title: const Text('Terbit'),
+                        trailing: Text(d.terbit),
+                      ),
+                      ListTile(
+                        title: const Text('Dhuha'),
+                        trailing: Text(d.dhuha),
+                      ),
+                      ListTile(
+                        title: const Text('Dzuhur'),
+                        trailing: Text(d.dzuhur),
+                      ),
+                      ListTile(
+                        title: const Text('Ashar'),
+                        trailing: Text(d.ashar),
+                      ),
+                      ListTile(
+                        title: const Text('Maghrib'),
+                        trailing: Text(d.maghrib),
+                      ),
+                      ListTile(
+                        title: const Text('Isya'),
+                        trailing: Text(d.isya),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -124,17 +148,4 @@ class _ShalatPageState extends State<ShalatPage> {
       ),
     );
   }
-}
-
-Widget _row(String label, String value) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Row(
-      children: [
-        SizedBox(width: 80, child: Text(label)),
-        const Text(': '),
-        Expanded(child: Text(value.isEmpty ? '-' : value)),
-      ],
-    ),
-  );
 }
