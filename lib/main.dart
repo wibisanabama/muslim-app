@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import 'repository/shalat_repository.dart';
 import 'viewmodel/shalat_view_model.dart';
+import 'repository/quran_repository.dart';
+import 'viewmodel/quran_view_model.dart';
 import 'view/splash_page.dart';
 
 void main() {
@@ -22,6 +24,14 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<ShalatViewModel>(
           create: (context) => ShalatViewModel(
             context.read<ShalatRepository>(),
+          ),
+        ),
+        Provider<QuranRepository>(
+          create: (_) => QuranRepository(),
+        ),
+        ChangeNotifierProvider<QuranViewModel>(
+          create: (context) => QuranViewModel(
+            context.read<QuranRepository>(),
           ),
         ),
       ],
