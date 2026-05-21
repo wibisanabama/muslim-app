@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'shalat_page.dart';
 import 'quran_page.dart';
 import 'doa_page.dart';
+import 'about_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -33,15 +34,8 @@ class _MainPageState extends State<MainPage> {
     // Halaman Doa (Menggunakan DoaPage)
     const DoaPage(),
 
-    // Halaman Tentang (Polos)
-    const Scaffold(
-      body: Center(
-        child: Text(
-          'Halaman Tentang',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-        ),
-      ),
-    ),
+    // Halaman Tentang (Menggunakan AboutPage)
+    const AboutPage(),
   ];
 
   @override

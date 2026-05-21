@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Jadwal Shalat MVVM',
+        title: 'Muslim',
         theme: ThemeData(useMaterial3: true),
 
         // Splash Screen sebagai pintu masuk utama
