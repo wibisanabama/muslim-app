@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/doa_view_model.dart';
 import 'doa_detail_page.dart';
+import 'muslim_drawer.dart';
 
 class DoaPage extends StatefulWidget {
   const DoaPage({super.key});
@@ -52,10 +53,17 @@ class _DoaPageState extends State<DoaPage> {
     }).toList();
 
     return Scaffold(
+      drawer: const MuslimDrawer(),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
         ),
         backgroundColor: _isScrolled
             ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)

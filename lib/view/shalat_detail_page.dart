@@ -73,77 +73,75 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      body: Padding(
+      body: ListView.separated(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(12),
-        child: ListView.separated(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: shalatItems.length,
-          separatorBuilder: (context, index) => Divider(
-            height: 1,
-            color: theme.colorScheme.surface,
-            thickness: 1.5,
-          ),
-          itemBuilder: (context, i) {
-            final item = shalatItems[i];
-            final isFirst = i == 0;
-            final isLast = i == shalatItems.length - 1;
+        itemCount: shalatItems.length,
+        separatorBuilder: (context, index) => Divider(
+          height: 1,
+          color: theme.colorScheme.surface,
+          thickness: 1.5,
+        ),
+        itemBuilder: (context, i) {
+          final item = shalatItems[i];
+          final isFirst = i == 0;
+          final isLast = i == shalatItems.length - 1;
 
-            final borderRadius = BorderRadius.only(
-              topLeft: Radius.circular(isFirst ? 16 : 0),
-              topRight: Radius.circular(isFirst ? 16 : 0),
-              bottomLeft: Radius.circular(isLast ? 16 : 0),
-              bottomRight: Radius.circular(isLast ? 16 : 0),
-            );
+          final borderRadius = BorderRadius.only(
+            topLeft: Radius.circular(isFirst ? 16 : 0),
+            topRight: Radius.circular(isFirst ? 16 : 0),
+            bottomLeft: Radius.circular(isLast ? 16 : 0),
+            bottomRight: Radius.circular(isLast ? 16 : 0),
+          );
 
-            return Material(
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-              borderRadius: borderRadius,
-              clipBehavior: Clip.antiAlias,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                child: Row(
-                  children: [
-                    // Circular Badge
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Icon(
-                        _getShalatIcon(item['name']!),
-                        size: 20,
-                        color: theme.colorScheme.primary,
-                      ),
+          return Material(
+            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+            borderRadius: borderRadius,
+            clipBehavior: Clip.antiAlias,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              child: Row(
+                children: [
+                  // Circular Badge
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(width: 16),
-                    // Shalat Name
-                    Expanded(
-                      child: Text(
-                        item['name']!,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      _getShalatIcon(item['name']!),
+                      size: 20,
+                      color: theme.colorScheme.primary,
                     ),
-                    // Shalat Time
-                    Text(
-                      item['time']!,
+                  ),
+                  const SizedBox(width: 16),
+                  // Shalat Name
+                  Expanded(
+                    child: Text(
+                      item['name']!,
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w500,
                         color: theme.colorScheme.onSurface,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  // Shalat Time
+                  Text(
+                    item['time']!,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

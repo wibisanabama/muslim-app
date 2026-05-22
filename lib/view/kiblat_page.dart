@@ -189,18 +189,7 @@ class _KiblatPageState extends State<KiblatPage> {
     return (qiblaAngle + 360.0) % 360.0;
   }
 
-  // Mendapatkan mata angin berdasarkan derajat sudut
-  String _getDirectionKeyword(double angle) {
-    if (angle >= 337.5 || angle < 22.5) return 'Utara';
-    if (angle >= 22.5 && angle < 67.5) return 'Timur Laut';
-    if (angle >= 67.5 && angle < 112.5) return 'Timur';
-    if (angle >= 112.5 && angle < 157.5) return 'Tenggara';
-    if (angle >= 157.5 && angle < 202.5) return 'Selatan';
-    if (angle >= 202.5 && angle < 247.5) return 'Barat Daya';
-    if (angle >= 247.5 && angle < 292.5) return 'Barat';
-    if (angle >= 292.5 && angle < 337.5) return 'Barat Laut';
-    return 'Utara';
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +199,7 @@ class _KiblatPageState extends State<KiblatPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Arah Kiblat'),
-        centerTitle: true,
+        centerTitle: false,
         elevation: 0,
         scrolledUnderElevation: 0,
         backgroundColor: _isScrolled
@@ -320,56 +309,6 @@ class _KiblatPageState extends State<KiblatPage> {
                                     child: Stack(
                                       alignment: Alignment.center,
                                       children: [
-                                        // Cardinal Directions (U, T, S, B)
-                                        // North (Utara)
-                                        Positioned(
-                                          top: 12,
-                                          child: Text(
-                                            'U',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: theme.colorScheme.error,
-                                            ),
-                                          ),
-                                        ),
-                                        // East (Timur)
-                                        Positioned(
-                                          right: 12,
-                                          child: Text(
-                                            'T',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: theme.colorScheme.onSurface,
-                                            ),
-                                          ),
-                                        ),
-                                        // South (Selatan)
-                                        Positioned(
-                                          bottom: 12,
-                                          child: Text(
-                                            'S',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: theme.colorScheme.onSurface,
-                                            ),
-                                          ),
-                                        ),
-                                        // West (Barat)
-                                        Positioned(
-                                          left: 12,
-                                          child: Text(
-                                            'B',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: theme.colorScheme.onSurface,
-                                            ),
-                                          ),
-                                        ),
-                                        
                                         // Concentric circles inside compass
                                         Container(
                                           width: 170,
@@ -383,51 +322,16 @@ class _KiblatPageState extends State<KiblatPage> {
                                           ),
                                         ),
                                         
-                                        // Jarum Kompas Utara (North Pointer) - Pointing to 0 degrees
-                                        CustomPaint(
-                                          size: const Size(20, 160),
-                                          painter: CompassNeedlePainter(
-                                            colorTop: theme.colorScheme.error,
-                                            colorBottom: theme.colorScheme.outline.withValues(alpha: 0.5),
-                                          ),
-                                        ),
-                                        
-                                        // Jarum Arah Kiblat (Qibla Pointer)
-                                        Transform.rotate(
-                                          angle: qiblaAngleRadians,
-                                          child: Stack(
-                                            alignment: Alignment.center,
-                                            children: [
-                                              // The Golden Line pointer pointing to Qiblah
-                                              CustomPaint(
-                                                size: const Size(22, 140),
-                                                painter: QiblaNeedlePainter(
-                                                  color: Colors.amber.shade700,
-                                                ),
-                                              ),
-                                              // Mosque/Kaaba representation icon on the pointer tip
-                                              Positioned(
-                                                top: 10,
-                                                child: Transform.rotate(
-                                                  angle: -qiblaAngleRadians, // Keep the icon upright relative to qibla needle
-                                                  child: Container(
-                                                    padding: const EdgeInsets.all(4),
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      color: Colors.amber.shade700,
-                                                      border: Border.all(color: Colors.white, width: 1.5),
-                                                    ),
-                                                    child: const Icon(
-                                                      Icons.mosque,
-                                                      size: 14,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                         // Jarum Arah Kiblat (Qibla Pointer)
+                                         Transform.rotate(
+                                           angle: qiblaAngleRadians,
+                                           child: CustomPaint(
+                                             size: const Size(22, 140),
+                                             painter: QiblaNeedlePainter(
+                                               color: Colors.amber.shade700,
+                                             ),
+                                           ),
+                                         ),
                                       ],
                                     ),
                                   ),
@@ -445,8 +349,8 @@ class _KiblatPageState extends State<KiblatPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 24),
-                          if (!hasSensor)
+                          if (!hasSensor) ...[
+                            const SizedBox(height: 16),
                             Text(
                               'Sensor arah (magnetometer) tidak terdeteksi pada perangkat ini.',
                               style: theme.textTheme.bodyMedium?.copyWith(
@@ -454,16 +358,8 @@ class _KiblatPageState extends State<KiblatPage> {
                                 fontWeight: FontWeight.w500,
                               ),
                               textAlign: TextAlign.center,
-                            )
-                          else
-                            Text(
-                              'Sudut Hadap Perangkat: ${headingDegrees.toStringAsFixed(1)}°',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              textAlign: TextAlign.center,
                             ),
+                          ],
                         ],
                       ),
                     ),
@@ -485,15 +381,9 @@ class _KiblatPageState extends State<KiblatPage> {
                       children: [
                         _buildInfoRow(
                           context,
-                          'Sudut Kiblat',
-                          '${_qiblaAngleDegrees.toStringAsFixed(1)}° (${_getDirectionKeyword(_qiblaAngleDegrees)})',
-                          isFirst: true,
-                        ),
-                        Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
-                        _buildInfoRow(
-                          context,
                           'Lokasi Anda',
                           _isLoadingLocation ? 'Mencari lokasi...' : _locationName,
+                          isFirst: true,
                         ),
                         Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
                         _buildInfoRow(
@@ -506,42 +396,6 @@ class _KiblatPageState extends State<KiblatPage> {
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 24),
-              
-              // Usage Guide Card
-              Card.filled(
-                margin: EdgeInsets.zero,
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Petunjuk Penggunaan',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '1. Posisikan perangkat seluler Anda secara datar dan mendatar (horizontal) di tangan atau permukaan meja.\n\n'
-                        '2. Putar perlahan posisi perangkat Anda hingga huruf "U" (Utara) pada kompas mengarah tepat sejajar dengan arah Utara geografis Anda yang sebenarnya.\n\n'
-                        '3. Setelah terarah tegak lurus, jarum emas berlogo Masjid akan menunjukkan posisi Arah Kiblat yang akurat untuk melakukan shalat.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
               const SizedBox(height: 24),
             ],
@@ -583,43 +437,6 @@ class _KiblatPageState extends State<KiblatPage> {
   }
 }
 
-// Painter for standard Red/Gray North pointer needle
-class CompassNeedlePainter extends CustomPainter {
-  final Color colorTop;
-  final Color colorBottom;
-
-  CompassNeedlePainter({required this.colorTop, required this.colorBottom});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-    
-    // Top Pointer (Red) - points to North
-    paint.color = colorTop;
-    path.moveTo(size.width / 2, 0);
-    path.lineTo(size.width, size.height / 2);
-    path.lineTo(size.width / 2, size.height / 2 - 5);
-    path.lineTo(0, size.height / 2);
-    path.close();
-    canvas.drawPath(path, paint);
-
-    // Bottom Pointer (Gray)
-    paint.color = colorBottom;
-    path.reset();
-    path.moveTo(size.width / 2, size.height);
-    path.lineTo(size.width, size.height / 2);
-    path.lineTo(size.width / 2, size.height / 2 - 5);
-    path.lineTo(0, size.height / 2);
-    path.close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
 
 // Painter for Qibla Golden Needle pointer
 class QiblaNeedlePainter extends CustomPainter {

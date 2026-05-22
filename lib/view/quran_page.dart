@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/quran_view_model.dart';
 import 'quran_detail_page.dart';
+import 'muslim_drawer.dart';
 
 class QuranPage extends StatefulWidget {
   const QuranPage({super.key});
@@ -53,10 +54,17 @@ class _QuranPageState extends State<QuranPage> {
     }).toList();
 
     return Scaffold(
+      drawer: const MuslimDrawer(),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
         ),
         backgroundColor: _isScrolled
             ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)

@@ -274,9 +274,10 @@ class _RamadhanPageState extends State<RamadhanPage> {
             background: deleteBackground,
             secondaryBackground: deleteSecondaryBackground,
             onDismissed: (direction) {
+              final messenger = ScaffoldMessenger.of(context);
               viewModel.deleteCeramahLog(log.id);
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(
+              messenger.clearSnackBars();
+              messenger.showSnackBar(
                 SnackBar(
                   behavior: SnackBarBehavior.floating,
                   backgroundColor: const Color(0xFF2C2C2C),
@@ -295,7 +296,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
                     textColor: theme.colorScheme.primaryContainer,
                     onPressed: () {
                       viewModel.restoreCeramahLog(log);
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      messenger.hideCurrentSnackBar();
                     },
                   ),
                 ),
@@ -481,14 +482,15 @@ class _RamadhanPageState extends State<RamadhanPage> {
                           ),
                           onPressed: () {
                             if (formKey.currentState!.validate()) {
+                              final messenger = ScaffoldMessenger.of(context);
                               viewModel.addCeramahLog(
                                 speaker: speakerController.text,
                                 title: titleController.text,
                                 summary: summaryController.text,
                               );
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).clearSnackBars();
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.clearSnackBars();
+                              messenger.showSnackBar(
                                 SnackBar(
                                   behavior: SnackBarBehavior.floating,
                                   backgroundColor: const Color(0xFF2C2C2C),
@@ -727,6 +729,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
                           ),
                           onPressed: () {
                             if (formKey.currentState!.validate()) {
+                              final messenger = ScaffoldMessenger.of(context);
                               viewModel.updateCeramahLog(
                                 id: log.id,
                                 speaker: speakerController.text,
@@ -734,8 +737,8 @@ class _RamadhanPageState extends State<RamadhanPage> {
                                 summary: summaryController.text,
                               );
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).clearSnackBars();
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.clearSnackBars();
+                              messenger.showSnackBar(
                                 SnackBar(
                                   behavior: SnackBarBehavior.floating,
                                   backgroundColor: const Color(0xFF2C2C2C),
@@ -842,9 +845,10 @@ class _RamadhanPageState extends State<RamadhanPage> {
                   background: deleteBackground,
                   secondaryBackground: deleteSecondaryBackground,
                   onDismissed: (direction) {
+                    final messenger = ScaffoldMessenger.of(context);
                     viewModel.deleteInfaqLog(log.id);
-                    ScaffoldMessenger.of(context).clearSnackBars();
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.clearSnackBars();
+                    messenger.showSnackBar(
                       SnackBar(
                         behavior: SnackBarBehavior.floating,
                         backgroundColor: const Color(0xFF2C2C2C),
@@ -863,7 +867,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
                           textColor: theme.colorScheme.primaryContainer,
                           onPressed: () {
                             viewModel.restoreInfaqLog(log);
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            messenger.hideCurrentSnackBar();
                           },
                         ),
                       ),
@@ -1027,14 +1031,15 @@ class _RamadhanPageState extends State<RamadhanPage> {
                           ),
                           onPressed: () {
                             if (formKey.currentState!.validate()) {
+                              final messenger = ScaffoldMessenger.of(context);
                               final amount = double.parse(amountController.text);
                               viewModel.addInfaqLog(
                                 amount: amount,
                                 notes: notesController.text,
                               );
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).clearSnackBars();
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.clearSnackBars();
+                              messenger.showSnackBar(
                                 SnackBar(
                                   behavior: SnackBarBehavior.floating,
                                   backgroundColor: const Color(0xFF2C2C2C),
@@ -1274,6 +1279,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
                           ),
                           onPressed: () {
                             if (formKey.currentState!.validate()) {
+                              final messenger = ScaffoldMessenger.of(context);
                               final amount = double.parse(amountController.text);
                               viewModel.updateInfaqLog(
                                 id: log.id,
@@ -1281,8 +1287,8 @@ class _RamadhanPageState extends State<RamadhanPage> {
                                 notes: notesController.text,
                               );
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).clearSnackBars();
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.clearSnackBars();
+                              messenger.showSnackBar(
                                 SnackBar(
                                   behavior: SnackBarBehavior.floating,
                                   backgroundColor: const Color(0xFF2C2C2C),

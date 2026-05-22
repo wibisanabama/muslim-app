@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../viewmodel/shalat_view_model.dart';
 import 'shalat_detail_page.dart';
+import 'muslim_drawer.dart';
 
 class ShalatPage extends StatefulWidget {
   static const routeName = '/shalat';
@@ -46,10 +47,17 @@ class _ShalatPageState extends State<ShalatPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      drawer: const MuslimDrawer(),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
         ),
         title: Text(vm.isLoadingLocation ? 'Mencari Lokasi...' : 'Jadwal - ${vm.cityName}'),
         centerTitle: true,

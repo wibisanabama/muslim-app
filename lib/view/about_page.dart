@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'muslim_drawer.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -53,10 +54,17 @@ class _AboutPageState extends State<AboutPage> {
     ];
 
     return Scaffold(
+      drawer: const MuslimDrawer(),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
         ),
         title: const Text('Tentang Aplikasi'),
         centerTitle: true,

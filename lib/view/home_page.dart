@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'kiblat_page.dart';
 import 'ramadhan_page.dart';
+import 'muslim_drawer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -38,10 +39,17 @@ class _HomePageState extends State<HomePage> {
     final theme = Theme.of(context);
     
     return Scaffold(
+      drawer: const MuslimDrawer(),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
         ),
         title: const Text('Muslim'),
         centerTitle: true,
@@ -132,7 +140,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Icon(
-                        Icons.arrow_right,
+                        Icons.chevron_right,
                         color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
                         size: 20,
                       ),
