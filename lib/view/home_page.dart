@@ -2,8 +2,36 @@ import 'package:flutter/material.dart';
 import 'kiblat_page.dart';
 import 'ramadhan_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late final ScrollController _scrollController;
+  bool _isScrolled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        final scrolled = _scrollController.offset > 0;
+        if (scrolled != _isScrolled) {
+          setState(() {
+            _isScrolled = scrolled;
+          });
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +45,11 @@ class HomePage extends StatelessWidget {
         ),
         title: const Text('Muslim'),
         centerTitle: true,
+        backgroundColor: _isScrolled
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -33,6 +66,7 @@ class HomePage extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

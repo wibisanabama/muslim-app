@@ -18,9 +18,21 @@ class _ShalatPageState extends State<ShalatPage> {
   final int year = 2025;
   final int month = 1;
 
+  late final ScrollController _scrollController;
+  bool _isScrolled = false;
+
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        final scrolled = _scrollController.offset > 0;
+        if (scrolled != _isScrolled) {
+          setState(() {
+            _isScrolled = scrolled;
+          });
+        }
+      });
     // panggil setelah build pertama supaya aman akses context
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ShalatViewModel>().fetchMonthlySchedule(
@@ -29,6 +41,12 @@ class _ShalatPageState extends State<ShalatPage> {
             month: month,
           );
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -44,6 +62,11 @@ class _ShalatPageState extends State<ShalatPage> {
         ),
         title: const Text('Jadwal Shalat'),
         centerTitle: true,
+        backgroundColor: _isScrolled
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -77,6 +100,7 @@ class _ShalatPageState extends State<ShalatPage> {
                 return LayoutBuilder(
                   builder: (context, constraints) {
                     return SingleChildScrollView(
+                      controller: _scrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
@@ -113,6 +137,7 @@ class _ShalatPageState extends State<ShalatPage> {
                 return LayoutBuilder(
                   builder: (context, constraints) {
                     return SingleChildScrollView(
+                      controller: _scrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
@@ -128,6 +153,7 @@ class _ShalatPageState extends State<ShalatPage> {
               }
 
               return ListView.separated(
+                controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemCount: vm.schedules.length,
                 separatorBuilder: (context, index) => Divider(
