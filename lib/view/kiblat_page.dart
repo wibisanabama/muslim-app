@@ -284,23 +284,6 @@ class _KiblatPageState extends State<KiblatPage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, color: theme.colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Detail Koordinat Arah',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
