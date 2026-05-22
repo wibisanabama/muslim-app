@@ -113,8 +113,9 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 24),
             
             // Catatan Ramadhan Card
-            Card(
-              elevation: 2,
+            Card.filled(
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -129,19 +130,22 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(12),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.6),
+                            width: 1.5,
+                          ),
                         ),
                         child: Icon(
-                          Icons.event_note,
-                          size: 32,
-                          color: theme.colorScheme.onPrimaryContainer,
+                          Icons.event_note_rounded,
+                          size: 20,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -153,6 +157,7 @@ class _HomePageState extends State<HomePage> {
                               'Catatan Ramadhan',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onSurface,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -166,8 +171,9 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Icon(
-                        Icons.chevron_right,
-                        color: theme.colorScheme.primary,
+                        Icons.arrow_right,
+                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                        size: 20,
                       ),
                     ],
                   ),
