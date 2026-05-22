@@ -34,6 +34,23 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
     super.dispose();
   }
 
+  IconData _getShalatIcon(String name) {
+    switch (name.toLowerCase()) {
+      case 'subuh':
+        return Icons.wb_twilight_rounded;
+      case 'dzuhur':
+        return Icons.wb_sunny_rounded;
+      case 'ashar':
+        return Icons.wb_sunny_outlined;
+      case 'maghrib':
+        return Icons.brightness_medium_rounded;
+      case 'isya':
+        return Icons.nights_stay_rounded;
+      default:
+        return Icons.star_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -87,7 +104,7 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 child: Row(
                   children: [
-                    // Circular Star Badge
+                    // Circular Badge
                     Container(
                       width: 36,
                       height: 36,
@@ -97,7 +114,7 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
                       ),
                       alignment: Alignment.center,
                       child: Icon(
-                        Icons.star_rounded,
+                        _getShalatIcon(item['name']!),
                         size: 20,
                         color: theme.colorScheme.primary,
                       ),
