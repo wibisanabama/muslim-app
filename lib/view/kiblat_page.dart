@@ -80,6 +80,7 @@ class _KiblatPageState extends State<KiblatPage> {
                 final double headingRadians = headingDegrees * (math.pi / 180.0);
 
                 return Card.filled(
+                  margin: EdgeInsets.zero,
                   color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -305,6 +306,7 @@ class _KiblatPageState extends State<KiblatPage> {
             
             // Usage Guide Card
             Card.filled(
+              margin: EdgeInsets.zero,
               color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
               elevation: 0,
               shape: RoundedRectangleBorder(
