@@ -193,38 +193,120 @@ class _QuranPageState extends State<QuranPage> {
               );
             }
 
-            return ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: filteredSurahs.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
-              itemBuilder: (context, i) {
-                final s = filteredSurahs[i];
-                return ListTile(
-                  leading: CircleAvatar(
-                    child: Text(s.nomor.toString()),
-                  ),
-                  title: Text(s.namaLatin),
-                  subtitle: Text('${s.tempatTurun} • ${s.jumlahAyat} Ayat'),
-                  trailing: Text(
-                    s.nama,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => QuranDetailPage(
-                          nomorSurah: s.nomor,
-                          namaLatin: s.namaLatin,
+            return Padding(
+              padding: const EdgeInsets.all(12),
+              child: ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: filteredSurahs.length,
+                separatorBuilder: (context, index) => Divider(
+                  height: 1,
+                  color: theme.colorScheme.surface,
+                  thickness: 1.5,
+                ),
+                itemBuilder: (context, i) {
+                  final s = filteredSurahs[i];
+                  final isFirst = i == 0;
+                  final isLast = i == filteredSurahs.length - 1;
+
+                  final borderRadius = BorderRadius.only(
+                    topLeft: Radius.circular(isFirst ? 16 : 0),
+                    topRight: Radius.circular(isFirst ? 16 : 0),
+                    bottomLeft: Radius.circular(isLast ? 16 : 0),
+                    bottomRight: Radius.circular(isLast ? 16 : 0),
+                  );
+
+                  return Material(
+                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                    borderRadius: borderRadius,
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QuranDetailPage(
+                              nomorSurah: s.nomor,
+                              namaLatin: s.namaLatin,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                        child: Row(
+                          children: [
+                            // Leading Surah Number with subtle Star background inside circle
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.star_rounded,
+                                    size: 24,
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                  ),
+                                  Text(
+                                    s.nomor.toString(),
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Surah Details (Title & Subtitle)
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    s.namaLatin,
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${s.tempatTurun} • ${s.jumlahAyat} Ayat',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Arabic Name
+                            Text(
+                              s.nama,
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Solid Play Arrow Trailing
+                            Icon(
+                              Icons.play_arrow,
+                              size: 14,
+                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                );
-              },
+                    ),
+                  );
+                },
+              ),
             );
           },
         ),
