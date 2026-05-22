@@ -34,10 +34,30 @@ class _ShalatPageState extends State<ShalatPage> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ShalatViewModel>();
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {},
+        ),
         title: const Text('Jadwal Shalat'),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: CircleAvatar(
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: theme.colorScheme.onPrimary,
+              radius: 18,
+              child: const Text(
+                'A',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () => context.read<ShalatViewModel>().fetchMonthlySchedule(
