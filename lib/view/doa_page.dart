@@ -192,30 +192,68 @@ class _DoaPageState extends State<DoaPage> {
               );
             }
 
-            return ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: filteredDoas.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
-              itemBuilder: (context, i) {
-                final d = filteredDoas[i];
-                return ListTile(
-                  title: Text(
-                    d.doa,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DoaDetailPage(doa: d),
+            return Padding(
+              padding: const EdgeInsets.all(12),
+              child: ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: filteredDoas.length,
+                separatorBuilder: (context, index) => Divider(
+                  height: 1,
+                  color: theme.colorScheme.surface,
+                  thickness: 1.5,
+                ),
+                itemBuilder: (context, i) {
+                  final d = filteredDoas[i];
+                  final isFirst = i == 0;
+                  final isLast = i == filteredDoas.length - 1;
+
+                  final borderRadius = BorderRadius.only(
+                    topLeft: Radius.circular(isFirst ? 16 : 0),
+                    topRight: Radius.circular(isFirst ? 16 : 0),
+                    bottomLeft: Radius.circular(isLast ? 16 : 0),
+                    bottomRight: Radius.circular(isLast ? 16 : 0),
+                  );
+
+                  return Material(
+                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                    borderRadius: borderRadius,
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DoaDetailPage(doa: d),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                d.doa,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Icon(
+                              Icons.play_arrow,
+                              size: 14,
+                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                );
-              },
+                    ),
+                  );
+                },
+              ),
             );
           },
         ),
