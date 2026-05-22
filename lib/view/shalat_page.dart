@@ -127,15 +127,31 @@ class _ShalatPageState extends State<ShalatPage> {
                 );
               }
 
-              return ListView.builder(
+              return ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemCount: vm.schedules.length,
+                separatorBuilder: (context, index) => Divider(
+                  height: 1,
+                  color: theme.colorScheme.surface,
+                  thickness: 1.5,
+                ),
                 itemBuilder: (context, i) {
                   final d = vm.schedules[i];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  final isFirst = i == 0;
+                  final isLast = i == vm.schedules.length - 1;
+
+                  final borderRadius = BorderRadius.only(
+                    topLeft: Radius.circular(isFirst ? 16 : 0),
+                    topRight: Radius.circular(isFirst ? 16 : 0),
+                    bottomLeft: Radius.circular(isLast ? 16 : 0),
+                    bottomRight: Radius.circular(isLast ? 16 : 0),
+                  );
+
+                  return Material(
+                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                    borderRadius: borderRadius,
+                    clipBehavior: Clip.antiAlias,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -144,18 +160,22 @@ class _ShalatPageState extends State<ShalatPage> {
                         );
                       },
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               d.tanggal,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onSurface,
                               ),
                             ),
-                            const Icon(Icons.chevron_right),
+                            Icon(
+                              Icons.play_arrow,
+                              size: 14,
+                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                            ),
                           ],
                         ),
                       ),
