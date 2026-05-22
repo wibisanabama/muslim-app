@@ -71,46 +71,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Welcoming Banner Card
-            Card(
-              elevation: 0,
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Assalamualaikum,',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Selamat Datang di Muslim',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Semoga aplikasi ini dapat menunjang ibadah harian Anda dengan lebih baik.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
+
             
             // Catatan Ramadhan Card
             Card.filled(
@@ -183,35 +144,41 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 32),
             
             // Section Fitur Tambahan
-            Text(
-              'Fitur Tambahan',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Text(
+                'Fitur Tambahan',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
             ),
             const SizedBox(height: 16),
             
             // Shortcuts Row / Wrap
-            Wrap(
-              spacing: 20,
-              runSpacing: 20,
-              children: [
-                // Qibla Direction Shortcut
-                _buildShortcutItem(
-                  context: context,
-                  icon: Icons.explore,
-                  label: 'Arah Kiblat',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const KiblatPage(),
-                      ),
-                    );
-                  },
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Wrap(
+                spacing: 20,
+                runSpacing: 20,
+                children: [
+                  // Qibla Direction Shortcut
+                  _buildShortcutItem(
+                    context: context,
+                    icon: Icons.explore,
+                    label: 'Arah Kiblat',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const KiblatPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
