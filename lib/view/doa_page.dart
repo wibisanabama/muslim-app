@@ -212,11 +212,10 @@ class _DoaPageState extends State<DoaPage> {
               );
             }
 
-            return Padding(
+            return ListView.separated(
+              controller: _scrollController,
               padding: const EdgeInsets.all(12),
-              child: ListView.separated(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
+              physics: const AlwaysScrollableScrollPhysics(),
                 itemCount: filteredDoas.length,
                 separatorBuilder: (context, index) => Divider(
                   height: 1,
@@ -274,8 +273,7 @@ class _DoaPageState extends State<DoaPage> {
                     ),
                   );
                 },
-              ),
-            );
+              );
           },
         ),
       ),

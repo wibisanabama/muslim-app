@@ -88,9 +88,7 @@ class _ShalatPageState extends State<ShalatPage> {
               year: year,
               month: month,
             ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Builder(
+        child: Builder(
             builder: (context) {
               if (vm.isLoading) {
                 return const Center(child: CircularProgressIndicator());
@@ -154,6 +152,7 @@ class _ShalatPageState extends State<ShalatPage> {
 
               return ListView.separated(
                 controller: _scrollController,
+                padding: const EdgeInsets.all(12),
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemCount: vm.schedules.length,
                 separatorBuilder: (context, index) => Divider(
@@ -212,7 +211,6 @@ class _ShalatPageState extends State<ShalatPage> {
             },
           ),
         ),
-      ),
     );
   }
 }

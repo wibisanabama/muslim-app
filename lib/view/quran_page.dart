@@ -213,11 +213,10 @@ class _QuranPageState extends State<QuranPage> {
               );
             }
 
-            return Padding(
+            return ListView.separated(
+              controller: _scrollController,
               padding: const EdgeInsets.all(12),
-              child: ListView.separated(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
+              physics: const AlwaysScrollableScrollPhysics(),
                 itemCount: filteredSurahs.length,
                 separatorBuilder: (context, index) => Divider(
                   height: 1,
@@ -327,8 +326,7 @@ class _QuranPageState extends State<QuranPage> {
                     ),
                   );
                 },
-              ),
-            );
+              );
           },
         ),
       ),
