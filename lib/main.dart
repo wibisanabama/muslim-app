@@ -8,7 +8,9 @@ import 'viewmodel/quran_view_model.dart';
 import 'repository/doa_repository.dart';
 import 'viewmodel/doa_view_model.dart';
 import 'viewmodel/ramadhan_view_model.dart';
+import 'viewmodel/theme_view_model.dart';
 import 'view/splash_page.dart';
+import 'theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,6 +21,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final materialTheme = MaterialTheme(textTheme);
+
     return MultiProvider(
       providers: [
         Provider<ShalatRepository>(
@@ -48,15 +53,25 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<RamadhanViewModel>(
           create: (_) => RamadhanViewModel(),
         ),
+        ChangeNotifierProvider<ThemeViewModel>(
+          create: (_) => ThemeViewModel(),
+        ),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Muslim',
-        theme: ThemeData(useMaterial3: true),
+      child: Consumer<ThemeViewModel>(
+        builder: (context, themeVm, _) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Muslim',
+            theme: materialTheme.light(),
+            darkTheme: materialTheme.dark(),
+            themeMode: themeVm.themeMode,
 
-        // Splash Screen sebagai pintu masuk utama
-        home: const SplashPage(),
+            // Splash Screen sebagai pintu masuk utama
+            home: const SplashPage(),
+          );
+        },
       ),
     );
   }
 }
+
