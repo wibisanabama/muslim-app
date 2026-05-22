@@ -351,8 +351,10 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+          child: Container(
+            width: double.infinity,
+            height: 240,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -413,11 +415,12 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.only(bottom: 16),
       child: Container(
         width: double.infinity,
+        height: 240,
         decoration: BoxDecoration(
           color: theme.colorScheme.primary.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(24),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
