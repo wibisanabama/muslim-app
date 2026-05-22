@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,6 +24,9 @@ class _ShalatPageState extends State<ShalatPage> {
   late final ShalatViewModel _viewModel;
   bool _needsScrollToToday = true;
 
+  Timer? _debounceTimer;
+  Future<List<Map<String, dynamic>>>? _searchFuture;
+
   @override
   void initState() {
     super.initState();
@@ -39,10 +43,31 @@ class _ShalatPageState extends State<ShalatPage> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _viewModel.removeListener(_onViewModelChanged);
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+
+    setState(() {
+      _searchQuery = query;
+      _searchFuture = null;
+    });
+
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      return;
+    }
+
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      setState(() {
+        _searchFuture = context.read<ShalatRepository>().searchCities(trimmed);
+      });
+    });
   }
 
   void _onScroll() {
@@ -131,11 +156,7 @@ class _ShalatPageState extends State<ShalatPage> {
           child: TextField(
             controller: _searchController,
             textAlignVertical: TextAlignVertical.center,
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
-            },
+            onChanged: _onSearchChanged,
             decoration: InputDecoration(
               hintText: 'Cari kota...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
@@ -149,9 +170,7 @@ class _ShalatPageState extends State<ShalatPage> {
                       icon: const Icon(Icons.clear, size: 18),
                       onPressed: () {
                         _searchController.clear();
-                        setState(() {
-                          _searchQuery = '';
-                        });
+                        _onSearchChanged('');
                       },
                     )
                   : null,
@@ -181,8 +200,11 @@ class _ShalatPageState extends State<ShalatPage> {
         child: Builder(
             builder: (context) {
               if (_searchQuery.isNotEmpty) {
+                if (_searchFuture == null) {
+                  return const Center(child: CircularProgressIndicator());
+                }
                 return FutureBuilder<List<Map<String, dynamic>>>(
-                  future: context.read<ShalatRepository>().searchCities(_searchQuery.trim()),
+                  future: _searchFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
