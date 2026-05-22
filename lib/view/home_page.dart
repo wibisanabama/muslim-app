@@ -230,8 +230,9 @@ class _HomePageState extends State<HomePage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Card(
-          elevation: 2,
+        Card.filled(
+          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+          elevation: 0,
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -246,11 +247,11 @@ class _HomePageState extends State<HomePage> {
               alignment: Alignment.center,
               child: CircleAvatar(
                 radius: 28,
-                backgroundColor: theme.colorScheme.secondaryContainer,
+                backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                 child: Icon(
                   icon,
                   size: 28,
-                  color: theme.colorScheme.onSecondaryContainer,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ),
