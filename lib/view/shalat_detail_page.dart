@@ -38,6 +38,17 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final shalatItems = [
+      {'name': 'Imsak', 'time': widget.schedule.imsak},
+      {'name': 'Subuh', 'time': widget.schedule.subuh},
+      {'name': 'Terbit', 'time': widget.schedule.terbit},
+      {'name': 'Dhuha', 'time': widget.schedule.dhuha},
+      {'name': 'Dzuhur', 'time': widget.schedule.dzuhur},
+      {'name': 'Ashar', 'time': widget.schedule.ashar},
+      {'name': 'Maghrib', 'time': widget.schedule.maghrib},
+      {'name': 'Isya', 'time': widget.schedule.isya},
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Detail Jadwal ${widget.schedule.tanggal}'),
@@ -49,90 +60,75 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
         scrolledUnderElevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
+        child: ListView.separated(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.access_time),
-                    title: const Text('Imsak'),
-                    trailing: Text(
-                      widget.schedule.imsak,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.access_time),
-                    title: const Text('Subuh'),
-                    trailing: Text(
-                      widget.schedule.subuh,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.access_time),
-                    title: const Text('Terbit'),
-                    trailing: Text(
-                      widget.schedule.terbit,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.access_time),
-                    title: const Text('Dhuha'),
-                    trailing: Text(
-                      widget.schedule.dhuha,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.access_time),
-                    title: const Text('Dzuhur'),
-                    trailing: Text(
-                      widget.schedule.dzuhur,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.access_time),
-                    title: const Text('Ashar'),
-                    trailing: Text(
-                      widget.schedule.ashar,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.access_time),
-                    title: const Text('Maghrib'),
-                    trailing: Text(
-                      widget.schedule.maghrib,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.access_time),
-                    title: const Text('Isya'),
-                    trailing: Text(
-                      widget.schedule.isya,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          itemCount: shalatItems.length,
+          separatorBuilder: (context, index) => Divider(
+            height: 1,
+            color: theme.colorScheme.surface,
+            thickness: 1.5,
           ),
+          itemBuilder: (context, i) {
+            final item = shalatItems[i];
+            final isFirst = i == 0;
+            final isLast = i == shalatItems.length - 1;
+
+            final borderRadius = BorderRadius.only(
+              topLeft: Radius.circular(isFirst ? 16 : 0),
+              topRight: Radius.circular(isFirst ? 16 : 0),
+              bottomLeft: Radius.circular(isLast ? 16 : 0),
+              bottomRight: Radius.circular(isLast ? 16 : 0),
+            );
+
+            return Material(
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+              borderRadius: borderRadius,
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                child: Row(
+                  children: [
+                    // Circular Star Badge
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.star_rounded,
+                        size: 20,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Shalat Name
+                    Expanded(
+                      child: Text(
+                        item['name']!,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    // Shalat Time
+                    Text(
+                      item['time']!,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
