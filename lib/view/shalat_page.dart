@@ -13,11 +13,6 @@ class ShalatPage extends StatefulWidget {
 }
 
 class _ShalatPageState extends State<ShalatPage> {
-  // sesuai API yang kamu kasih:
-  final int cityId = 1206;
-  final int year = 2025;
-  final int month = 1;
-
   late final ScrollController _scrollController;
   bool _isScrolled = false;
 
@@ -35,11 +30,7 @@ class _ShalatPageState extends State<ShalatPage> {
       });
     // panggil setelah build pertama supaya aman akses context
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ShalatViewModel>().fetchMonthlySchedule(
-            cityId: cityId,
-            year: year,
-            month: month,
-          );
+      context.read<ShalatViewModel>().updateLocationAndFetchSchedule();
     });
   }
 
@@ -60,7 +51,7 @@ class _ShalatPageState extends State<ShalatPage> {
           icon: const Icon(Icons.menu),
           onPressed: () {},
         ),
-        title: const Text('Jadwal Shalat'),
+        title: Text(vm.isLoadingLocation ? 'Mencari Lokasi...' : 'Jadwal - ${vm.cityName}'),
         centerTitle: true,
         backgroundColor: _isScrolled
             ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
@@ -83,13 +74,27 @@ class _ShalatPageState extends State<ShalatPage> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => context.read<ShalatViewModel>().fetchMonthlySchedule(
-              cityId: cityId,
-              year: year,
-              month: month,
-            ),
+        onRefresh: () => context.read<ShalatViewModel>().updateLocationAndFetchSchedule(forceGPS: true),
         child: Builder(
             builder: (context) {
+              if (vm.isLoadingLocation) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Mendeteksi koordinat GPS...',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
               if (vm.isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
@@ -115,11 +120,7 @@ class _ShalatPageState extends State<ShalatPage> {
                               const SizedBox(height: 12),
                               FilledButton(
                                 onPressed: () =>
-                                    context.read<ShalatViewModel>().fetchMonthlySchedule(
-                                          cityId: cityId,
-                                          year: year,
-                                          month: month,
-                                        ),
+                                    context.read<ShalatViewModel>().updateLocationAndFetchSchedule(forceGPS: true),
                                 child: const Text('Coba Lagi'),
                               ),
                             ],

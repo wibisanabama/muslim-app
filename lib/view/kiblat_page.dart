@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'dart:math' as math;
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class KiblatPage extends StatefulWidget {
   const KiblatPage({super.key});
@@ -12,6 +15,13 @@ class KiblatPage extends StatefulWidget {
 class _KiblatPageState extends State<KiblatPage> {
   late final ScrollController _scrollController;
   bool _isScrolled = false;
+
+  // Lokasi & Arah Kiblat Real-time State
+  double _qiblaAngleDegrees = 295.0; // Fallback default untuk Indonesia
+  String _locationName = 'Indonesia'; // Fallback default
+  bool _isLoadingLocation = false;
+  String? _errorMessage;
+  bool _hasLoadedOnce = false;
 
   @override
   void initState() {
@@ -25,6 +35,14 @@ class _KiblatPageState extends State<KiblatPage> {
           });
         }
       });
+
+    // 1. Muat data dari cache terlebih dahulu untuk load instan
+    _loadCachedLocation();
+
+    // 2. Deteksi lokasi real-time GPS
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchLocationAndCalculateQibla();
+    });
   }
 
   @override
@@ -33,313 +51,501 @@ class _KiblatPageState extends State<KiblatPage> {
     super.dispose();
   }
 
+  // Fungsi untuk memuat cache lokal
+  Future<void> _loadCachedLocation() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedAngle = prefs.getDouble('cached_qibla_angle');
+      final cachedName = prefs.getString('cached_qibla_name');
+
+      if (cachedAngle != null && cachedName != null) {
+        setState(() {
+          _qiblaAngleDegrees = cachedAngle;
+          _locationName = cachedName;
+          _hasLoadedOnce = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading cached qibla data: $e');
+    }
+  }
+
+  // Fungsi untuk mendeteksi GPS dan menghitung arah kiblat
+  Future<void> _fetchLocationAndCalculateQibla({bool force = false}) async {
+    if (_isLoadingLocation) return;
+
+    setState(() {
+      _isLoadingLocation = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Cek apakah layanan lokasi aktif
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Layanan lokasi (GPS) belum aktif.');
+      }
+
+      // Cek perizinan lokasi
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Izin akses lokasi ditolak.');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Izin lokasi ditolak secara permanen.');
+      }
+
+      // Ambil koordinat GPS saat ini (menggunakan API non-deprecated)
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 8),
+        ),
+      );
+
+      final double lat = position.latitude;
+      final double lon = position.longitude;
+
+      // Hitung sudut kiblat dinamis menggunakan rumus trigonometri bola
+      final double calculatedAngle = calculateQiblaDirection(lat, lon);
+
+      // Terjemahkan koordinat GPS ke nama wilayah/kota (Reverse Geocoding)
+      String resolvedCity = '';
+      try {
+        final placemarks = await placemarkFromCoordinates(lat, lon);
+        if (placemarks.isNotEmpty) {
+          final place = placemarks.first;
+          if (place.subAdministrativeArea != null && place.subAdministrativeArea!.isNotEmpty) {
+            resolvedCity = place.subAdministrativeArea!
+                .replaceAll(RegExp(r'(Regency|Kabupaten|City|Kota|Regency\s+|\s+Regency|\s+City|City\s+)', caseSensitive: false), '')
+                .trim();
+          } else if (place.locality != null && place.locality!.isNotEmpty) {
+            resolvedCity = place.locality!;
+          } else if (place.administrativeArea != null && place.administrativeArea!.isNotEmpty) {
+            resolvedCity = place.administrativeArea!;
+          }
+
+          final String country = place.country ?? 'Indonesia';
+          resolvedCity = resolvedCity.isNotEmpty ? '$resolvedCity, $country' : country;
+        }
+      } catch (e) {
+        debugPrint('Geocoding error: $e');
+        resolvedCity = 'Lokasi Terdeteksi';
+      }
+
+      // Simpan di cache lokal
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('cached_qibla_lat', lat);
+      await prefs.setDouble('cached_qibla_lon', lon);
+      await prefs.setDouble('cached_qibla_angle', calculatedAngle);
+      await prefs.setString('cached_qibla_name', resolvedCity);
+
+      setState(() {
+        _qiblaAngleDegrees = calculatedAngle;
+        _locationName = resolvedCity;
+        _hasLoadedOnce = true;
+      });
+    } catch (e) {
+      debugPrint('Qibla location acquisition error: $e');
+      setState(() {
+        _errorMessage = e.toString();
+        // Fallback jika belum pernah ada data di cache
+        if (!_hasLoadedOnce) {
+          _qiblaAngleDegrees = 295.0;
+          _locationName = 'Indonesia (Default)';
+        }
+      });
+    } finally {
+      setState(() {
+        _isLoadingLocation = false;
+      });
+    }
+  }
+
+  // Rumus Trigonometri Bola untuk Menghitung Arah Kiblat
+  double calculateQiblaDirection(double lat1, double lon1) {
+    // Koordinat Ka'bah (Makkah)
+    const double lat2 = 21.422487;
+    const double lon2 = 39.826206;
+
+    // Ubah ke radian
+    final double phi1 = lat1 * math.pi / 180.0;
+    final double lambda1 = lon1 * math.pi / 180.0;
+    final double phi2 = lat2 * math.pi / 180.0;
+    final double lambda2 = lon2 * math.pi / 180.0;
+
+    final double deltaLambda = lambda2 - lambda1;
+
+    final double y = math.sin(deltaLambda);
+    final double x = math.cos(phi1) * math.tan(phi2) - math.sin(phi1) * math.cos(deltaLambda);
+
+    double qiblaAngle = math.atan2(y, x) * 180.0 / math.pi;
+
+    // Normalisasi sudut ke rentang [0, 360) derajat
+    return (qiblaAngle + 360.0) % 360.0;
+  }
+
+  // Mendapatkan mata angin berdasarkan derajat sudut
+  String _getDirectionKeyword(double angle) {
+    if (angle >= 337.5 || angle < 22.5) return 'Utara';
+    if (angle >= 22.5 && angle < 67.5) return 'Timur Laut';
+    if (angle >= 67.5 && angle < 112.5) return 'Timur';
+    if (angle >= 112.5 && angle < 157.5) return 'Tenggara';
+    if (angle >= 157.5 && angle < 202.5) return 'Selatan';
+    if (angle >= 202.5 && angle < 247.5) return 'Barat Daya';
+    if (angle >= 247.5 && angle < 292.5) return 'Barat';
+    if (angle >= 292.5 && angle < 337.5) return 'Barat Laut';
+    return 'Utara';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
-    // Sudut Kiblat untuk wilayah Indonesia secara umum adalah ~295° dari Utara (searah jarum jam).
-    const double qiblaAngleDegrees = 295.0;
-    const double qiblaAngleRadians = qiblaAngleDegrees * (math.pi / 180.0);
+    final double qiblaAngleRadians = _qiblaAngleDegrees * (math.pi / 180.0);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Arah Kiblat'),
-        centerTitle: false,
+        centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,
         backgroundColor: _isScrolled
             ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
             : Colors.transparent,
       ),
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Compass Container Card inside StreamBuilder
-            StreamBuilder<CompassEvent>(
-              stream: FlutterCompass.events,
-              builder: (context, snapshot) {
-                double? direction;
-                bool hasSensor = true;
-
-                if (snapshot.hasError) {
-                  direction = null;
-                } else if (snapshot.connectionState == ConnectionState.waiting) {
-                  direction = null;
-                } else {
-                  direction = snapshot.data?.heading;
-                  if (snapshot.data == null) {
-                    hasSensor = false;
-                  }
-                }
-
-                // Perhitungan rotasi piringan kompas:
-                final double headingDegrees = direction ?? 0.0;
-                final double headingRadians = headingDegrees * (math.pi / 180.0);
-
-                return Card.filled(
+      body: RefreshIndicator(
+        onRefresh: () => _fetchLocationAndCalculateQibla(force: true),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          controller: _scrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_errorMessage != null) ...[
+                Card.filled(
+                  color: theme.colorScheme.errorContainer,
                   margin: EdgeInsets.zero,
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
-                    child: Column(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    child: Row(
                       children: [
-                        Text(
-                          'KOMPAS KIBLAT',
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
+                        Icon(Icons.error_outline, color: theme.colorScheme.error),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(color: theme.colorScheme.onErrorContainer),
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        
-                        // The Compass Dial Graphic
-                        Center(
-                          child: Container(
-                            width: 250,
-                            height: 250,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                              border: Border.all(
-                                color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                                width: 8,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorScheme.shadow.withValues(alpha: 0.05),
-                                  blurRadius: 10,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                // Piringan Kompas Berputar (U, T, S, B, Jarum Utara, dan Jarum Kiblat)
-                                Transform.rotate(
-                                  angle: -headingRadians,
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      // Cardinal Directions (U, T, S, B)
-                                      // North (Utara)
-                                      Positioned(
-                                        top: 12,
-                                        child: Text(
-                                          'U',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: theme.colorScheme.error,
-                                          ),
-                                        ),
-                                      ),
-                                      // East (Timur)
-                                      Positioned(
-                                        right: 12,
-                                        child: Text(
-                                          'T',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: theme.colorScheme.onSurface,
-                                          ),
-                                        ),
-                                      ),
-                                      // South (Selatan)
-                                      Positioned(
-                                        bottom: 12,
-                                        child: Text(
-                                          'S',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: theme.colorScheme.onSurface,
-                                          ),
-                                        ),
-                                      ),
-                                      // West (Barat)
-                                      Positioned(
-                                        left: 12,
-                                        child: Text(
-                                          'B',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: theme.colorScheme.onSurface,
-                                          ),
-                                        ),
-                                      ),
-                                      
-                                      // Concentric circles inside compass
-                                      Container(
-                                        width: 170,
-                                        height: 170,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: theme.colorScheme.outline.withValues(alpha: 0.15),
-                                            width: 1,
-                                          ),
-                                        ),
-                                      ),
-                                      
-                                      // Jarum Kompas Utara (North Pointer) - Pointing to 0 degrees
-                                      CustomPaint(
-                                        size: const Size(20, 160),
-                                        painter: CompassNeedlePainter(
-                                          colorTop: theme.colorScheme.error,
-                                          colorBottom: theme.colorScheme.outline.withValues(alpha: 0.5),
-                                        ),
-                                      ),
-                                      
-                                      // Jarum Arah Kiblat (Qibla Pointer) - Pointing to 295 degrees
-                                      Transform.rotate(
-                                        angle: qiblaAngleRadians,
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            // The Golden Line pointer pointing to Qiblah
-                                            CustomPaint(
-                                              size: const Size(22, 140),
-                                              painter: QiblaNeedlePainter(
-                                                color: Colors.amber.shade700,
-                                              ),
-                                            ),
-                                            // Mosque/Kaaba representation icon on the pointer tip
-                                            Positioned(
-                                              top: 10,
-                                              child: Transform.rotate(
-                                                angle: -qiblaAngleRadians, // Keep the icon upright relative to qibla needle
-                                                child: Container(
-                                                  padding: const EdgeInsets.all(4),
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    color: Colors.amber.shade700,
-                                                    border: Border.all(color: Colors.white, width: 1.5),
-                                                  ),
-                                                  child: const Icon(
-                                                    Icons.mosque,
-                                                    size: 14,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                
-                                // Center Pivot Dot (Statis)
-                                CircleAvatar(
-                                  radius: 8,
-                                  backgroundColor: theme.colorScheme.surface,
-                                  child: CircleAvatar(
-                                    radius: 4,
-                                    backgroundColor: theme.colorScheme.primary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        if (!hasSensor)
-                          Text(
-                            'Sensor arah (magnetometer) tidak terdeteksi pada perangkat ini.',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.error,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          )
-                        else
-                          Text(
-                            'Sudut Hadap Perangkat: ${headingDegrees.toStringAsFixed(1)}°',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
                       ],
                     ),
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            
-            // Info Section - Segmented (Filled)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
+                ),
+                const SizedBox(height: 16),
+              ],
+              // Compass Container Card inside StreamBuilder
+              StreamBuilder<CompassEvent>(
+                stream: FlutterCompass.events,
+                builder: (context, snapshot) {
+                  double? direction;
+                  bool hasSensor = true;
+
+                  if (snapshot.hasError) {
+                    direction = null;
+                  } else if (snapshot.connectionState == ConnectionState.waiting) {
+                    direction = null;
+                  } else {
+                    direction = snapshot.data?.heading;
+                    if (snapshot.data == null) {
+                      hasSensor = false;
+                    }
+                  }
+
+                  // Perhitungan rotasi piringan kompas:
+                  final double headingDegrees = direction ?? 0.0;
+                  final double headingRadians = headingDegrees * (math.pi / 180.0);
+
+                  return Card.filled(
+                    margin: EdgeInsets.zero,
                     color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(16),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            'KOMPAS KIBLAT',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          
+                          // The Compass Dial Graphic
+                          Center(
+                            child: Container(
+                              width: 250,
+                              height: 250,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                                border: Border.all(
+                                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                                  width: 8,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.shadow.withValues(alpha: 0.05),
+                                    blurRadius: 10,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // Piringan Kompas Berputar (U, T, S, B, Jarum Utara, dan Jarum Kiblat)
+                                  Transform.rotate(
+                                    angle: -headingRadians,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        // Cardinal Directions (U, T, S, B)
+                                        // North (Utara)
+                                        Positioned(
+                                          top: 12,
+                                          child: Text(
+                                            'U',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: theme.colorScheme.error,
+                                            ),
+                                          ),
+                                        ),
+                                        // East (Timur)
+                                        Positioned(
+                                          right: 12,
+                                          child: Text(
+                                            'T',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: theme.colorScheme.onSurface,
+                                            ),
+                                          ),
+                                        ),
+                                        // South (Selatan)
+                                        Positioned(
+                                          bottom: 12,
+                                          child: Text(
+                                            'S',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: theme.colorScheme.onSurface,
+                                            ),
+                                          ),
+                                        ),
+                                        // West (Barat)
+                                        Positioned(
+                                          left: 12,
+                                          child: Text(
+                                            'B',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: theme.colorScheme.onSurface,
+                                            ),
+                                          ),
+                                        ),
+                                        
+                                        // Concentric circles inside compass
+                                        Container(
+                                          width: 170,
+                                          height: 170,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: theme.colorScheme.outline.withValues(alpha: 0.15),
+                                              width: 1,
+                                            ),
+                                          ),
+                                        ),
+                                        
+                                        // Jarum Kompas Utara (North Pointer) - Pointing to 0 degrees
+                                        CustomPaint(
+                                          size: const Size(20, 160),
+                                          painter: CompassNeedlePainter(
+                                            colorTop: theme.colorScheme.error,
+                                            colorBottom: theme.colorScheme.outline.withValues(alpha: 0.5),
+                                          ),
+                                        ),
+                                        
+                                        // Jarum Arah Kiblat (Qibla Pointer)
+                                        Transform.rotate(
+                                          angle: qiblaAngleRadians,
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              // The Golden Line pointer pointing to Qiblah
+                                              CustomPaint(
+                                                size: const Size(22, 140),
+                                                painter: QiblaNeedlePainter(
+                                                  color: Colors.amber.shade700,
+                                                ),
+                                              ),
+                                              // Mosque/Kaaba representation icon on the pointer tip
+                                              Positioned(
+                                                top: 10,
+                                                child: Transform.rotate(
+                                                  angle: -qiblaAngleRadians, // Keep the icon upright relative to qibla needle
+                                                  child: Container(
+                                                    padding: const EdgeInsets.all(4),
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: Colors.amber.shade700,
+                                                      border: Border.all(color: Colors.white, width: 1.5),
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.mosque,
+                                                      size: 14,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  // Center Pivot Dot (Statis)
+                                  CircleAvatar(
+                                    radius: 8,
+                                    backgroundColor: theme.colorScheme.surface,
+                                    child: CircleAvatar(
+                                      radius: 4,
+                                      backgroundColor: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          if (!hasSensor)
+                            Text(
+                              'Sensor arah (magnetometer) tidak terdeteksi pada perangkat ini.',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.error,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            )
+                          else
+                            Text(
+                              'Sudut Hadap Perangkat: ${headingDegrees.toStringAsFixed(1)}°',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              
+              // Info Section - Segmented (Filled)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildInfoRow(
+                          context,
+                          'Sudut Kiblat',
+                          '${_qiblaAngleDegrees.toStringAsFixed(1)}° (${_getDirectionKeyword(_qiblaAngleDegrees)})',
+                          isFirst: true,
+                        ),
+                        Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
+                        _buildInfoRow(
+                          context,
+                          'Lokasi Anda',
+                          _isLoadingLocation ? 'Mencari lokasi...' : _locationName,
+                        ),
+                        Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
+                        _buildInfoRow(
+                          context,
+                          'Tujuan Arah',
+                          'Ka\'bah, Makkah',
+                          isLast: true,
+                        ),
+                      ],
+                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              
+              // Usage Guide Card
+              Card.filled(
+                margin: EdgeInsets.zero,
+                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildInfoRow(context, 'Sudut Kiblat', '295.2° (Barat Laut)', isFirst: true),
-                      Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
-                      _buildInfoRow(context, 'Negara Referensi', 'Indonesia'),
-                      Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
-                      _buildInfoRow(context, 'Tujuan Arah', 'Ka\'bah, Makkah', isLast: true),
+                      Text(
+                        'Petunjuk Penggunaan',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '1. Posisikan perangkat seluler Anda secara datar dan mendatar (horizontal) di tangan atau permukaan meja.\n\n'
+                        '2. Putar perlahan posisi perangkat Anda hingga huruf "U" (Utara) pada kompas mengarah tepat sejajar dengan arah Utara geografis Anda yang sebenarnya.\n\n'
+                        '3. Setelah terarah tegak lurus, jarum emas berlogo Masjid akan menunjukkan posisi Arah Kiblat yang akurat untuk melakukan shalat.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          height: 1.5,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            
-            // Usage Guide Card
-            Card.filled(
-              margin: EdgeInsets.zero,
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Petunjuk Penggunaan',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      '1. Posisikan perangkat seluler Anda secara datar dan mendatar (horizontal) di tangan atau permukaan meja.\n\n'
-                      '2. Putar perlahan posisi perangkat Anda hingga huruf "U" (Utara) pada kompas mengarah tepat sejajar dengan arah Utara geografis Anda yang sebenarnya.\n\n'
-                      '3. Setelah terarah tegak lurus, jarum emas berlogo Masjid akan menunjukkan posisi Arah Kiblat yang akurat untuk melakukan shalat.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
