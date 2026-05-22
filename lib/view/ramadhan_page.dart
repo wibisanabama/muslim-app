@@ -655,15 +655,9 @@ class _RamadhanPageState extends State<RamadhanPage> {
                         ),
                       ),
                     ),
-                    Row(
-                      children: [
-                        Icon(Icons.edit_note, color: theme.colorScheme.primary),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Ubah Catatan Ceramah',
-                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    Text(
+                      'Ubah Catatan Ceramah',
+                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 24),
                     TextFormField(
@@ -1204,15 +1198,9 @@ class _RamadhanPageState extends State<RamadhanPage> {
                         ),
                       ),
                     ),
-                    Row(
-                      children: [
-                        Icon(Icons.edit_note, color: theme.colorScheme.primary),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Ubah Catatan Sedekah / Infaq',
-                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    Text(
+                      'Ubah Catatan Sedekah / Infaq',
+                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 24),
                     TextFormField(
