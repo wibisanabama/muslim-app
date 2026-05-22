@@ -34,6 +34,24 @@ class _AboutPageState extends State<AboutPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final features = [
+      {
+        'title': 'Jadwal Shalat',
+        'subtitle': 'Jadwal shalat bulanan yang akurat sesuai lokasi.',
+        'icon': Icons.access_time_rounded,
+      },
+      {
+        'title': 'Al-Quran',
+        'subtitle': 'Daftar surat lengkap dengan teks Arab dan latin.',
+        'icon': Icons.menu_book_rounded,
+      },
+      {
+        'title': 'Doa Harian',
+        'subtitle': 'Kumpulan doa harian dengan fallback offline otomatis.',
+        'icon': Icons.favorite_border_rounded,
+      },
+    ];
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -104,7 +122,8 @@ class _AboutPageState extends State<AboutPage> {
             ),
             const SizedBox(height: 32),
             // Deskripsi Aplikasi
-            Card(
+            Card.filled(
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -127,61 +146,69 @@ class _AboutPageState extends State<AboutPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             // Fitur Utama
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      child: Text(
-                        'Fitur Utama',
-                        style: theme.textTheme.titleMedium?.copyWith(
+            Padding(
+              padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+              child: Text(
+                'Fitur Utama',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: features.length,
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                color: theme.colorScheme.surface,
+                thickness: 1.5,
+              ),
+              itemBuilder: (context, index) {
+                final feature = features[index];
+                final isFirst = index == 0;
+                final isLast = index == features.length - 1;
+
+                final borderRadius = BorderRadius.only(
+                  topLeft: Radius.circular(isFirst ? 16 : 0),
+                  topRight: Radius.circular(isFirst ? 16 : 0),
+                  bottomLeft: Radius.circular(isLast ? 16 : 0),
+                  bottomRight: Radius.circular(isLast ? 16 : 0),
+                );
+
+                return Material(
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                  borderRadius: borderRadius,
+                  clipBehavior: Clip.antiAlias,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: theme.colorScheme.secondaryContainer,
+                        child: Icon(
+                          feature['icon'] as IconData,
+                          color: theme.colorScheme.secondary,
+                        ),
+                      ),
+                      title: Text(
+                        feature['title'] as String,
+                        style: theme.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                    ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: theme.colorScheme.secondaryContainer,
-                        child: Icon(
-                          Icons.access_time,
-                          color: theme.colorScheme.secondary,
+                      subtitle: Text(
+                        feature['subtitle'] as String,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          height: 1.3,
                         ),
                       ),
-                      title: const Text('Jadwal Shalat'),
-                      subtitle: const Text('Jadwal shalat bulanan yang akurat sesuai lokasi.'),
                     ),
-                    const Divider(indent: 72),
-                    ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: theme.colorScheme.secondaryContainer,
-                        child: Icon(
-                          Icons.menu_book,
-                          color: theme.colorScheme.secondary,
-                        ),
-                      ),
-                      title: const Text('Al-Quran'),
-                      subtitle: const Text('Daftar surat lengkap dengan teks Arab dan latin.'),
-                    ),
-                    const Divider(indent: 72),
-                    ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: theme.colorScheme.secondaryContainer,
-                        child: Icon(
-                          Icons.favorite_border,
-                          color: theme.colorScheme.secondary,
-                        ),
-                      ),
-                      title: const Text('Doa Harian'),
-                      subtitle: const Text('Kumpulan doa harian dengan fallback offline otomatis.'),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 32),
             // Footer
