@@ -19,6 +19,15 @@ class Ayat {
       teksIndonesia: (json['teksIndonesia'] ?? '').toString(),
     );
   }
+
+  factory Ayat.fromV1Json(Map<String, dynamic> json) {
+    return Ayat(
+      nomorAyat: (json['nomor'] as num).toInt(),
+      teksArab: (json['ar'] ?? '').toString(),
+      teksLatin: (json['tr'] ?? '').toString(),
+      teksIndonesia: (json['idn'] ?? '').toString(),
+    );
+  }
 }
 
 class SurahDetail {
@@ -54,6 +63,22 @@ class SurahDetail {
       deskripsi: (json['deskripsi'] ?? '').toString(),
       ayat: listAyat != null
           ? listAyat.map((e) => Ayat.fromJson(e as Map<String, dynamic>)).toList()
+          : [],
+    );
+  }
+
+  factory SurahDetail.fromV1Json(Map<String, dynamic> json) {
+    final listAyat = json['ayat'] as List?;
+    return SurahDetail(
+      nomor: (json['nomor'] as num).toInt(),
+      nama: (json['nama'] ?? '').toString(),
+      namaLatin: (json['nama_latin'] ?? '').toString(),
+      jumlahAyat: (json['jumlah_ayat'] as num).toInt(),
+      tempatTurun: (json['tempat_turun'] ?? '').toString(),
+      arti: (json['arti'] ?? '').toString(),
+      deskripsi: (json['deskripsi'] ?? '').toString(),
+      ayat: listAyat != null
+          ? listAyat.map((e) => Ayat.fromV1Json(e as Map<String, dynamic>)).toList()
           : [],
     );
   }

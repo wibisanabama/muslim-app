@@ -41,6 +41,10 @@ class _QuranPageState extends State<QuranPage> {
     super.dispose();
   }
 
+  String _normalizeString(String str) {
+    return str.toLowerCase().replaceAll(RegExp(r"[^a-z0-9]"), "");
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<QuranViewModel>();
@@ -48,9 +52,15 @@ class _QuranPageState extends State<QuranPage> {
 
     // Filter surahs locally
     final filteredSurahs = vm.surahs.where((s) {
-      final query = _searchQuery.toLowerCase();
-      return s.namaLatin.toLowerCase().contains(query) ||
-             s.nama.toLowerCase().contains(query);
+      final normQuery = _normalizeString(_searchQuery);
+      if (normQuery.isEmpty) return true;
+
+      final normNamaLatin = _normalizeString(s.namaLatin);
+      final normNama = s.nama.toLowerCase();
+      final normQueryArabic = _searchQuery.toLowerCase();
+
+      return normNamaLatin.contains(normQuery) ||
+             normNama.contains(normQueryArabic);
     }).toList();
 
     return Scaffold(
@@ -265,7 +275,7 @@ class _QuranPageState extends State<QuranPage> {
                         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                         child: Row(
                           children: [
-                            // Leading Surah Number with subtle Star background inside circle
+                            // Leading Surah Number circle
                             Container(
                               width: 36,
                               height: 36,
@@ -274,22 +284,12 @@ class _QuranPageState extends State<QuranPage> {
                                 shape: BoxShape.circle,
                               ),
                               alignment: Alignment.center,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.star_rounded,
-                                    size: 24,
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                                  ),
-                                  Text(
-                                    s.nomor.toString(),
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                ],
+                              child: Text(
+                                s.nomor.toString(),
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 16),
