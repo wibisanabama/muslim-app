@@ -51,7 +51,8 @@ class _DoaDetailPageState extends State<DoaDetailPage> {
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16.0),
-        child: Card(
+        child: Card.filled(
+          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
