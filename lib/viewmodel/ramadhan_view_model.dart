@@ -129,6 +129,28 @@ class RamadhanViewModel extends ChangeNotifier {
     _saveLogs();
   }
 
+  /// Mengupdate catatan ceramah yang sudah ada
+  void updateCeramahLog({
+    required String id,
+    required String speaker,
+    required String title,
+    required String summary,
+  }) {
+    final index = _ceramahLogs.indexWhere((element) => element.id == id);
+    if (index != -1) {
+      final oldLog = _ceramahLogs[index];
+      _ceramahLogs[index] = CeramahLog(
+        id: oldLog.id,
+        date: oldLog.date,
+        speaker: speaker.trim().isEmpty ? 'Hamba Allah' : speaker.trim(),
+        title: title.trim().isEmpty ? 'Kultum Ramadhan' : title.trim(),
+        summary: summary.trim(),
+      );
+      notifyListeners();
+      _saveLogs();
+    }
+  }
+
   /// Menghapus catatan ceramah
   void deleteCeramahLog(String id) {
     _ceramahLogs.removeWhere((element) => element.id == id);
@@ -157,6 +179,42 @@ class RamadhanViewModel extends ChangeNotifier {
   /// Menghapus catatan infaq
   void deleteInfaqLog(String id) {
     _infaqLogs.removeWhere((element) => element.id == id);
+    notifyListeners();
+    _saveLogs();
+  }
+
+  /// Mengupdate catatan infaq yang sudah ada
+  void updateInfaqLog({
+    required String id,
+    required double amount,
+    required String notes,
+  }) {
+    final index = _infaqLogs.indexWhere((element) => element.id == id);
+    if (index != -1) {
+      final oldLog = _infaqLogs[index];
+      _infaqLogs[index] = InfaqLog(
+        id: oldLog.id,
+        date: oldLog.date,
+        amount: amount,
+        notes: notes.trim().isEmpty ? 'Sedekah Ramadhan' : notes.trim(),
+      );
+      notifyListeners();
+      _saveLogs();
+    }
+  }
+
+  /// Memulihkan/memasukkan kembali catatan ceramah yang dihapus (untuk fitur Undo)
+  void restoreCeramahLog(CeramahLog log) {
+    _ceramahLogs.add(log);
+    _ceramahLogs.sort((a, b) => b.date.compareTo(a.date));
+    notifyListeners();
+    _saveLogs();
+  }
+
+  /// Memulihkan/memasukkan kembali catatan infaq yang dihapus (untuk fitur Undo)
+  void restoreInfaqLog(InfaqLog log) {
+    _infaqLogs.add(log);
+    _infaqLogs.sort((a, b) => b.date.compareTo(a.date));
     notifyListeners();
     _saveLogs();
   }

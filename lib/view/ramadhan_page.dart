@@ -11,7 +11,7 @@ class RamadhanPage extends StatefulWidget {
 }
 
 class _RamadhanPageState extends State<RamadhanPage> {
-  int _selectedDay = 1; // Default hari ke-1 Ramadhan
+  final int _selectedDay = 1; // Default hari ke-1 Ramadhan
 
   // Helper untuk format rupiah sederhana tanpa library eksternal
   String _formatRupiah(double amount) {
@@ -41,6 +41,23 @@ class _RamadhanPageState extends State<RamadhanPage> {
     return '$day $month $year';
   }
 
+  IconData _getShalatIcon(String name) {
+    switch (name.toLowerCase()) {
+      case 'subuh':
+        return Icons.wb_twilight_rounded;
+      case 'dzuhur':
+        return Icons.wb_sunny_rounded;
+      case 'ashar':
+        return Icons.wb_sunny_outlined;
+      case 'maghrib':
+        return Icons.brightness_medium_rounded;
+      case 'isya':
+        return Icons.nights_stay_rounded;
+      default:
+        return Icons.star_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -50,6 +67,10 @@ class _RamadhanPageState extends State<RamadhanPage> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Catatan Ramadhan'),
+          centerTitle: false,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          backgroundColor: Colors.transparent,
           bottom: TabBar(
             indicatorColor: theme.colorScheme.primary,
             labelColor: theme.colorScheme.primary,
@@ -83,176 +104,85 @@ class _RamadhanPageState extends State<RamadhanPage> {
   // ================= TAB SHALAT =================
   Widget _buildShalatTab(BuildContext context, RamadhanViewModel viewModel) {
     final theme = Theme.of(context);
-    final currentLog = viewModel.shalatLogs[_selectedDay - 1];
-
+    final log = viewModel.shalatLogs[_selectedDay - 1];
     final fardhuPrayers = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
-    final sunnahPrayers = ['Tarawih', 'Witir', 'Dhuha', 'Tahajjud'];
 
-    // Hitung persentase ketercapaian hari ini
-    final totalPrayers = fardhuPrayers.length + sunnahPrayers.length;
-    final donePrayers = currentLog.prayers.values.where((v) => v).length;
-    final percent = donePrayers / totalPrayers;
-
-    return SingleChildScrollView(
+    return ListView.separated(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Row Selector Hari
-          Card(
-            elevation: 0,
-            color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      itemCount: fardhuPrayers.length,
+      separatorBuilder: (context, index) => Divider(
+        height: 1,
+        color: theme.colorScheme.surface,
+        thickness: 1.5,
+      ),
+      itemBuilder: (context, i) {
+        final prayerName = fardhuPrayers[i];
+        final isChecked = log.prayers[prayerName] ?? false;
+        final isFirst = i == 0;
+        final isLast = i == fardhuPrayers.length - 1;
+
+        final borderRadius = BorderRadius.only(
+          topLeft: Radius.circular(isFirst ? 16 : 0),
+          topRight: Radius.circular(isFirst ? 16 : 0),
+          bottomLeft: Radius.circular(isLast ? 16 : 0),
+          bottomRight: Radius.circular(isLast ? 16 : 0),
+        );
+
+        return Material(
+          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+          borderRadius: borderRadius,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              viewModel.togglePrayer(_selectedDay, prayerName);
+            },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Pilih Hari Ramadhan:',
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  // Circular Badge
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      _getShalatIcon(prayerName),
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
-                  DropdownButton<int>(
-                    value: _selectedDay,
-                    underline: const SizedBox(),
-                    borderRadius: BorderRadius.circular(12),
-                    icon: Icon(Icons.arrow_drop_down, color: theme.colorScheme.primary),
-                    items: List.generate(30, (index) {
-                      final dayNum = index + 1;
-                      return DropdownMenuItem<int>(
-                        value: dayNum,
-                        child: Text(
-                          'Hari ke-$dayNum',
-                          style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      );
-                    }),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _selectedDay = val;
-                        });
-                      }
+                  const SizedBox(width: 16),
+                  // Shalat Name
+                  Expanded(
+                    child: Text(
+                      prayerName,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  // Checkbox on the right
+                  Checkbox(
+                    value: isChecked,
+                    activeColor: theme.colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    onChanged: (bool? value) {
+                      viewModel.togglePrayer(_selectedDay, prayerName);
                     },
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-
-          // Progress bar ketercapaian
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Progress Ibadah Hari ke-$_selectedDay',
-                        style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      Text(
-                        '$donePrayers/$totalPrayers Ibadah',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  LinearProgressIndicator(
-                    value: percent,
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                    minHeight: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Judul Shalat Fardhu
-          _buildSectionHeader(context, 'Shalat Fardhu'),
-          const SizedBox(height: 8),
-          ...fardhuPrayers.map((prayer) => _buildPrayerTile(context, viewModel, _selectedDay, prayer)),
-          const SizedBox(height: 20),
-
-          // Judul Shalat Sunnah
-          _buildSectionHeader(context, 'Shalat Sunnah'),
-          const SizedBox(height: 8),
-          ...sunnahPrayers.map((prayer) => _buildPrayerTile(context, viewModel, _selectedDay, prayer)),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: Text(
-        title,
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: theme.colorScheme.primary,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPrayerTile(
-    BuildContext context, 
-    RamadhanViewModel viewModel, 
-    int day, 
-    String prayerName
-  ) {
-    final theme = Theme.of(context);
-    final log = viewModel.shalatLogs[day - 1];
-    final isChecked = log.prayers[prayerName] ?? false;
-
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isChecked 
-              ? theme.colorScheme.primary.withValues(alpha: 0.5) 
-              : theme.colorScheme.outline.withValues(alpha: 0.15),
-          width: 1,
-        ),
-      ),
-      margin: const EdgeInsets.only(bottom: 8.0),
-      color: isChecked 
-          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.1) 
-          : theme.colorScheme.surface,
-      child: CheckboxListTile(
-        title: Text(
-          prayerName,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: isChecked ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-          ),
-        ),
-        subtitle: Text(
-          isChecked ? 'Sudah dilaksanakan' : 'Belum dilaksanakan',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: isChecked ? theme.colorScheme.primary.withValues(alpha: 0.8) : theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        value: isChecked,
-        activeColor: theme.colorScheme.primary,
-        checkboxShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        onChanged: (_) {
-          viewModel.togglePrayer(day, prayerName);
-        },
-      ),
+        );
+      },
     );
   }
 
@@ -281,183 +211,309 @@ class _RamadhanPageState extends State<RamadhanPage> {
           ),
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => _showAddCeramahDialog(context, viewModel),
+          onPressed: () => _showAddCeramahBottomSheet(context, viewModel),
           label: const Text('Tambah Catatan'),
           icon: const Icon(Icons.add),
-          backgroundColor: theme.colorScheme.primaryContainer,
-          foregroundColor: theme.colorScheme.onPrimaryContainer,
+          backgroundColor: theme.colorScheme.primary,
+          foregroundColor: theme.colorScheme.onPrimary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
         ),
       );
     }
 
     return Scaffold(
-      body: ListView.builder(
+      body: ListView.separated(
         padding: const EdgeInsets.all(16.0),
         itemCount: viewModel.ceramahLogs.length,
+        separatorBuilder: (context, index) => Divider(
+          height: 1,
+          color: theme.colorScheme.surface,
+          thickness: 1.5,
+        ),
         itemBuilder: (context, index) {
           final log = viewModel.ceramahLogs[index];
-          return Card(
-            elevation: 1,
-            margin: const EdgeInsets.only(bottom: 12.0),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => _showCeramahDetailBottomSheet(context, log, viewModel),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            log.title,
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+          final isFirst = index == 0;
+          final isLast = index == viewModel.ceramahLogs.length - 1;
+          final borderRadius = BorderRadius.only(
+            topLeft: Radius.circular(isFirst ? 16 : 0),
+            topRight: Radius.circular(isFirst ? 16 : 0),
+            bottomLeft: Radius.circular(isLast ? 16 : 0),
+            bottomRight: Radius.circular(isLast ? 16 : 0),
+          );
+          
+          final deleteBackground = Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.errorContainer.withValues(alpha: 0.5),
+              borderRadius: borderRadius,
+            ),
+            child: Icon(
+              Icons.delete_sweep_rounded,
+              color: theme.colorScheme.error,
+              size: 28,
+            ),
+          );
+
+          final deleteSecondaryBackground = Container(
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.errorContainer.withValues(alpha: 0.5),
+              borderRadius: borderRadius,
+            ),
+            child: Icon(
+              Icons.delete_sweep_rounded,
+              color: theme.colorScheme.error,
+              size: 28,
+            ),
+          );
+
+          return Dismissible(
+            key: ValueKey(log.id),
+            background: deleteBackground,
+            secondaryBackground: deleteSecondaryBackground,
+            onDismissed: (direction) {
+              viewModel.deleteCeramahLog(log.id);
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: const Color(0xFF2C2C2C),
+                  elevation: 4.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  content: const Text(
+                    'Catatan ceramah berhasil dihapus',
+                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                  duration: const Duration(seconds: 3),
+                  persist: false,
+                  action: SnackBarAction(
+                    label: 'Undo',
+                    textColor: theme.colorScheme.primaryContainer,
+                    onPressed: () {
+                      viewModel.restoreCeramahLog(log);
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    },
+                  ),
+                ),
+              );
+            },
+            child: Material(
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+              borderRadius: borderRadius,
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: () => _showCeramahDetailBottomSheet(context, log, viewModel),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        log.title,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.person_outline, size: 16, color: theme.colorScheme.primary),
+                          const SizedBox(width: 6),
+                          Text(
+                            log.speaker,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.primary,
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          icon: Icon(Icons.delete_outline, color: theme.colorScheme.error, size: 20),
-                          onPressed: () => _showDeleteConfirmDialog(
-                            context: context,
-                            title: 'Hapus Catatan',
-                            content: 'Apakah Anda yakin ingin menghapus catatan ceramah "${log.title}"?',
-                            onConfirm: () => viewModel.deleteCeramahLog(log.id),
+                          const Spacer(),
+                          Text(
+                            _formatDate(log.date),
+                            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                           ),
+                        ],
+                      ),
+                      Divider(
+                        height: 24,
+                        color: theme.colorScheme.surface,
+                        thickness: 1.5,
+                      ),
+                      Text(
+                        log.summary,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          height: 1.4,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.person_outline, size: 16, color: theme.colorScheme.primary),
-                        const SizedBox(width: 6),
-                        Text(
-                          log.speaker,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                        const Spacer(),
-                        Icon(Icons.calendar_month, size: 16, color: theme.colorScheme.onSurfaceVariant),
-                        const SizedBox(width: 6),
-                        Text(
-                          _formatDate(log.date),
-                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 24),
-                    Text(
-                      log.summary,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant, height: 1.4),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddCeramahDialog(context, viewModel),
-        backgroundColor: theme.colorScheme.primaryContainer,
-        foregroundColor: theme.colorScheme.onPrimaryContainer,
-        child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddCeramahBottomSheet(context, viewModel),
+        label: const Text('Tambah Catatan'),
+        icon: const Icon(Icons.add),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
       ),
     );
   }
 
-  void _showAddCeramahDialog(BuildContext context, RamadhanViewModel viewModel) {
+  void _showAddCeramahBottomSheet(BuildContext context, RamadhanViewModel viewModel) {
     final titleController = TextEditingController();
     final speakerController = TextEditingController();
     final summaryController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
         final theme = Theme.of(context);
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Row(
-            children: [
-              Icon(Icons.menu_book, color: theme.colorScheme.primary),
-              const SizedBox(width: 8),
-              const Text('Catat Ceramah'),
-            ],
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          content: SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Judul / Tema Materi',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                      prefixIcon: Icon(Icons.title),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                     ),
-                    validator: (val) => val == null || val.trim().isEmpty ? 'Judul tidak boleh kosong' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: speakerController,
-                    decoration: const InputDecoration(
-                      labelText: 'Penceramah / Ustadz',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                      prefixIcon: Icon(Icons.person),
+                    Row(
+                      children: [
+                        Icon(Icons.menu_book, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Catat Ceramah',
+                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                    validator: (val) => val == null || val.trim().isEmpty ? 'Nama penceramah tidak boleh kosong' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: summaryController,
-                    maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: 'Ringkasan Catatan Materi',
-                      alignLabelWithHint: true,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: titleController,
+                      decoration: const InputDecoration(
+                        labelText: 'Judul / Tema Materi',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                        prefixIcon: Icon(Icons.title),
+                      ),
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Judul tidak boleh kosong' : null,
                     ),
-                    validator: (val) => val == null || val.trim().isEmpty ? 'Ringkasan tidak boleh kosong' : null,
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: speakerController,
+                      decoration: const InputDecoration(
+                        labelText: 'Penceramah / Ustadz',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Nama penceramah tidak boleh kosong' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: summaryController,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        labelText: 'Ringkasan Catatan Materi',
+                        alignLabelWithHint: true,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                      ),
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Ringkasan tidak boleh kosong' : null,
+                    ),
+                    const SizedBox(height: 24),
+                     Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: theme.colorScheme.primary,
+                            backgroundColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 12),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          onPressed: () {
+                            if (formKey.currentState!.validate()) {
+                              viewModel.addCeramahLog(
+                                speaker: speakerController.text,
+                                title: titleController.text,
+                                summary: summaryController.text,
+                              );
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: const Color(0xFF2C2C2C),
+                                  elevation: 4.0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  content: const Text(
+                                    'Catatan ceramah berhasil ditambahkan!',
+                                    style: TextStyle(color: Colors.white, fontSize: 14),
+                                  ),
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  viewModel.addCeramahLog(
-                    speaker: speakerController.text,
-                    title: titleController.text,
-                    summary: summaryController.text,
-                  );
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Catatan ceramah berhasil ditambahkan!')),
-                  );
-                }
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
         );
       },
     );
@@ -493,9 +549,24 @@ class _RamadhanPageState extends State<RamadhanPage> {
                       ),
                     ),
                   ),
-                  Text(
-                    log.title,
-                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          log.title,
+                          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        tooltip: 'Ubah Catatan',
+                        onPressed: () {
+                          Navigator.pop(context); // Close detail sheet
+                          _showEditCeramahBottomSheet(context, log, viewModel); // Open edit sheet
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -548,247 +619,695 @@ class _RamadhanPageState extends State<RamadhanPage> {
     );
   }
 
-  // ================= TAB INFAQ =================
-  Widget _buildInfaqTab(BuildContext context, RamadhanViewModel viewModel) {
-    final theme = Theme.of(context);
+  void _showEditCeramahBottomSheet(BuildContext context, CeramahLog log, RamadhanViewModel viewModel) {
+    final titleController = TextEditingController(text: log.title);
+    final speakerController = TextEditingController(text: log.speaker);
+    final summaryController = TextEditingController(text: log.summary);
+    final formKey = GlobalKey<FormState>();
 
-    return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Total Accumulation Card
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Card(
-              color: theme.colorScheme.primaryContainer,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        final theme = Theme.of(context);
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: formKey,
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'TOTAL SEDEKAH & INFAQ RAMADHAN',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
-                        letterSpacing: 1.2,
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _formatRupiah(viewModel.totalInfaq),
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onPrimaryContainer,
-                      ),
+                    Row(
+                      children: [
+                        Icon(Icons.edit_note, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Ubah Catatan Ceramah',
+                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Semoga menjadi amal jariyah yang dilipatgandakan. Aamiin.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
-                        fontStyle: FontStyle.italic,
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: titleController,
+                      decoration: const InputDecoration(
+                        labelText: 'Judul / Tema Materi',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                        prefixIcon: Icon(Icons.title),
                       ),
-                      textAlign: TextAlign.center,
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Judul tidak boleh kosong' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: speakerController,
+                      decoration: const InputDecoration(
+                        labelText: 'Penceramah / Ustadz',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Nama penceramah tidak boleh kosong' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: summaryController,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        labelText: 'Ringkasan Catatan Materi',
+                        alignLabelWithHint: true,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                      ),
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Ringkasan tidak boleh kosong' : null,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: theme.colorScheme.primary,
+                            backgroundColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 12),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          onPressed: () {
+                            if (formKey.currentState!.validate()) {
+                              viewModel.updateCeramahLog(
+                                id: log.id,
+                                speaker: speakerController.text,
+                                title: titleController.text,
+                                summary: summaryController.text,
+                              );
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: const Color(0xFF2C2C2C),
+                                  elevation: 4.0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  content: const Text(
+                                    'Catatan ceramah berhasil diperbarui!',
+                                    style: TextStyle(color: Colors.white, fontSize: 14),
+                                  ),
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ),
           ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Text(
-              'Riwayat Transaksi Infaq',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          Expanded(
-            child: viewModel.infaqLogs.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.volunteer_activism_outlined, size: 64, color: theme.colorScheme.outline.withValues(alpha: 0.5)),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Belum ada transaksi infaq.',
-                          style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Mulai tabungan akhirat dengan berinfaq.',
-                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    itemCount: viewModel.infaqLogs.length,
-                    itemBuilder: (context, index) {
-                      final log = viewModel.infaqLogs[index];
-                      return Card(
-                        elevation: 0.5,
-                        margin: const EdgeInsets.only(bottom: 8.0),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-                            child: Icon(Icons.volunteer_activism, color: theme.colorScheme.primary, size: 20),
-                          ),
-                          title: Text(
-                            _formatRupiah(log.amount),
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(log.notes, style: theme.textTheme.bodyMedium),
-                              const SizedBox(height: 2),
-                              Text(
-                                _formatDate(log.date),
-                                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                              ),
-                            ],
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete_outline, color: theme.colorScheme.error, size: 20),
-                            onPressed: () => _showDeleteConfirmDialog(
-                              context: context,
-                              title: 'Hapus Transaksi',
-                              content: 'Apakah Anda yakin ingin menghapus catatan infaq sebesar ${_formatRupiah(log.amount)}?',
-                              onConfirm: () => viewModel.deleteInfaqLog(log.id),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddInfaqDialog(context, viewModel),
-        backgroundColor: theme.colorScheme.primaryContainer,
-        foregroundColor: theme.colorScheme.onPrimaryContainer,
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  void _showAddInfaqDialog(BuildContext context, RamadhanViewModel viewModel) {
-    final amountController = TextEditingController();
-    final notesController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Row(
-            children: [
-              Icon(Icons.volunteer_activism, color: theme.colorScheme.primary),
-              const SizedBox(width: 8),
-              const Text('Catat Sedekah / Infaq'),
-            ],
-          ),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Nominal Rupiah (Rp)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                    prefixText: 'Rp ',
-                  ),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Nominal tidak boleh kosong';
-                    }
-                    final amount = double.tryParse(val);
-                    if (amount == null || amount <= 0) {
-                      return 'Nominal harus berupa angka lebih besar dari 0';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Keterangan (Penerima / Peruntukan)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                    prefixIcon: Icon(Icons.info_outline),
-                  ),
-                  validator: (val) => val == null || val.trim().isEmpty ? 'Keterangan tidak boleh kosong' : null,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  final amount = double.parse(amountController.text);
-                  viewModel.addInfaqLog(
-                    amount: amount,
-                    notes: notesController.text,
-                  );
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Catatan sedekah berhasil disimpan!')),
-                  );
-                }
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
         );
       },
     );
   }
 
-  // ================= GENERAL COMMON DIALOGS =================
-  void _showDeleteConfirmDialog({
-    required BuildContext context,
-    required String title,
-    required String content,
-    required VoidCallback onConfirm,
-  }) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-              onPressed: () {
-                onConfirm();
-                Navigator.pop(context);
+  // ================= TAB INFAQ =================
+  Widget _buildInfaqTab(BuildContext context, RamadhanViewModel viewModel) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      body: viewModel.infaqLogs.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.volunteer_activism_outlined, size: 64, color: theme.colorScheme.outline.withValues(alpha: 0.5)),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada transaksi infaq.',
+                    style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Mulai tabungan akhirat dengan berinfaq.',
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                  ),
+                ],
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: viewModel.infaqLogs.length,
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                color: theme.colorScheme.surface,
+                thickness: 1.5,
+              ),
+              itemBuilder: (context, index) {
+                final log = viewModel.infaqLogs[index];
+                final isFirst = index == 0;
+                final isLast = index == viewModel.infaqLogs.length - 1;
+                final borderRadius = BorderRadius.only(
+                  topLeft: Radius.circular(isFirst ? 16 : 0),
+                  topRight: Radius.circular(isFirst ? 16 : 0),
+                  bottomLeft: Radius.circular(isLast ? 16 : 0),
+                  bottomRight: Radius.circular(isLast ? 16 : 0),
+                );
+
+                final deleteBackground = Container(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.errorContainer.withValues(alpha: 0.5),
+                    borderRadius: borderRadius,
+                  ),
+                  child: Icon(
+                    Icons.delete_sweep_rounded,
+                    color: theme.colorScheme.error,
+                    size: 24,
+                  ),
+                );
+
+                final deleteSecondaryBackground = Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.errorContainer.withValues(alpha: 0.5),
+                    borderRadius: borderRadius,
+                  ),
+                  child: Icon(
+                    Icons.delete_sweep_rounded,
+                    color: theme.colorScheme.error,
+                    size: 24,
+                  ),
+                );
+
+                return Dismissible(
+                  key: ValueKey(log.id),
+                  background: deleteBackground,
+                  secondaryBackground: deleteSecondaryBackground,
+                  onDismissed: (direction) {
+                    viewModel.deleteInfaqLog(log.id);
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFF2C2C2C),
+                        elevation: 4.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        content: Text(
+                          'Transaksi infaq ${_formatRupiah(log.amount)} berhasil dihapus',
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                        duration: const Duration(seconds: 3),
+                        persist: false,
+                        action: SnackBarAction(
+                          label: 'Undo',
+                          textColor: theme.colorScheme.primaryContainer,
+                          onPressed: () {
+                            viewModel.restoreInfaqLog(log);
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  child: Material(
+                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                    borderRadius: borderRadius,
+                    clipBehavior: Clip.antiAlias,
+                    child: ListTile(
+                      onTap: () => _showInfaqDetailBottomSheet(context, log, viewModel),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                      leading: CircleAvatar(
+                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        child: Icon(Icons.volunteer_activism, color: theme.colorScheme.primary, size: 20),
+                      ),
+                      title: Text(
+                        _formatRupiah(log.amount),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            log.notes,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _formatDate(log.date),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
               },
-              child: const Text('Hapus'),
             ),
-          ],
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddInfaqBottomSheet(context, viewModel),
+        label: const Text('Tambah Catatan'),
+        icon: const Icon(Icons.add),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+      ),
+    );
+  }
+
+  void _showAddInfaqBottomSheet(BuildContext context, RamadhanViewModel viewModel) {
+    final amountController = TextEditingController();
+    final notesController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        final theme = Theme.of(context);
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.volunteer_activism, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Catat Sedekah / Infaq',
+                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Nominal Rupiah (Rp)',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                        prefixText: 'Rp ',
+                      ),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Nominal tidak boleh kosong';
+                        }
+                        final amount = double.tryParse(val);
+                        if (amount == null || amount <= 0) {
+                          return 'Nominal harus berupa angka lebih besar dari 0';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: notesController,
+                      decoration: const InputDecoration(
+                        labelText: 'Keterangan (Penerima / Peruntukan)',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                        prefixIcon: Icon(Icons.info_outline),
+                      ),
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Keterangan tidak boleh kosong' : null,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: theme.colorScheme.primary,
+                            backgroundColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 12),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          onPressed: () {
+                            if (formKey.currentState!.validate()) {
+                              final amount = double.parse(amountController.text);
+                              viewModel.addInfaqLog(
+                                amount: amount,
+                                notes: notesController.text,
+                              );
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: const Color(0xFF2C2C2C),
+                                  elevation: 4.0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  content: const Text(
+                                    'Catatan sedekah berhasil disimpan!',
+                                    style: TextStyle(color: Colors.white, fontSize: 14),
+                                  ),
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showInfaqDetailBottomSheet(BuildContext context, InfaqLog log, RamadhanViewModel viewModel) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (context) {
+        final theme = Theme.of(context);
+        return DraggableScrollableSheet(
+          initialChildSize: 0.45,
+          maxChildSize: 0.9,
+          minChildSize: 0.3,
+          expand: false,
+          builder: (context, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _formatRupiah(log.amount),
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        tooltip: 'Ubah Transaksi',
+                        onPressed: () {
+                          Navigator.pop(context); // Close detail sheet
+                          _showEditInfaqBottomSheet(context, log, viewModel); // Open edit sheet
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.volunteer_activism, size: 14, color: theme.colorScheme.onPrimaryContainer),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Infaq & Sedekah',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: theme.colorScheme.onPrimaryContainer,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatDate(log.date),
+                        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 32),
+                  Text(
+                    'Keterangan:',
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    log.notes,
+                    style: theme.textTheme.bodyLarge?.copyWith(height: 1.5, color: theme.colorScheme.onSurface),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showEditInfaqBottomSheet(BuildContext context, InfaqLog log, RamadhanViewModel viewModel) {
+    final amountController = TextEditingController(text: log.amount.toInt().toString());
+    final notesController = TextEditingController(text: log.notes);
+    final formKey = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        final theme = Theme.of(context);
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.edit_note, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Ubah Catatan Sedekah / Infaq',
+                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Nominal Rupiah (Rp)',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                        prefixText: 'Rp ',
+                      ),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Nominal tidak boleh kosong';
+                        }
+                        final amount = double.tryParse(val);
+                        if (amount == null || amount <= 0) {
+                          return 'Nominal harus berupa angka lebih besar dari 0';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: notesController,
+                      decoration: const InputDecoration(
+                        labelText: 'Keterangan (Penerima / Peruntukan)',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                        prefixIcon: Icon(Icons.info_outline),
+                      ),
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Keterangan tidak boleh kosong' : null,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: theme.colorScheme.primary,
+                            backgroundColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 12),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          onPressed: () {
+                            if (formKey.currentState!.validate()) {
+                              final amount = double.parse(amountController.text);
+                              viewModel.updateInfaqLog(
+                                id: log.id,
+                                amount: amount,
+                                notes: notesController.text,
+                              );
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: const Color(0xFF2C2C2C),
+                                  elevation: 4.0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  content: const Text(
+                                    'Catatan sedekah berhasil diperbarui!',
+                                    style: TextStyle(color: Colors.white, fontSize: 14),
+                                  ),
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         );
       },
     );
