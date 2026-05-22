@@ -56,4 +56,22 @@ class ShalatRepository {
     }
     return null;
   }
+
+  Future<List<Map<String, dynamic>>> searchCities(String keyword) async {
+    final url =
+        Uri.parse('https://api.myquran.com/v2/sholat/kota/cari/$keyword');
+    try {
+      final res = await _client.get(url);
+      if (res.statusCode == 200) {
+        final Map<String, dynamic> jsonMap = json.decode(res.body);
+        if (jsonMap['status'] == true && jsonMap['data'] != null) {
+          final list = jsonMap['data'] as List;
+          return list.map((e) => Map<String, dynamic>.from(e)).toList();
+        }
+      }
+    } catch (_) {
+      // Mengembalikan list kosong jika gagal
+    }
+    return [];
+  }
 }

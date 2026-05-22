@@ -156,4 +156,23 @@ class ShalatViewModel extends ChangeNotifier {
     final now = DateTime.now();
     await fetchMonthlySchedule(cityId: _cityId, year: now.year, month: now.month);
   }
+
+  Future<void> selectCity(int cityId, String cityName) async {
+    _cityId = cityId;
+    _cityName = cityName;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('cached_city_id', _cityId);
+      await prefs.setString('cached_city_name', _cityName);
+      
+      final now = DateTime.now();
+      await fetchMonthlySchedule(cityId: _cityId, year: now.year, month: now.month);
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
 }

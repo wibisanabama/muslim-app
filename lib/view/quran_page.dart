@@ -71,26 +71,28 @@ class _QuranPageState extends State<QuranPage> {
             : Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
+        titleSpacing: 0,
         title: Container(
-          height: 40,
+          height: 48,
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
           ),
           child: TextField(
             controller: _searchController,
+            textAlignVertical: TextAlignVertical.center,
             onChanged: (value) {
               setState(() {
                 _searchQuery = value;
               });
             },
             decoration: InputDecoration(
-              hintText: 'Search surah',
+              hintText: 'Cari surah...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               isDense: true,
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -111,7 +113,7 @@ class _QuranPageState extends State<QuranPage> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: const EdgeInsets.only(left: 12.0, right: 16.0),
             child: CircleAvatar(
               backgroundColor: theme.colorScheme.primary,
               foregroundColor: theme.colorScheme.onPrimary,
@@ -322,10 +324,9 @@ class _QuranPageState extends State<QuranPage> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            // Solid Play Arrow Trailing
                             Icon(
-                              Icons.play_arrow,
-                              size: 14,
+                              Icons.chevron_right,
+                              size: 20,
                               color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
                             ),
                           ],

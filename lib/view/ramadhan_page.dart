@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/ramadhan_view_model.dart';
 import '../model/ramadhan_record.dart';
@@ -44,13 +45,13 @@ class _RamadhanPageState extends State<RamadhanPage> {
   IconData _getShalatIcon(String name) {
     switch (name.toLowerCase()) {
       case 'subuh':
-        return Icons.wb_twilight_rounded;
+        return CupertinoIcons.sunrise;
       case 'dzuhur':
         return Icons.wb_sunny_rounded;
       case 'ashar':
         return Icons.wb_sunny_outlined;
       case 'maghrib':
-        return Icons.brightness_medium_rounded;
+        return CupertinoIcons.sunset;
       case 'isya':
         return Icons.nights_stay_rounded;
       default:
@@ -413,15 +414,9 @@ class _RamadhanPageState extends State<RamadhanPage> {
                         ),
                       ),
                     ),
-                    Row(
-                      children: [
-                        Icon(Icons.menu_book, color: theme.colorScheme.primary),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Catat Ceramah',
-                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    Text(
+                      'Catat Ceramah',
+                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 24),
                     TextFormField(
@@ -963,24 +958,22 @@ class _RamadhanPageState extends State<RamadhanPage> {
                         ),
                       ),
                     ),
-                    Row(
-                      children: [
-                        Icon(Icons.volunteer_activism, color: theme.colorScheme.primary),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Catat Sedekah / Infaq',
-                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    Text(
+                      'Catat Sedekah / Infaq',
+                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 24),
                     TextFormField(
                       controller: amountController,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Nominal Rupiah (Rp)',
+                        labelText: 'Nominal Rupiah',
                         border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                        prefixText: 'Rp ',
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 16, right: 8),
+                          child: Text('Rp', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        ),
+                        prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
                       ),
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {

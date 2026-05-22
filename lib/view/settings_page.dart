@@ -118,37 +118,33 @@ class SettingsPage extends StatelessWidget {
                   const EdgeInsets.only(left: 0, right: 0, top: 8, bottom: 0),
               content: SizedBox(
                 width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    RadioListTile<ThemeMode>(
-                      dense: true,
-                      title: const Text('Bawaan Sistem'),
-                      value: ThemeMode.system,
-                      groupValue: selected,
-                      onChanged: (mode) {
-                        setDialogState(() => selected = mode!);
-                      },
-                    ),
-                    RadioListTile<ThemeMode>(
-                      dense: true,
-                      title: const Text('Cerah'),
-                      value: ThemeMode.light,
-                      groupValue: selected,
-                      onChanged: (mode) {
-                        setDialogState(() => selected = mode!);
-                      },
-                    ),
-                    RadioListTile<ThemeMode>(
-                      dense: true,
-                      title: const Text('Gelap'),
-                      value: ThemeMode.dark,
-                      groupValue: selected,
-                      onChanged: (mode) {
-                        setDialogState(() => selected = mode!);
-                      },
-                    ),
-                  ],
+                child: RadioGroup<ThemeMode>(
+                  groupValue: selected,
+                  onChanged: (mode) {
+                    if (mode != null) {
+                      setDialogState(() => selected = mode);
+                    }
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      RadioListTile<ThemeMode>(
+                        dense: true,
+                        title: Text('Bawaan Sistem'),
+                        value: ThemeMode.system,
+                      ),
+                      RadioListTile<ThemeMode>(
+                        dense: true,
+                        title: Text('Cerah'),
+                        value: ThemeMode.light,
+                      ),
+                      RadioListTile<ThemeMode>(
+                        dense: true,
+                        title: Text('Gelap'),
+                        value: ThemeMode.dark,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               actions: [
