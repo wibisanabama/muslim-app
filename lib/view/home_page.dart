@@ -238,13 +238,10 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(6),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.6),
-                            width: 1.5,
-                          ),
+                          color: theme.colorScheme.primary.withValues(alpha: 0.15),
                         ),
                         child: Icon(
                           Icons.event_note_rounded,
