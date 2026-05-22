@@ -17,22 +17,46 @@ class QuranDetailPage extends StatefulWidget {
 }
 
 class _QuranDetailPageState extends State<QuranDetailPage> {
+  late final ScrollController _scrollController;
+  bool _isScrolled = false;
+
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        final scrolled = _scrollController.offset > 0;
+        if (scrolled != _isScrolled) {
+          setState(() {
+            _isScrolled = scrolled;
+          });
+        }
+      });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<QuranViewModel>().fetchSurahDetail(widget.nomorSurah);
     });
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final vm = context.watch<QuranViewModel>();
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.namaLatin),
         centerTitle: false,
+        backgroundColor: _isScrolled
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: Builder(
         builder: (context) {
@@ -41,35 +65,65 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
           }
 
           if (vm.detailError != null) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Gagal memuat detail surat:\n${vm.detailError}',
-                      textAlign: TextAlign.center,
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                    const SizedBox(height: 12),
-                    FilledButton(
-                      onPressed: () => context
-                          .read<QuranViewModel>()
-                          .fetchSurahDetail(widget.nomorSurah),
-                      child: const Text('Coba Lagi'),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Gagal memuat detail surat:\n${vm.detailError}',
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            FilledButton(
+                              onPressed: () => context
+                                  .read<QuranViewModel>()
+                                  .fetchSurahDetail(widget.nomorSurah),
+                              child: const Text('Coba Lagi'),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
           }
 
           final detail = vm.surahDetail;
           if (detail == null) {
-            return const Center(child: Text('Data detail tidak ditemukan'));
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: const Center(
+                      child: Text('Data detail tidak ditemukan'),
+                    ),
+                  ),
+                );
+              },
+            );
           }
 
           return ListView.builder(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
             itemCount: detail.ayat.length,
             itemBuilder: (context, index) {

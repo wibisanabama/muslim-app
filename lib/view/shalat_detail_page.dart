@@ -1,21 +1,58 @@
 import 'package:flutter/material.dart';
 import '../model/shalat_schedule_response.dart';
 
-class ShalatDetailPage extends StatelessWidget {
+class ShalatDetailPage extends StatefulWidget {
   final ShalatDaySchedule schedule;
 
   const ShalatDetailPage({super.key, required this.schedule});
 
   @override
+  State<ShalatDetailPage> createState() => _ShalatDetailPageState();
+}
+
+class _ShalatDetailPageState extends State<ShalatDetailPage> {
+  late final ScrollController _scrollController;
+  bool _isScrolled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        final scrolled = _scrollController.offset > 0;
+        if (scrolled != _isScrolled) {
+          setState(() {
+            _isScrolled = scrolled;
+          });
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detail Jadwal ${schedule.tanggal}'),
+        title: Text('Detail Jadwal ${widget.schedule.tanggal}'),
         centerTitle: false,
+        backgroundColor: _isScrolled
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Card(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -25,7 +62,7 @@ class ShalatDetailPage extends StatelessWidget {
                     leading: const Icon(Icons.access_time),
                     title: const Text('Imsak'),
                     trailing: Text(
-                      schedule.imsak,
+                      widget.schedule.imsak,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -34,7 +71,7 @@ class ShalatDetailPage extends StatelessWidget {
                     leading: const Icon(Icons.access_time),
                     title: const Text('Subuh'),
                     trailing: Text(
-                      schedule.subuh,
+                      widget.schedule.subuh,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -43,7 +80,7 @@ class ShalatDetailPage extends StatelessWidget {
                     leading: const Icon(Icons.access_time),
                     title: const Text('Terbit'),
                     trailing: Text(
-                      schedule.terbit,
+                      widget.schedule.terbit,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -52,7 +89,7 @@ class ShalatDetailPage extends StatelessWidget {
                     leading: const Icon(Icons.access_time),
                     title: const Text('Dhuha'),
                     trailing: Text(
-                      schedule.dhuha,
+                      widget.schedule.dhuha,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -61,7 +98,7 @@ class ShalatDetailPage extends StatelessWidget {
                     leading: const Icon(Icons.access_time),
                     title: const Text('Dzuhur'),
                     trailing: Text(
-                      schedule.dzuhur,
+                      widget.schedule.dzuhur,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -70,7 +107,7 @@ class ShalatDetailPage extends StatelessWidget {
                     leading: const Icon(Icons.access_time),
                     title: const Text('Ashar'),
                     trailing: Text(
-                      schedule.ashar,
+                      widget.schedule.ashar,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -79,7 +116,7 @@ class ShalatDetailPage extends StatelessWidget {
                     leading: const Icon(Icons.access_time),
                     title: const Text('Maghrib'),
                     trailing: Text(
-                      schedule.maghrib,
+                      widget.schedule.maghrib,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -88,7 +125,7 @@ class ShalatDetailPage extends StatelessWidget {
                     leading: const Icon(Icons.access_time),
                     title: const Text('Isya'),
                     trailing: Text(
-                      schedule.isya,
+                      widget.schedule.isya,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),

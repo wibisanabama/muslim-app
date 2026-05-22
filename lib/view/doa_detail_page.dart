@@ -1,18 +1,55 @@
 import 'package:flutter/material.dart';
 import '../model/doa.dart';
 
-class DoaDetailPage extends StatelessWidget {
+class DoaDetailPage extends StatefulWidget {
   final Doa doa;
   const DoaDetailPage({super.key, required this.doa});
 
   @override
+  State<DoaDetailPage> createState() => _DoaDetailPageState();
+}
+
+class _DoaDetailPageState extends State<DoaDetailPage> {
+  late final ScrollController _scrollController;
+  bool _isScrolled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        final scrolled = _scrollController.offset > 0;
+        if (scrolled != _isScrolled) {
+          setState(() {
+            _isScrolled = scrolled;
+          });
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(doa.doa),
+        title: Text(widget.doa.doa),
         centerTitle: false,
+        backgroundColor: _isScrolled
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16.0),
         child: Card(
           child: Padding(
@@ -21,15 +58,15 @@ class DoaDetailPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  doa.doa,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  widget.doa.doa,
+                  style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  doa.ayat,
+                  widget.doa.ayat,
                   textAlign: TextAlign.right,
                   style: const TextStyle(
                     fontSize: 26,
@@ -39,11 +76,11 @@ class DoaDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  doa.latin,
+                  widget.doa.latin,
                   style: TextStyle(
                     fontSize: 14,
                     fontStyle: FontStyle.italic,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: theme.colorScheme.primary,
                     height: 1.4,
                   ),
                 ),
@@ -59,7 +96,7 @@ class DoaDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  doa.artinya,
+                  widget.doa.artinya,
                   style: const TextStyle(
                     fontSize: 14,
                     height: 1.4,
