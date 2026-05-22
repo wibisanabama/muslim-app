@@ -32,6 +32,7 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.namaLatin),
+        centerTitle: false,
       ),
       body: Builder(
         builder: (context) {

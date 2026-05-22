@@ -10,6 +10,7 @@ class DoaDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(doa.doa),
+        centerTitle: false,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

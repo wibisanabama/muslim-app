@@ -11,6 +11,7 @@ class ShalatDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Detail Jadwal ${schedule.tanggal}'),
+        centerTitle: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
