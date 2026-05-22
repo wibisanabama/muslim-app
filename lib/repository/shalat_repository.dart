@@ -32,19 +32,23 @@ class ShalatRepository {
   }
 
   String _normalizeKeyword(String keyword) {
-    String normalized = keyword.trim().toLowerCase();
+    // 1. Bersihkan semua karakter yang bukan alfabet, angka, spasi, atau titik.
+    // Ganti karakter tersebut dengan spasi agar tidak menempel (misal: "kab-bandung" -> "kab bandung").
+    String cleaned = keyword.replaceAll(RegExp(r'[^a-zA-Z0-9\s\.]'), ' ');
+
+    String normalized = cleaned.trim().toLowerCase();
     
-    // 1. Ganti "kabupaten" atau "kab" (dengan/tanpa titik) diikuti atau tidak oleh spasi menjadi "kab. "
+    // 2. Ganti "kabupaten" atau "kab" (dengan/tanpa titik) diikuti atau tidak oleh spasi menjadi "kab. "
     normalized = normalized.replaceAll(RegExp(r'\b(kabupaten|kab)\b\.?', caseSensitive: false), 'kab. ');
     
-    // 2. Ganti "kota" atau "kot" (dengan/tanpa titik) menjadi "kota "
+    // 3. Ganti "kota" atau "kot" (dengan/tanpa titik) menjadi "kota "
     normalized = normalized.replaceAll(RegExp(r'\b(kota|kot)\b\.?', caseSensitive: false), 'kota ');
 
-    // 3. Bersihkan spasi ganda
+    // 4. Bersihkan spasi ganda
     normalized = normalized.replaceAll(RegExp(r'\s+'), ' ');
     normalized = normalized.trim();
 
-    // 4. Rearrangement: Jika keyword diakhiri dengan " kab" / " kabupaten" / " kab."
+    // 5. Rearrangement: Jika keyword diakhiri dengan " kab" / " kabupaten" / " kab."
     // Contoh: "bandung kab" -> "kab. bandung"
     final kabSuffixRegExp = RegExp(r'\s+(kabupaten|kab)\b\.?$', caseSensitive: false);
     if (kabSuffixRegExp.hasMatch(normalized)) {
