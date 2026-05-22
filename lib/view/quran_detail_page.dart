@@ -121,63 +121,82 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
             );
           }
 
-          return ListView.builder(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-            itemCount: detail.ayat.length,
-            itemBuilder: (context, index) {
-              final a = detail.ayat[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 6.0),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          CircleAvatar(
-                            radius: 14,
-                            child: Text(
-                              a.nomorAyat.toString(),
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          return Padding(
+            padding: const EdgeInsets.all(12),
+            child: ListView.separated(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: detail.ayat.length,
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                color: theme.colorScheme.surface,
+                thickness: 1.5,
+              ),
+              itemBuilder: (context, index) {
+                final a = detail.ayat[index];
+                final isFirst = index == 0;
+                final isLast = index == detail.ayat.length - 1;
+
+                final borderRadius = BorderRadius.only(
+                  topLeft: Radius.circular(isFirst ? 16 : 0),
+                  topRight: Radius.circular(isFirst ? 16 : 0),
+                  bottomLeft: Radius.circular(isLast ? 16 : 0),
+                  bottomRight: Radius.circular(isLast ? 16 : 0),
+                );
+
+                return Material(
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                  borderRadius: borderRadius,
+                  clipBehavior: Clip.antiAlias,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            CircleAvatar(
+                              radius: 14,
+                              child: Text(
+                                a.nomorAyat.toString(),
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          a.teksArab,
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            height: 1.8,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        a.teksArab,
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          height: 1.8,
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        a.teksLatin,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
-                          color: Theme.of(context).colorScheme.primary,
+                        const SizedBox(height: 16),
+                        Text(
+                          a.teksLatin,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        a.teksIndonesia,
-                        style: const TextStyle(
-                          fontSize: 14,
+                        const SizedBox(height: 8),
+                        Text(
+                          a.teksIndonesia,
+                          style: const TextStyle(
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),
