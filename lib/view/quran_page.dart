@@ -13,10 +13,21 @@ class QuranPage extends StatefulWidget {
 class _QuranPageState extends State<QuranPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  late final ScrollController _scrollController;
+  bool _isScrolled = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        final scrolled = _scrollController.offset > 0;
+        if (scrolled != _isScrolled) {
+          setState(() {
+            _isScrolled = scrolled;
+          });
+        }
+      });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<QuranViewModel>().fetchSurahs();
     });
@@ -25,6 +36,7 @@ class _QuranPageState extends State<QuranPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -46,6 +58,11 @@ class _QuranPageState extends State<QuranPage> {
           icon: const Icon(Icons.menu),
           onPressed: () {},
         ),
+        backgroundColor: _isScrolled
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Container(
           height: 40,
           decoration: BoxDecoration(
@@ -111,6 +128,7 @@ class _QuranPageState extends State<QuranPage> {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
+                    controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
@@ -145,6 +163,7 @@ class _QuranPageState extends State<QuranPage> {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
+                    controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
@@ -163,6 +182,7 @@ class _QuranPageState extends State<QuranPage> {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
+                    controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
@@ -196,6 +216,7 @@ class _QuranPageState extends State<QuranPage> {
             return Padding(
               padding: const EdgeInsets.all(12),
               child: ListView.separated(
+                controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemCount: filteredSurahs.length,
                 separatorBuilder: (context, index) => Divider(

@@ -13,10 +13,21 @@ class DoaPage extends StatefulWidget {
 class _DoaPageState extends State<DoaPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  late final ScrollController _scrollController;
+  bool _isScrolled = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        final scrolled = _scrollController.offset > 0;
+        if (scrolled != _isScrolled) {
+          setState(() {
+            _isScrolled = scrolled;
+          });
+        }
+      });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DoaViewModel>().fetchDoas();
     });
@@ -25,6 +36,7 @@ class _DoaPageState extends State<DoaPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -45,6 +57,11 @@ class _DoaPageState extends State<DoaPage> {
           icon: const Icon(Icons.menu),
           onPressed: () {},
         ),
+        backgroundColor: _isScrolled
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Container(
           height: 40,
           decoration: BoxDecoration(
@@ -110,6 +127,7 @@ class _DoaPageState extends State<DoaPage> {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
+                    controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
@@ -144,6 +162,7 @@ class _DoaPageState extends State<DoaPage> {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
+                    controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
@@ -162,6 +181,7 @@ class _DoaPageState extends State<DoaPage> {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
+                    controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
@@ -195,6 +215,7 @@ class _DoaPageState extends State<DoaPage> {
             return Padding(
               padding: const EdgeInsets.all(12),
               child: ListView.separated(
+                controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemCount: filteredDoas.length,
                 separatorBuilder: (context, index) => Divider(
