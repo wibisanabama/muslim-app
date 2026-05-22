@@ -105,6 +105,7 @@ class SettingsPage extends StatelessWidget {
 
   void _showThemeDialog(BuildContext context, ThemeViewModel themeVm) {
     ThemeMode selected = themeVm.themeMode;
+    final theme = Theme.of(context);
 
     showDialog(
       context: context,
@@ -127,20 +128,35 @@ class SettingsPage extends StatelessWidget {
                   },
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       RadioListTile<ThemeMode>(
-                        dense: true,
-                        title: Text('Bawaan Sistem'),
+                        dense: false,
+                        title: Text(
+                          'Bawaan Sistem',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         value: ThemeMode.system,
                       ),
                       RadioListTile<ThemeMode>(
-                        dense: true,
-                        title: Text('Cerah'),
+                        dense: false,
+                        title: Text(
+                          'Cerah',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         value: ThemeMode.light,
                       ),
                       RadioListTile<ThemeMode>(
-                        dense: true,
-                        title: Text('Gelap'),
+                        dense: false,
+                        title: Text(
+                          'Gelap',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         value: ThemeMode.dark,
                       ),
                     ],
