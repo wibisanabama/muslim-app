@@ -39,10 +39,7 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
     final theme = Theme.of(context);
 
     final shalatItems = [
-      {'name': 'Imsak', 'time': widget.schedule.imsak},
       {'name': 'Subuh', 'time': widget.schedule.subuh},
-      {'name': 'Terbit', 'time': widget.schedule.terbit},
-      {'name': 'Dhuha', 'time': widget.schedule.dhuha},
       {'name': 'Dzuhur', 'time': widget.schedule.dzuhur},
       {'name': 'Ashar', 'time': widget.schedule.ashar},
       {'name': 'Maghrib', 'time': widget.schedule.maghrib},
