@@ -364,7 +364,6 @@ class _HadisListPageState extends State<HadisListPage> {
 
     final parsed = int.tryParse(query);
     if (parsed == null || parsed < 1 || parsed > widget.totalAvailable) {
-      _showSnackbar("Silakan masukkan nomor hadis antara 1 dan ${widget.totalAvailable}");
       return;
     }
 
@@ -396,28 +395,8 @@ class _HadisListPageState extends State<HadisListPage> {
     } catch (e) {
       if (mounted) {
         Navigator.pop(context); // Pop loading dialog
-        _showSnackbar("Hadis nomor $parsed tidak ditemukan atau Anda sedang offline.");
       }
     }
-  }
-
-  void _showSnackbar(String msg) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF2C2C2C),
-        elevation: 4.0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        content: Text(
-          msg,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
-        ),
-        duration: const Duration(seconds: 3),
-      ),
-    );
   }
 
   @override
@@ -732,46 +711,13 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
       setState(() {
         _isBookmarked = false;
       });
-      _showSnackbar("Hadis dihapus dari simpanan.", isError: true);
     } else {
       savedList.add(numStr);
       await prefs.setStringList(key, savedList);
       setState(() {
         _isBookmarked = true;
       });
-      _showSnackbar("Hadis berhasil disimpan!");
     }
-  }
-
-  void _showSnackbar(String msg, {bool isError = false}) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF2C2C2C),
-        elevation: 4.0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        content: Row(
-          children: [
-            Icon(
-              isError ? Icons.bookmark_remove_rounded : Icons.bookmark_added_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                msg,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-              ),
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 3),
-      ),
-    );
   }
 
   @override
