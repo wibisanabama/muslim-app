@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../model/doa.dart';
+import '../viewmodel/doa_view_model.dart';
 
 class DoaDetailPage extends StatefulWidget {
   final Doa doa;
@@ -37,6 +39,8 @@ class _DoaDetailPageState extends State<DoaDetailPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final vm = context.watch<DoaViewModel>();
+    final isSaved = vm.isDoaSaved(widget.doa.id);
 
     return Scaffold(
       appBar: AppBar(
@@ -47,7 +51,20 @@ class _DoaDetailPageState extends State<DoaDetailPage> {
             : Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(
+              isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+              color: isSaved ? theme.colorScheme.primary : null,
+            ),
+            onPressed: () {
+              context.read<DoaViewModel>().toggleSavedDoa(widget.doa.id);
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
+
       body: SingleChildScrollView(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
