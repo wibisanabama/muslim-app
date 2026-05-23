@@ -277,10 +277,8 @@ class _HadisListPageState extends State<HadisListPage> {
   final HadisRepository _repository = HadisRepository();
 
   String _searchQuery = '';
-  bool _isSearchingApi = false;
   final Map<int, Hadis> _searchedHadiths = {};
   String? _searchError;
-  Timer? _searchDebounce;
 
   int _currentStart = 1;
   final int _batchSize = 50;
@@ -311,7 +309,6 @@ class _HadisListPageState extends State<HadisListPage> {
   void dispose() {
     _scrollController.dispose();
     _numberController.dispose();
-    _searchDebounce?.cancel();
     super.dispose();
   }
 
@@ -360,8 +357,39 @@ class _HadisListPageState extends State<HadisListPage> {
     if (parsed == null || parsed < 1 || parsed > widget.totalAvailable) {
       return;
     }
+    
+    await _openHadisByNumber(parsed);
+  }
 
-    // Show dynamic blocking loading indicator overlay dialog
+  Future<void> _openHadisByNumber(int number) async {
+    final theme = Theme.of(context);
+    
+    // Check if already in memory
+    Hadis? foundHadis;
+    final inMemory = _hadiths.where((h) => h.number == number).toList();
+    if (inMemory.isNotEmpty) {
+      foundHadis = inMemory.first;
+    } else {
+      foundHadis = _searchedHadiths[number];
+    }
+
+    if (foundHadis != null) {
+      // Open immediately if already loaded
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HadisDetailPage(
+            hadis: foundHadis!,
+            bookId: widget.bookId,
+            bookName: widget.bookName,
+          ),
+        ),
+      );
+      _loadSavedHadis();
+      return;
+    }
+
+    // Show a loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -371,9 +399,15 @@ class _HadisListPageState extends State<HadisListPage> {
     );
 
     try {
-      final singleHadis = await _repository.getSingleHadis(widget.bookId, parsed);
+      final singleHadis = await _repository.getSingleHadis(widget.bookId, number);
       if (mounted) {
         Navigator.pop(context); // Pop loading dialog
+        
+        // Save to searched hadiths so we have it in cache next time
+        setState(() {
+          _searchedHadiths[number] = singleHadis;
+        });
+
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -389,31 +423,12 @@ class _HadisListPageState extends State<HadisListPage> {
     } catch (e) {
       if (mounted) {
         Navigator.pop(context); // Pop loading dialog
-      }
-    }
-  }
-
-  Future<void> _searchHadisFromApi(int number) async {
-    if (!mounted) return;
-    setState(() {
-      _isSearchingApi = true;
-      _searchError = null;
-    });
-
-    try {
-      final singleHadis = await _repository.getSingleHadis(widget.bookId, number);
-      if (mounted) {
-        setState(() {
-          _searchedHadiths[number] = singleHadis;
-          _isSearchingApi = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _searchError = 'Hadis nomor $number tidak ditemukan';
-          _isSearchingApi = false;
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memuat hadis nomor $number. Pastikan koneksi internet aktif.'),
+            backgroundColor: theme.colorScheme.error,
+          ),
+        );
       }
     }
   }
@@ -455,7 +470,6 @@ class _HadisListPageState extends State<HadisListPage> {
               });
 
               if (trimmed.isEmpty) {
-                _searchDebounce?.cancel();
                 return;
               }
 
@@ -466,19 +480,6 @@ class _HadisListPageState extends State<HadisListPage> {
                 });
                 return;
               }
-
-              // Check if already in memory
-              final existing = _hadiths.any((h) => h.number == parsed);
-              if (existing) return;
-
-              // Check if already fetched previously
-              if (_searchedHadiths.containsKey(parsed)) return;
-
-              // Debounce API search
-              _searchDebounce?.cancel();
-              _searchDebounce = Timer(const Duration(milliseconds: 400), () {
-                _searchHadisFromApi(parsed);
-              });
             },
             decoration: InputDecoration(
               hintText: 'Cari hadis ${widget.bookName}...',
@@ -576,7 +577,6 @@ class _HadisListPageState extends State<HadisListPage> {
               }
             ),
 
-          // Hadith List
           Expanded(
             child: _searchQuery.isNotEmpty
                 ? Builder(
@@ -607,142 +607,184 @@ class _HadisListPageState extends State<HadisListPage> {
                         );
                       }
 
-                      final parsed = int.tryParse(_searchQuery);
-                      if (parsed == null) {
+                      final query = _searchQuery.trim();
+                      final List<int> matchingNumbers = [];
+                      final parsedQuery = int.tryParse(query);
+
+                      // Generate matching numbers dynamically
+                      for (int i = 1; i <= widget.totalAvailable; i++) {
+                        if (i.toString().contains(query)) {
+                          matchingNumbers.add(i);
+                        }
+                      }
+
+                      // Sort: exact match first, startsWith next, then contains
+                      matchingNumbers.sort((a, b) {
+                        if (a == parsedQuery) return -1;
+                        if (b == parsedQuery) return 1;
+
+                        final strA = a.toString();
+                        final strB = b.toString();
+
+                        final startsA = strA.startsWith(query);
+                        final startsB = strB.startsWith(query);
+
+                        if (startsA && !startsB) return -1;
+                        if (!startsA && startsB) return 1;
+
+                        return a.compareTo(b);
+                      });
+
+                      // Display up to 100 results to maintain performance
+                      final displayedMatches = matchingNumbers.take(100).toList();
+
+                      if (displayedMatches.isEmpty) {
                         return Center(
-                          child: Text(
-                            'Nomor hadis tidak valid',
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off_rounded,
+                                  size: 48,
+                                  color: theme.colorScheme.secondary.withValues(alpha: 0.5),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Hadis tidak ditemukan',
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
                       }
 
-                      // Check in memory and in _searchedHadiths map
-                      Hadis? foundHadis;
-                      final inMemory = _hadiths.where((h) => h.number == parsed).toList();
-                      if (inMemory.isNotEmpty) {
-                        foundHadis = inMemory.first;
-                      } else {
-                        foundHadis = _searchedHadiths[parsed];
-                      }
-
-                      if (foundHadis == null) {
-                        if (_isSearchingApi) {
-                          return const Center(child: CircularProgressIndicator());
-                        } else {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.search_rounded,
-                                    size: 48,
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.5),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'Mencari hadis nomor $parsed...',
-                                    style: theme.textTheme.bodyLarge?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }
-                      }
-
-                      // Render found hadis beautifully in a list
-                      return ListView(
+                      return ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        children: [
-                          Card.filled(
-                            margin: EdgeInsets.zero,
-                            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24.0),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: InkWell(
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => HadisDetailPage(
-                                      hadis: foundHadis!,
-                                      bookId: widget.bookId,
-                                      bookName: widget.bookName,
-                                    ),
-                                  ),
-                                );
-                                _loadSavedHadis();
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        foundHadis.number.toString(),
-                                        style: theme.textTheme.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: theme.colorScheme.primary,
+                        itemCount: displayedMatches.length,
+                        itemBuilder: (context, index) {
+                          final num = displayedMatches[index];
+
+                          // Check if loaded in memory
+                          Hadis? foundHadis;
+                          final inMemory = _hadiths.where((h) => h.number == num).toList();
+                          if (inMemory.isNotEmpty) {
+                            foundHadis = inMemory.first;
+                          } else {
+                            foundHadis = _searchedHadiths[num];
+                          }
+
+                          final double bottomMargin = (index == displayedMatches.length - 1) ? 0.0 : 2.0;
+                          final BorderRadius borderRadius;
+                          if (displayedMatches.length == 1) {
+                            borderRadius = BorderRadius.circular(24.0);
+                          } else if (index == 0) {
+                            borderRadius = const BorderRadius.vertical(top: Radius.circular(24.0));
+                          } else if (index == displayedMatches.length - 1) {
+                            borderRadius = const BorderRadius.vertical(bottom: Radius.circular(24.0));
+                          } else {
+                            borderRadius = BorderRadius.zero;
+                          }
+
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: bottomMargin),
+                            child: Card.filled(
+                              margin: EdgeInsets.zero,
+                              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: borderRadius,
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: InkWell(
+                                onTap: () => _openHadisByNumber(num),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Number Circle Badge
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          num.toString(),
+                                          style: theme.textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: theme.colorScheme.primary,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            foundHadis.arabic,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: GoogleFonts.scheherazadeNew(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold,
-                                              height: 1.2,
-                                              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            foundHadis.translation,
-                                            style: theme.textTheme.bodyMedium?.copyWith(
-                                              color: theme.colorScheme.onSurfaceVariant,
-                                              height: 1.4,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: foundHadis != null
+                                            ? Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    foundHadis.arabic,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: GoogleFonts.scheherazadeNew(
+                                                      fontSize: 22,
+                                                      fontWeight: FontWeight.bold,
+                                                      height: 1.2,
+                                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                    foundHadis.translation,
+                                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                                      color: theme.colorScheme.onSurfaceVariant,
+                                                      height: 1.4,
+                                                    ),
+                                                    maxLines: 2,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ],
+                                              )
+                                            : Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Hadis ke-$num',
+                                                    style: theme.textTheme.titleMedium?.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: theme.colorScheme.onSurface,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    'Ketuk untuk membuka detail hadis...',
+                                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                                      color: theme.colorScheme.onSurfaceVariant,
+                                                      fontStyle: FontStyle.italic,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Icon(
-                                      Icons.chevron_right_rounded,
-                                      color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        Icons.chevron_right_rounded,
+                                        color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       );
                     },
                   )
