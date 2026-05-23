@@ -20,7 +20,7 @@ class QuranDetailPage extends StatefulWidget {
 }
 
 class _QuranDetailPageState extends State<QuranDetailPage> {
-  late final ScrollController _scrollController;
+  late ScrollController _scrollController;
   late final QuranViewModel _quranVM;
   bool _isScrolled = false;
   bool _hasScrolledToInitial = false;
@@ -81,45 +81,24 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
         _quranVM.surahDetail!.nomor == widget.nomorSurah) {
       _isScrollScheduled = true;
 
-      // Setelah ListView ter-build pertama kali, mulai proses scroll bertahap.
+      final detail = _quranVM.surahDetail!;
+      final estimatedOffset = _calculateEstimatedOffset(detail.ayat, widget.initialAyahNumber!);
+
+      // Dispose controller lama dan buat baru dengan offset awal
+      _scrollController.dispose();
+      _scrollController = ScrollController(initialScrollOffset: estimatedOffset)
+        ..addListener(_onScrollListener);
+
+      // Setelah render frame pertama di offset awal, lakukan alignment presisi
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _performScrollToTarget();
+        _doPreciseScroll();
       });
     }
   }
 
-  void _performScrollToTarget() {
+  void _doPreciseScroll() {
     if (!_scrollController.hasClients) return;
 
-    final targetAyah = widget.initialAyahNumber!;
-    final key = _ayahKeys[targetAyah];
-
-    // Jika key sudah terdaftar (item sudah ter-build), langsung align presisi.
-    if (key != null && key.currentContext != null) {
-      Scrollable.ensureVisible(
-        key.currentContext!,
-        duration: Duration.zero,
-        alignment: 0.0,
-      );
-      setState(() {
-        _hasScrolledToInitial = true;
-      });
-      return;
-    }
-
-    // Key belum terdaftar → item belum ter-build oleh lazy list.
-    // Jump ke estimasi agar ListView merender item di sekitar target.
-    final detail = _quranVM.surahDetail!;
-    final estimatedOffset = _calculateEstimatedOffset(detail.ayat, targetAyah);
-    _scrollController.jumpTo(estimatedOffset.clamp(0.0, double.infinity));
-
-    // Tunggu frame berikutnya, lalu coba lagi (key seharusnya sudah terdaftar).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _finalizeScroll();
-    });
-  }
-
-  void _finalizeScroll() {
     final targetAyah = widget.initialAyahNumber!;
     final key = _ayahKeys[targetAyah];
 
