@@ -195,7 +195,7 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
                   _showDhikrSelectionBottomSheet(theme);
                 },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+                  padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 36.0, bottom: 28.0),
                   child: Column(
                     children: [
                       Text(
