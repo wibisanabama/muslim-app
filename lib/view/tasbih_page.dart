@@ -99,13 +99,17 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF2C2C2C),
+            elevation: 4.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
             content: Text(
               'Alhamdulillah, target $_targetLimit x ${_dhikrs[_dhikrIndex].latin} selesai!',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 3),
           ),
         );
 
