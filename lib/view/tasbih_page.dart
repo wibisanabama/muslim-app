@@ -445,39 +445,62 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: _dhikrs.length,
-                  separatorBuilder: (context, index) => const Divider(),
+                  separatorBuilder: (context, index) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = _dhikrs[index];
                     final isSelected = _dhikrIndex == index;
 
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        item.latin,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(item.meaning),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            item.arabic,
-                            style: GoogleFonts.scheherazadeNew(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.primary,
-                            ),
+                    return Material(
+                      color: isSelected
+                          ? theme.colorScheme.primary.withValues(alpha: 0.12)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () {
+                          _changeDhikr(index);
+                          Navigator.pop(context);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.latin,
+                                      style: theme.textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      item.meaning,
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: isSelected 
+                                            ? theme.colorScheme.primary.withValues(alpha: 0.8)
+                                            : theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Text(
+                                item.arabic,
+                                style: GoogleFonts.scheherazadeNew(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ],
                           ),
-                          if (isSelected) ...[
-                            const SizedBox(width: 12),
-                            Icon(Icons.check_circle_rounded, color: theme.colorScheme.primary),
-                          ],
-                        ],
+                        ),
                       ),
-                      onTap: () {
-                        _changeDhikr(index);
-                        Navigator.pop(context);
-                      },
                     );
                   },
                 ),
