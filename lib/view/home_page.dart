@@ -444,21 +444,6 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.format_quote_rounded,
-                    size: 32,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(height: 20),
                 Text(
                   quote.teksArab,
                   textAlign: TextAlign.center,
