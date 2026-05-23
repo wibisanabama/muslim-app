@@ -8,6 +8,7 @@ import 'kiblat_page.dart';
 import 'asmaul_husna_page.dart';
 import 'tasbih_page.dart';
 import 'ramadhan_page.dart';
+import 'hadis_page.dart';
 
 
 import 'shalat_detail_page.dart';
@@ -301,54 +302,78 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 16),
             
-            // Shortcuts Row / Wrap
+            // Shortcuts Row
             Padding(
-              padding: EdgeInsets.zero,
-              child: Wrap(
-                spacing: 20,
-                runSpacing: 20,
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Qibla Direction Shortcut
-                  _buildShortcutItem(
-                    context: context,
-                    icon: Icons.explore,
-                    label: 'Arah Kiblat',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const KiblatPage(),
-                        ),
-                      );
-                    },
+                  Expanded(
+                    child: _buildShortcutItem(
+                      context: context,
+                      icon: Icons.explore,
+                      label: 'Arah Kiblat',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const KiblatPage(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   // Asmaul Husna Shortcut
-                  _buildShortcutItem(
-                    context: context,
-                    icon: Icons.brightness_5_rounded,
-                    label: 'Asmaul Husna',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AsmaulHusnaPage(),
-                        ),
-                      );
-                    },
+                  Expanded(
+                    child: _buildShortcutItem(
+                      context: context,
+                      icon: Icons.brightness_5_rounded,
+                      label: 'Asmaul Husna',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AsmaulHusnaPage(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   // Tasbih Shortcut
-                  _buildShortcutItem(
-                    context: context,
-                    icon: Icons.fingerprint_rounded,
-                    label: 'Tasbih',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const TasbihPage(),
-                        ),
-                      );
-                    },
+                  Expanded(
+                    child: _buildShortcutItem(
+                      context: context,
+                      icon: Icons.fingerprint_rounded,
+                      label: 'Tasbih',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TasbihPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Hadis Shortcut
+                  Expanded(
+                    child: _buildShortcutItem(
+                      context: context,
+                      icon: Icons.menu_book_rounded,
+                      label: 'Hadis',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HadisPage(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -702,18 +727,19 @@ class _HomePageState extends State<HomePage> {
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: onTap,
-            child: Container(
-              width: 80,
-              height: 80,
-              padding: const EdgeInsets.all(12),
-              alignment: Alignment.center,
-              child: CircleAvatar(
-                radius: 28,
-                backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                child: Icon(
-                  icon,
-                  size: 28,
-                  color: theme.colorScheme.primary,
+            child: AspectRatio(
+              aspectRatio: 1.0,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+                child: CircleAvatar(
+                  radius: 22,
+                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  child: Icon(
+                    icon,
+                    size: 24,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
             ),
@@ -724,10 +750,12 @@ class _HomePageState extends State<HomePage> {
           label,
           style: theme.textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            fontSize: 13,
+            fontSize: 12,
             color: theme.colorScheme.onSurface,
           ),
           textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
