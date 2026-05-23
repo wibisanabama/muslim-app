@@ -116,7 +116,7 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
           borderRadius: BorderRadius.circular(24),
           clipBehavior: Clip.antiAlias,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -160,7 +160,7 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
           borderRadius: BorderRadius.circular(24),
           clipBehavior: Clip.antiAlias,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -207,7 +207,7 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
           borderRadius: BorderRadius.circular(24),
           clipBehavior: Clip.antiAlias,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -425,7 +425,7 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
           children: [
             // Kartu Shalat Mendatang
             Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 16.0),
               child: _buildHeaderCard(
                 context: context,
                 theme: theme,
