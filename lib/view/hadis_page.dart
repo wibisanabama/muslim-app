@@ -720,7 +720,7 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Hadis'),
+        title: Text('Hadis Ke-${widget.hadis.number}'),
         centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -748,32 +748,15 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
               margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'Hadis Ke-${widget.hadis.number}',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
+                child: Center(
+                  child: Text(
+                    widget.bookName,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      widget.bookName,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
