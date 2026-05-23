@@ -402,12 +402,20 @@ class _HadisListPageState extends State<HadisListPage> {
   }
 
   void _showSnackbar(String msg) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: Theme.of(context).colorScheme.error,
+        backgroundColor: const Color(0xFF2C2C2C),
+        elevation: 4.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        content: Text(
+          msg,
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+        ),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -457,6 +465,7 @@ class _HadisListPageState extends State<HadisListPage> {
         ),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Hadis Disimpan shortcut card
           if (!_isLoading && _hadiths.isNotEmpty)
@@ -735,24 +744,32 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
   }
 
   void _showSnackbar(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF2C2C2C),
+        elevation: 4.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
         content: Row(
           children: [
             Icon(
               isError ? Icons.bookmark_remove_rounded : Icons.bookmark_added_rounded,
               color: Colors.white,
+              size: 20,
             ),
             const SizedBox(width: 12),
-            Text(msg),
+            Expanded(
+              child: Text(
+                msg,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+            ),
           ],
         ),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: isError
-            ? Theme.of(context).colorScheme.error
-            : Theme.of(context).colorScheme.primary,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
