@@ -429,6 +429,7 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
   void _showDhikrSelectionBottomSheet(ThemeData theme) {
     showModalBottomSheet(
       context: context,
+      showDragHandle: true,
       backgroundColor: theme.scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
