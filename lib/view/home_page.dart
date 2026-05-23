@@ -375,16 +375,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _formatFriendlyDate(schedule.tanggal),
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.8),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  name.contains('Besok') ? '$cleanName (Besok)' : cleanName,
+                  cleanName,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -463,31 +454,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-  }
-
-  String _formatFriendlyDate(String rawDate) {
-    try {
-      final parts = rawDate.split(', ');
-      if (parts.length < 2) return rawDate;
-      
-      final dayName = parts[0];
-      final dateParts = parts[1].split('/');
-      if (dateParts.length < 3) return rawDate;
-      
-      final day = int.parse(dateParts[0]);
-      final month = int.parse(dateParts[1]);
-      final year = int.parse(dateParts[2]);
-      
-      final months = [
-        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-      ];
-      final monthName = months[month - 1];
-      
-      return "$dayName, $day $monthName $year";
-    } catch (_) {
-      return rawDate;
-    }
   }
 
   IconData _getShalatIcon(String name) {
