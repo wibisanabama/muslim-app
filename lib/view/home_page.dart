@@ -355,80 +355,77 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 16),
             
             // Shortcuts Row
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Qibla Direction Shortcut
-                  Expanded(
-                    child: _buildShortcutItem(
-                      context: context,
-                      icon: Icons.explore,
-                      label: 'Arah Kiblat',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const KiblatPage(),
-                          ),
-                        );
-                      },
-                    ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Qibla Direction Shortcut
+                Expanded(
+                  child: _buildShortcutItem(
+                    context: context,
+                    icon: Icons.explore,
+                    label: 'Arah Kiblat',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const KiblatPage(),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(width: 8),
-                  // Asmaul Husna Shortcut
-                  Expanded(
-                    child: _buildShortcutItem(
-                      context: context,
-                      icon: Icons.brightness_5_rounded,
-                      label: 'Asmaul Husna',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AsmaulHusnaPage(),
-                          ),
-                        );
-                      },
-                    ),
+                ),
+                const SizedBox(width: 12),
+                // Asmaul Husna Shortcut
+                Expanded(
+                  child: _buildShortcutItem(
+                    context: context,
+                    icon: Icons.brightness_5_rounded,
+                    label: 'Asmaul Husna',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AsmaulHusnaPage(),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(width: 8),
-                  // Tasbih Shortcut
-                  Expanded(
-                    child: _buildShortcutItem(
-                      context: context,
-                      icon: Icons.fingerprint_rounded,
-                      label: 'Tasbih',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TasbihPage(),
-                          ),
-                        );
-                      },
-                    ),
+                ),
+                const SizedBox(width: 12),
+                // Tasbih Shortcut
+                Expanded(
+                  child: _buildShortcutItem(
+                    context: context,
+                    icon: Icons.fingerprint_rounded,
+                    label: 'Tasbih',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TasbihPage(),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(width: 8),
-                  // Hadis Shortcut
-                  Expanded(
-                    child: _buildShortcutItem(
-                      context: context,
-                      icon: Icons.menu_book_rounded,
-                      label: 'Hadis',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const HadisPage(),
-                          ),
-                        );
-                      },
-                    ),
+                ),
+                const SizedBox(width: 12),
+                // Hadis Shortcut
+                Expanded(
+                  child: _buildShortcutItem(
+                    context: context,
+                    icon: Icons.menu_book_rounded,
+                    label: 'Hadis',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HadisPage(),
+                        ),
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
 
 
@@ -716,23 +713,22 @@ class _HomePageState extends State<HomePage> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(
-          width: 56,
-          height: 56,
-          child: Card.filled(
-            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-            elevation: 0,
-            margin: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: onTap,
+        Card.filled(
+          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: onTap,
+            child: AspectRatio(
+              aspectRatio: 1.0,
               child: Center(
                 child: Icon(
                   icon,
-                  size: 24,
+                  size: 26,
                   color: theme.colorScheme.primary,
                 ),
               ),
