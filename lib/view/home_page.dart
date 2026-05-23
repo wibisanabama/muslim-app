@@ -15,7 +15,9 @@ import 'shalat_detail_page.dart';
 import 'muslim_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'quran_detail_page.dart';
-import '../repository/quran_quote_helper.dart';
+import '../repository/quran_repository.dart';
+import '../model/surah_detail.dart';
+import 'dart:math';
 
 
 class HomePage extends StatefulWidget {
@@ -30,9 +32,23 @@ class _HomePageState extends State<HomePage> {
   bool _isScrolled = false;
   Timer? _timer;
 
+  bool _isLoadingQuote = true;
+  Ayat? _randomAyat;
+  int _quoteSurahNum = 94;
+  String _quoteSurahName = 'Al-Insyirah';
+
+  // Inline static fallback quote if offline/error (no helper file!)
+  static final Ayat _fallbackAyat = Ayat(
+    nomorAyat: 5,
+    teksArab: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا", // Note: arab text
+    teksLatin: "Fa inna ma'al-'usri yusrā",
+    teksIndonesia: "Karena sesungguhnya sesudah kesulitan itu ada kemudahan.",
+  );
+
   @override
   void initState() {
     super.initState();
+    _fetchRandomQuote();
     _scrollController = ScrollController()
       ..addListener(() {
         final scrolled = _scrollController.offset > 0;
@@ -57,6 +73,42 @@ class _HomePageState extends State<HomePage> {
         vm.updateLocationAndFetchSchedule();
       }
     });
+  }
+
+  Future<void> _fetchRandomQuote() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingQuote = true;
+    });
+
+    try {
+      // Pick a random surah number from 1 to 114
+      final randomSurah = Random().nextInt(114) + 1;
+      final quranRepo = QuranRepository();
+      final surahDetail = await quranRepo.getSurahDetail(randomSurah);
+      
+      if (surahDetail.ayat.isNotEmpty && mounted) {
+        final randomAyatIndex = Random().nextInt(surahDetail.ayat.length);
+        setState(() {
+          _randomAyat = surahDetail.ayat[randomAyatIndex];
+          _quoteSurahNum = surahDetail.nomor;
+          _quoteSurahName = surahDetail.namaLatin;
+          _isLoadingQuote = false;
+        });
+        return;
+      }
+    } catch (_) {
+      // Catch exceptions and fall back to local default quote
+    }
+
+    if (mounted) {
+      setState(() {
+        _randomAyat = _fallbackAyat;
+        _quoteSurahNum = 94;
+        _quoteSurahName = 'Al-Insyirah';
+        _isLoadingQuote = false;
+      });
+    }
   }
 
   @override
@@ -395,61 +447,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _PrayerPeriod _getCurrentPrayerPeriod(
-    ShalatDaySchedule todaySchedule,
-    ShalatDaySchedule tomorrowSchedule,
-    DateTime now,
-  ) {
-    DateTime? parseTime(ShalatDaySchedule schedule, DateTime baseDate, String timeStr) {
-      try {
-        final parts = timeStr.split(':');
-        final hour = int.parse(parts[0]);
-        final minute = int.parse(parts[1]);
-        return DateTime(baseDate.year, baseDate.month, baseDate.day, hour, minute);
-      } catch (_) {
-        return null;
-      }
-    }
 
-    final todayDate = DateTime(now.year, now.month, now.day);
-    final yesterdayDate = todayDate.subtract(const Duration(days: 1));
-
-
-    final todaySubuh = parseTime(todaySchedule, todayDate, todaySchedule.subuh);
-    final todayDzuhur = parseTime(todaySchedule, todayDate, todaySchedule.dzuhur);
-    final todayAshar = parseTime(todaySchedule, todayDate, todaySchedule.ashar);
-    final todayMaghrib = parseTime(todaySchedule, todayDate, todaySchedule.maghrib);
-    final todayIsya = parseTime(todaySchedule, todayDate, todaySchedule.isya);
-
-    // Jika waktu saat ini sebelum waktu Subuh hari ini, periode aktif adalah Isya kemarin
-    if (todaySubuh != null && now.isBefore(todaySubuh)) {
-      return _PrayerPeriod('Isya', yesterdayDate);
-    }
-
-    if (todayIsya != null && (now.isAfter(todayIsya) || now.isAtSameMomentAs(todayIsya))) {
-      return _PrayerPeriod('Isya', todayDate);
-    }
-    if (todayMaghrib != null && (now.isAfter(todayMaghrib) || now.isAtSameMomentAs(todayMaghrib))) {
-      return _PrayerPeriod('Maghrib', todayDate);
-    }
-    if (todayAshar != null && (now.isAfter(todayAshar) || now.isAtSameMomentAs(todayAshar))) {
-      return _PrayerPeriod('Ashar', todayDate);
-    }
-    if (todayDzuhur != null && (now.isAfter(todayDzuhur) || now.isAtSameMomentAs(todayDzuhur))) {
-      return _PrayerPeriod('Dzuhur', todayDate);
-    }
-
-    return _PrayerPeriod('Subuh', todayDate);
-  }
-
-  int _getStableHash(String key) {
-    int hash = 0;
-    for (int i = 0; i < key.length; i++) {
-      hash = 31 * hash + key.codeUnitAt(i);
-      hash = hash & 0xFFFFFFFF;
-    }
-    return hash;
-  }
 
   Widget _buildQuoteCard({
     required BuildContext context,
@@ -457,27 +455,27 @@ class _HomePageState extends State<HomePage> {
     required ShalatDaySchedule? todaySchedule,
     required ShalatDaySchedule? tomorrowSchedule,
   }) {
-    final now = DateTime.now();
-    
-    // Tentukan quote dan nama shalat aktif
-    String activePrayerName = '';
-    int quoteIndex = 0;
-    
-    if (todaySchedule != null && tomorrowSchedule != null) {
-      final period = _getCurrentPrayerPeriod(todaySchedule, tomorrowSchedule, now);
-      activePrayerName = period.name;
-      
-      // Hitung hash stabil berdasarkan tanggal dan nama shalat
-      final formattedDate = "${period.startDate.year}-${period.startDate.month.toString().padLeft(2, '0')}-${period.startDate.day.toString().padLeft(2, '0')}";
-      final key = "$formattedDate-$activePrayerName";
-      quoteIndex = _getStableHash(key) % QuranQuoteHelper.quotes.length;
-    } else {
-      // Fallback: rotasi 15 menit
-      quoteIndex = (now.millisecondsSinceEpoch ~/ (15 * 60 * 1000)) % QuranQuoteHelper.quotes.length;
+    if (_isLoadingQuote) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Container(
+          width: double.infinity,
+          height: 180,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
     }
-    
-    final quote = QuranQuoteHelper.quotes[quoteIndex];
-    
+
+    final ayat = _randomAyat ?? _fallbackAyat;
+    final surahNum = _quoteSurahNum;
+    final surahName = _quoteSurahName;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Material(
@@ -491,9 +489,9 @@ class _HomePageState extends State<HomePage> {
               context,
               MaterialPageRoute(
                 builder: (context) => QuranDetailPage(
-                  nomorSurah: quote.surahNumber,
-                  namaLatin: quote.surahName,
-                  initialAyahNumber: quote.ayahNumber,
+                  nomorSurah: surahNum,
+                  namaLatin: surahName,
+                  initialAyahNumber: ayat.nomorAyat,
                 ),
               ),
             );
@@ -504,7 +502,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  quote.teksArab,
+                  ayat.teksArab,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.scheherazadeNew(
                     fontSize: 28,
@@ -515,7 +513,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  quote.teksLatin,
+                  ayat.teksLatin,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontStyle: FontStyle.italic,
@@ -525,7 +523,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '"${quote.teksIndonesia}"',
+                  '"${ayat.teksIndonesia}"',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
@@ -534,7 +532,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'QS. ${quote.surahName} [${quote.surahNumber}]: ${quote.ayahNumber}',
+                  'QS. $surahName [$surahNum]: ${ayat.nomorAyat}',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -762,9 +760,5 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _PrayerPeriod {
-  final String name;
-  final DateTime startDate;
-  _PrayerPeriod(this.name, this.startDate);
-}
+
 

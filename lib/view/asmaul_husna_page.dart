@@ -1,6 +1,30 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../repository/asmaul_husna_helper.dart';
+import 'package:http/http.dart' as http;
+
+class AsmaulHusna {
+  final int number;
+  final String latin;
+  final String arabic;
+  final String translation;
+
+  const AsmaulHusna({
+    required this.number,
+    required this.latin,
+    required this.arabic,
+    required this.translation,
+  });
+
+  factory AsmaulHusna.fromJson(Map<String, dynamic> json) {
+    return AsmaulHusna(
+      number: (json['urutan'] as num?)?.toInt() ?? 0,
+      latin: (json['latin'] ?? '').toString(),
+      arabic: (json['arab'] ?? '').toString(),
+      translation: (json['arti'] ?? '').toString(),
+    );
+  }
+}
 
 class AsmaulHusnaPage extends StatefulWidget {
   const AsmaulHusnaPage({super.key});
@@ -15,9 +39,14 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
   late final ScrollController _scrollController;
   bool _isScrolled = false;
 
+  List<AsmaulHusna> _allNames = [];
+  bool _isLoading = true;
+  bool _isError = false;
+
   @override
   void initState() {
     super.initState();
+    _fetchNames();
     _scrollController = ScrollController()
       ..addListener(() {
         final scrolled = _scrollController.offset > 0;
@@ -27,6 +56,36 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
           });
         }
       });
+  }
+
+  Future<void> _fetchNames() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _isError = false;
+    });
+    try {
+      final res = await http.get(Uri.parse('https://asmaul-husna-api.vercel.app/api/all'));
+      if (res.statusCode == 200) {
+        final Map<String, dynamic> jsonMap = json.decode(res.body);
+        final data = jsonMap['data'] as List?;
+        if (data != null && mounted) {
+          setState(() {
+            _allNames = data.map((e) => AsmaulHusna.fromJson(e as Map<String, dynamic>)).toList();
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+      throw Exception();
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isError = true;
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -45,7 +104,7 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
     final theme = Theme.of(context);
 
     // Filter names locally based on search
-    final filteredNames = AsmaulHusnaHelper.names.where((item) {
+    final filteredNames = _allNames.where((item) {
       final normQuery = _normalizeString(_searchQuery);
       if (normQuery.isEmpty) return true;
 
@@ -113,6 +172,49 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
       ),
       body: Builder(
         builder: (context) {
+          if (_isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (_isError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.cloud_off_rounded,
+                      size: 48,
+                      color: theme.colorScheme.error,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Gagal memuat Asmaul Husna',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Pastikan Anda terhubung ke internet dan coba lagi.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: _fetchNames,
+                      child: const Text('Coba Lagi'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           if (filteredNames.isEmpty) {
             return Center(
               child: Column(

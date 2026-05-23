@@ -278,7 +278,7 @@ class _HadisListPageState extends State<HadisListPage> {
   int _currentStart = 1;
   final int _batchSize = 50;
   bool _isLoading = false;
-  bool _isOffline = false;
+  bool _isError = false;
   bool _isScrolled = false;
   List<int> _savedHadisNumbers = [];
 
@@ -316,11 +316,12 @@ class _HadisListPageState extends State<HadisListPage> {
   }
 
   Future<void> _fetchNextBatch() async {
-    if (_isLoading || _isOffline) return;
+    if (_isLoading) return;
     if (_currentStart > widget.totalAvailable) return;
 
     setState(() {
       _isLoading = true;
+      _isError = false;
     });
 
     int end = _currentStart + _batchSize - 1;
@@ -330,28 +331,14 @@ class _HadisListPageState extends State<HadisListPage> {
 
     try {
       final newHadiths = await _repository.getHadisRange(widget.bookId, _currentStart, end);
-      
-      // Mapped fallback detection: if it returns exactly 12 items, it is the local curated offline fallback
-      if (newHadiths.length == 12 && newHadiths.first.translation.contains("Penjelasan & Kandungan:")) {
-        setState(() {
-          _isOffline = true;
-          _hadiths.addAll(newHadiths);
-        });
-      } else {
-        setState(() {
-          _hadiths.addAll(newHadiths);
-          _currentStart = end + 1;
-        });
-      }
-    } catch (e) {
-      // Graceful fallback to offline mode
-      final fallback = _repository.getLocalFallback();
       setState(() {
-        _isOffline = true;
-        _hadiths.addAll(fallback);
+        _hadiths.addAll(newHadiths);
+        _currentStart = end + 1;
+        _isLoading = false;
       });
-    } finally {
+    } catch (e) {
       setState(() {
+        _isError = _hadiths.isEmpty;
         _isLoading = false;
       });
     }
@@ -511,41 +498,51 @@ class _HadisListPageState extends State<HadisListPage> {
               }
             ),
 
-          // Offline Warning Banner
-          if (_isOffline)
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.errorContainer.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.offline_bolt_rounded, color: theme.colorScheme.error),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Anda sedang offline. Menampilkan 12 Hadis pilihan.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onErrorContainer,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
           // Hadith List
           Expanded(
-            child: _hadiths.isEmpty && _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _hadiths.length + (_isLoading && !_isOffline ? 1 : 0),
+            child: _isError && _hadiths.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.cloud_off_rounded,
+                            size: 48,
+                            color: theme.colorScheme.error,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Gagal memuat daftar hadis',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Pastikan Anda terhubung ke internet dan coba lagi.',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          FilledButton(
+                            onPressed: _fetchNextBatch,
+                            child: const Text('Coba Lagi'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : _hadiths.isEmpty && _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _hadiths.length + (_isLoading ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == _hadiths.length) {
                         return const Padding(
