@@ -717,28 +717,17 @@ class _HomePageState extends State<HomePage> {
           color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
           elevation: 0,
           margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: const CircleBorder(),
           child: InkWell(
-            borderRadius: BorderRadius.circular(16),
+            customBorder: const CircleBorder(),
             onTap: onTap,
             child: AspectRatio(
               aspectRatio: 1.0,
               child: Center(
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    icon,
-                    size: 22,
-                    color: theme.colorScheme.primary,
-                  ),
+                child: Icon(
+                  icon,
+                  size: 26,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ),
