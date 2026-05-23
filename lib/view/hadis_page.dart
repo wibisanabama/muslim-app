@@ -137,91 +137,105 @@ class _HadisPageState extends State<HadisPage> {
             );
           }
 
-          return ListView.separated(
+          return ListView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.all(16),
             itemCount: filteredList.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final item = filteredList[index];
-              return Card.filled(
-                margin: EdgeInsets.zero,
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HadisDetailPage(hadis: item),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Lingkaran Nomor Hadis
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            item.number.toString(),
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.primary,
+              final double bottomMargin = (index == filteredList.length - 1) ? 0.0 : 2.0;
+              final BorderRadius borderRadius;
+              if (filteredList.length == 1) {
+                borderRadius = BorderRadius.circular(24.0);
+              } else if (index == 0) {
+                borderRadius = const BorderRadius.vertical(top: Radius.circular(24.0));
+              } else if (index == filteredList.length - 1) {
+                borderRadius = const BorderRadius.vertical(bottom: Radius.circular(24.0));
+              } else {
+                borderRadius = BorderRadius.zero;
+              }
+
+              return Padding(
+                padding: EdgeInsets.only(bottom: bottomMargin),
+                child: Card.filled(
+                  margin: EdgeInsets.zero,
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: borderRadius,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HadisDetailPage(hadis: item),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Lingkaran Nomor Hadis
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              item.number.toString(),
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.primary,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        // Detail Hadis
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.title,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.onSurface,
+                          const SizedBox(width: 16),
+                          // Detail Hadis
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.title,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item.narrator,
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.narrator,
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.primary,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                item.translation,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                  height: 1.4,
+                                const SizedBox(height: 8),
+                                Text(
+                                  item.translation,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    height: 1.4,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
