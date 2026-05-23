@@ -135,90 +135,98 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
             );
           }
 
-          return ListView.builder(
+          return GridView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.all(16),
+            physics: const AlwaysScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 2,
+              mainAxisSpacing: 2,
+              childAspectRatio: 0.95,
+            ),
             itemCount: filteredNames.length,
             itemBuilder: (context, index) {
               final item = filteredNames[index];
-              final double bottomMargin = (index == filteredNames.length - 1) ? 0.0 : 2.0;
-              final BorderRadius borderRadius;
-              if (filteredNames.length == 1) {
-                borderRadius = BorderRadius.circular(24.0);
-              } else if (index == 0) {
-                borderRadius = const BorderRadius.vertical(top: Radius.circular(24.0));
-              } else if (index == filteredNames.length - 1) {
-                borderRadius = const BorderRadius.vertical(bottom: Radius.circular(24.0));
-              } else {
-                borderRadius = BorderRadius.zero;
-              }
+              
+              // Segmented filled border radius calculations for 2-column grid
+              final int total = filteredNames.length;
+              final bool isTop = index < 2;
+              final bool isBottom = (index ~/ 2) == ((total - 1) ~/ 2);
+              final bool isLeft = index % 2 == 0;
+              final bool isRight = index % 2 == 1;
 
-              return Padding(
-                padding: EdgeInsets.only(bottom: bottomMargin),
-                child: Card.filled(
-                  margin: EdgeInsets.zero,
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: borderRadius,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Lingkaran Nomor Asmaul Husna
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            item.number.toString(),
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.primary,
-                            ),
-                          ),
+              final Radius topLeft = (isTop && isLeft) ? const Radius.circular(24.0) : Radius.zero;
+              final Radius topRight = (isTop && isRight) ? const Radius.circular(24.0) : (total == 1 && isLeft ? const Radius.circular(24.0) : Radius.zero);
+              final Radius bottomLeft = (isBottom && isLeft) ? const Radius.circular(24.0) : Radius.zero;
+              final Radius bottomRight = (isRight && isBottom) 
+                  ? const Radius.circular(24.0) 
+                  : ((isLeft && isBottom && index == total - 1) ? const Radius.circular(24.0) : Radius.zero);
+
+              final borderRadius = BorderRadius.only(
+                topLeft: topLeft,
+                topRight: topRight,
+                bottomLeft: bottomLeft,
+                bottomRight: bottomRight,
+              );
+
+              return Card.filled(
+                margin: EdgeInsets.zero,
+                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                shape: RoundedRectangleBorder(
+                  borderRadius: borderRadius,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(width: 16),
-                        // Detail Asmaul Husna (Latin & Terjemahan)
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.latin,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item.translation,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        // Teks Arab
-                        Text(
-                          item.arabic,
-                          style: GoogleFonts.scheherazadeNew(
-                            fontSize: 32,
+                        child: Text(
+                          item.number.toString(),
+                          style: theme.textTheme.labelSmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            height: 1.1,
-                            color: theme.colorScheme.onSurface,
+                            color: theme.colorScheme.primary,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        item.arabic,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.scheherazadeNew(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          height: 1.4,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        item.latin,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.translation,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
               );
