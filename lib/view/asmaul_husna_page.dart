@@ -152,16 +152,16 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
               // Segmented filled border radius calculations for 2-column grid
               final int total = filteredNames.length;
               final bool isTop = index < 2;
-              final bool isBottom = (index ~/ 2) == ((total - 1) ~/ 2);
               final bool isLeft = index % 2 == 0;
               final bool isRight = index % 2 == 1;
+              final bool hasNoItemBelow = (index + 2) >= total;
 
               final Radius topLeft = (isTop && isLeft) ? const Radius.circular(24.0) : Radius.zero;
               final Radius topRight = (isTop && isRight) ? const Radius.circular(24.0) : (total == 1 && isLeft ? const Radius.circular(24.0) : Radius.zero);
-              final Radius bottomLeft = (isBottom && isLeft) ? const Radius.circular(24.0) : Radius.zero;
-              final Radius bottomRight = (isRight && isBottom) 
+              final Radius bottomLeft = (hasNoItemBelow && isLeft) ? const Radius.circular(24.0) : Radius.zero;
+              final Radius bottomRight = (hasNoItemBelow && isRight) 
                   ? const Radius.circular(24.0) 
-                  : ((isLeft && isBottom && index == total - 1) ? const Radius.circular(24.0) : Radius.zero);
+                  : ((index == total - 1) ? const Radius.circular(24.0) : Radius.zero);
 
               final borderRadius = BorderRadius.only(
                 topLeft: topLeft,
