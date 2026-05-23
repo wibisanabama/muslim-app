@@ -109,40 +109,43 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
       final bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.10);
       final textColor = theme.colorScheme.onSurface.withValues(alpha: 0.4);
 
-      return Material(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(24),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.03),
-                  shape: BoxShape.circle,
+      return SizedBox(
+        height: 240,
+        child: Material(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(24),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.03),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.event_available_rounded,
+                    size: 28,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                  ),
                 ),
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.event_available_rounded,
-                  size: 28,
-                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                const SizedBox(height: 16),
+                Text(
+                  'Jadwal Sudah Terlewat',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Jadwal Sudah Terlewat',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
@@ -150,40 +153,43 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
       final bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.25);
       final textColor = theme.colorScheme.onSurface;
 
-      return Material(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(24),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+      return SizedBox(
+        height: 240,
+        child: Material(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(24),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.event_note_rounded,
+                    size: 28,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.event_note_rounded,
-                  size: 28,
-                  color: theme.colorScheme.primary,
+                const SizedBox(height: 16),
+                Text(
+                  'Jadwal Belum Aktif',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Jadwal Belum Aktif',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
@@ -194,53 +200,56 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
       final shalatName = upcomingShalat != null ? upcomingShalat['name']! : '-';
       final cleanName = shalatName.replaceAll(' (Besok)', '');
 
-      return Material(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(24),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Icon(
-                  _getShalatIcon(cleanName),
-                  size: 32,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                cleanName,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              if (timeRemaining != null) ...[
-                const SizedBox(height: 16),
-                Text(
-                  _formatDuration(timeRemaining),
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                    fontFamily: 'monospace',
-                    letterSpacing: 2,
+      return SizedBox(
+        height: 240,
+        child: Material(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(24),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    _getShalatIcon(cleanName),
+                    size: 32,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
+                const SizedBox(height: 16),
+                Text(
+                  cleanName,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                if (timeRemaining != null) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    _formatDuration(timeRemaining),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                      fontFamily: 'monospace',
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       );

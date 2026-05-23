@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../model/doa.dart';
 
 class DoaDetailPage extends StatefulWidget {
@@ -69,10 +70,10 @@ class _DoaDetailPageState extends State<DoaDetailPage> {
                 Text(
                   widget.doa.ayat,
                   textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    fontSize: 26,
+                  style: GoogleFonts.scheherazadeNew(
+                    fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    height: 1.8,
+                    height: 2.0,
                   ),
                 ),
                 const SizedBox(height: 24),
