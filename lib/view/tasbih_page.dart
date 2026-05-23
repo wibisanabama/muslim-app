@@ -150,7 +150,11 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
       HapticFeedback.lightImpact();
     }
     setState(() {
-      _targetLimit = limit;
+      if (_targetLimit == limit) {
+        _targetLimit = 0; // Unselect -> Tanpa Batas
+      } else {
+        _targetLimit = limit;
+      }
       _count = 0;
     });
     _saveState();
@@ -340,10 +344,8 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
                     Row(
                       children: [
                         _buildLimitChip(label: '33', value: 33),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 12),
                         _buildLimitChip(label: '99', value: 99),
-                        const SizedBox(width: 8),
-                        _buildLimitChip(label: 'Tanpa Batas', value: 0),
                       ],
                     ),
                     const SizedBox(height: 16),
