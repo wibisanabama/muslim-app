@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import '../model/shalat_schedule_response.dart';
 import '../viewmodel/shalat_view_model.dart';
 import 'kiblat_page.dart';
+import 'asmaul_husna_page.dart';
 import 'ramadhan_page.dart';
+
 import 'shalat_detail_page.dart';
 import 'muslim_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -318,9 +320,24 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                   ),
+                  // Asmaul Husna Shortcut
+                  _buildShortcutItem(
+                    context: context,
+                    icon: Icons.brightness_5_rounded,
+                    label: 'Asmaul Husna',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AsmaulHusnaPage(),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
+
             const SizedBox(height: 32),
             _buildQuoteCard(
               context: context,
