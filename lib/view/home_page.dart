@@ -430,118 +430,100 @@ class _HomePageState extends State<HomePage> {
     
     final quote = QuranQuoteHelper.quotes[quoteIndex];
     
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Material(
+        color: theme.colorScheme.primary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(24),
-        side: BorderSide(
-          color: theme.colorScheme.primary.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => QuranDetailPage(
-                nomorSurah: quote.surahNumber,
-                namaLatin: quote.surahName,
-                initialAyahNumber: quote.ayahNumber,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => QuranDetailPage(
+                  nomorSurah: quote.surahNumber,
+                  namaLatin: quote.surahName,
+                  initialAyahNumber: quote.ayahNumber,
+                ),
               ),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.format_quote_rounded,
-                        size: 20,
-                        color: theme.colorScheme.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Kutipan Ayat',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.format_quote_rounded,
+                          size: 20,
                           color: theme.colorScheme.primary,
                         ),
-                      ),
-                    ],
-                  ),
-                  if (activePrayerName.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'Waktu $activePrayerName',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
+                        const SizedBox(width: 8),
+                        Text(
+                          'Kutipan Ayat',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Text(
-                quote.teksArab,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.scheherazadeNew(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  height: 1.8,
-                  color: theme.colorScheme.onSurface,
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                quote.teksLatin,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontStyle: FontStyle.italic,
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: 20),
+                Text(
+                  quote.teksArab,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.scheherazadeNew(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    height: 1.8,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '"${quote.teksIndonesia}"',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  height: 1.4,
+                const SizedBox(height: 16),
+                Text(
+                  quote.teksLatin,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                '— QS. ${quote.surahName} [${quote.surahNumber}]: ${quote.ayahNumber}',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
+                const SizedBox(height: 8),
+                Text(
+                  '"${quote.teksIndonesia}"',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+                Text(
+                  'QS. ${quote.surahName} [${quote.surahNumber}]: ${quote.ayahNumber}',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
 
   Widget _buildUpcomingPrayerCard({
 
