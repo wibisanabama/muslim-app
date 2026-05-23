@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/hadis_model.dart';
@@ -702,8 +701,6 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
     final key = 'saved_hadis_${widget.bookId}';
     final savedList = prefs.getStringList(key) ?? [];
     final numStr = widget.hadis.number.toString();
-
-    HapticFeedback.lightImpact();
 
     if (_isBookmarked) {
       savedList.remove(numStr);
