@@ -8,6 +8,10 @@ import 'kiblat_page.dart';
 import 'ramadhan_page.dart';
 import 'shalat_detail_page.dart';
 import 'muslim_drawer.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'quran_detail_page.dart';
+import '../repository/quran_quote_helper.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -66,15 +70,14 @@ class _HomePageState extends State<HomePage> {
     Map<String, String>? upcomingShalat;
     Duration? timeRemaining;
     ShalatDaySchedule? targetSchedule;
+    ShalatDaySchedule? todaySchedule;
+    ShalatDaySchedule? tomorrowSchedule;
 
     if (vm.schedules.isNotEmpty) {
       final now = DateTime.now();
       final todayDate = DateTime(now.year, now.month, now.day);
       final tomorrowDate = todayDate.add(const Duration(days: 1));
 
-      // Temukan jadwal hari ini & besok
-      ShalatDaySchedule? todaySchedule;
-      ShalatDaySchedule? tomorrowSchedule;
 
       for (final s in vm.schedules) {
         try {
@@ -318,14 +321,230 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
+            const SizedBox(height: 32),
+            Padding(
+              padding: EdgeInsets.zero,
+              child: Text(
+                'Kutipan Ayat',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildQuoteCard(
+              context: context,
+              theme: theme,
+              todaySchedule: todaySchedule,
+              tomorrowSchedule: tomorrowSchedule,
+            ),
           ],
+
         ),
       ),
     ),
     );
   }
 
+  _PrayerPeriod _getCurrentPrayerPeriod(
+    ShalatDaySchedule todaySchedule,
+    ShalatDaySchedule tomorrowSchedule,
+    DateTime now,
+  ) {
+    DateTime? parseTime(ShalatDaySchedule schedule, DateTime baseDate, String timeStr) {
+      try {
+        final parts = timeStr.split(':');
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        return DateTime(baseDate.year, baseDate.month, baseDate.day, hour, minute);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final yesterdayDate = todayDate.subtract(const Duration(days: 1));
+
+
+    final todaySubuh = parseTime(todaySchedule, todayDate, todaySchedule.subuh);
+    final todayDzuhur = parseTime(todaySchedule, todayDate, todaySchedule.dzuhur);
+    final todayAshar = parseTime(todaySchedule, todayDate, todaySchedule.ashar);
+    final todayMaghrib = parseTime(todaySchedule, todayDate, todaySchedule.maghrib);
+    final todayIsya = parseTime(todaySchedule, todayDate, todaySchedule.isya);
+
+    // Jika waktu saat ini sebelum waktu Subuh hari ini, periode aktif adalah Isya kemarin
+    if (todaySubuh != null && now.isBefore(todaySubuh)) {
+      return _PrayerPeriod('Isya', yesterdayDate);
+    }
+
+    if (todayIsya != null && (now.isAfter(todayIsya) || now.isAtSameMomentAs(todayIsya))) {
+      return _PrayerPeriod('Isya', todayDate);
+    }
+    if (todayMaghrib != null && (now.isAfter(todayMaghrib) || now.isAtSameMomentAs(todayMaghrib))) {
+      return _PrayerPeriod('Maghrib', todayDate);
+    }
+    if (todayAshar != null && (now.isAfter(todayAshar) || now.isAtSameMomentAs(todayAshar))) {
+      return _PrayerPeriod('Ashar', todayDate);
+    }
+    if (todayDzuhur != null && (now.isAfter(todayDzuhur) || now.isAtSameMomentAs(todayDzuhur))) {
+      return _PrayerPeriod('Dzuhur', todayDate);
+    }
+
+    return _PrayerPeriod('Subuh', todayDate);
+  }
+
+  int _getStableHash(String key) {
+    int hash = 0;
+    for (int i = 0; i < key.length; i++) {
+      hash = 31 * hash + key.codeUnitAt(i);
+      hash = hash & 0xFFFFFFFF;
+    }
+    return hash;
+  }
+
+  Widget _buildQuoteCard({
+    required BuildContext context,
+    required ThemeData theme,
+    required ShalatDaySchedule? todaySchedule,
+    required ShalatDaySchedule? tomorrowSchedule,
+  }) {
+    final now = DateTime.now();
+    
+    // Tentukan quote dan nama shalat aktif
+    String activePrayerName = '';
+    int quoteIndex = 0;
+    
+    if (todaySchedule != null && tomorrowSchedule != null) {
+      final period = _getCurrentPrayerPeriod(todaySchedule, tomorrowSchedule, now);
+      activePrayerName = period.name;
+      
+      // Hitung hash stabil berdasarkan tanggal dan nama shalat
+      final formattedDate = "${period.startDate.year}-${period.startDate.month.toString().padLeft(2, '0')}-${period.startDate.day.toString().padLeft(2, '0')}";
+      final key = "$formattedDate-$activePrayerName";
+      quoteIndex = _getStableHash(key) % QuranQuoteHelper.quotes.length;
+    } else {
+      // Fallback: rotasi 15 menit
+      quoteIndex = (now.millisecondsSinceEpoch ~/ (15 * 60 * 1000)) % QuranQuoteHelper.quotes.length;
+    }
+    
+    final quote = QuranQuoteHelper.quotes[quoteIndex];
+    
+    return Card.filled(
+      margin: EdgeInsets.zero,
+      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QuranDetailPage(
+                nomorSurah: quote.surahNumber,
+                namaLatin: quote.surahName,
+                initialAyahNumber: quote.ayahNumber,
+              ),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.format_quote_rounded,
+                        size: 20,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Kutipan Ayat',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (activePrayerName.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Waktu $activePrayerName',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text(
+                quote.teksArab,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.scheherazadeNew(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  height: 1.8,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                quote.teksLatin,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '"${quote.teksIndonesia}"',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                '— QS. ${quote.surahName} [${quote.surahNumber}]: ${quote.ayahNumber}',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildUpcomingPrayerCard({
+
     required BuildContext context,
     required ThemeData theme,
     required String cityName,
@@ -532,3 +751,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+class _PrayerPeriod {
+  final String name;
+  final DateTime startDate;
+  _PrayerPeriod(this.name, this.startDate);
+}
+
