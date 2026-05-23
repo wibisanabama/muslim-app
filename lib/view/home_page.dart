@@ -726,10 +726,19 @@ class _HomePageState extends State<HomePage> {
             child: AspectRatio(
               aspectRatio: 1.0,
               child: Center(
-                child: Icon(
-                  icon,
-                  size: 26,
-                  color: theme.colorScheme.primary,
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    icon,
+                    size: 22,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
             ),
