@@ -187,50 +187,46 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
             Card.filled(
               color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    Text(
-                      activeDhikr.arabic,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.scheherazadeNew(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        height: 1.6,
-                        color: theme.colorScheme.primary,
+              margin: EdgeInsets.zero,
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(24),
+                onTap: () {
+                  _showDhikrSelectionBottomSheet(theme);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        activeDhikr.arabic,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.scheherazadeNew(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          height: 1.6,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      activeDhikr.latin,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
+                      const SizedBox(height: 8),
+                      Text(
+                        activeDhikr.latin,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '"${activeDhikr.meaning}"',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      const SizedBox(height: 4),
+                      Text(
+                        '"${activeDhikr.meaning}"',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Tombol Ganti Dhikr
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        _showDhikrSelectionBottomSheet(theme);
-                      },
-                      icon: const Icon(Icons.swap_horiz_rounded),
-                      label: const Text('Ganti Bacaan'),
-                      style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
