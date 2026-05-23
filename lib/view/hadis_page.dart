@@ -279,12 +279,19 @@ class _HadisListPageState extends State<HadisListPage> {
   final int _batchSize = 50;
   bool _isLoading = false;
   bool _isOffline = false;
+  bool _isScrolled = false;
 
   @override
   void initState() {
     super.initState();
     _fetchNextBatch();
     _scrollController.addListener(() {
+      final scrolled = _scrollController.offset > 0;
+      if (scrolled != _isScrolled) {
+        setState(() {
+          _isScrolled = scrolled;
+        });
+      }
       if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
         _fetchNextBatch();
       }
@@ -400,52 +407,46 @@ class _HadisListPageState extends State<HadisListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.bookName),
-        centerTitle: false,
-        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        backgroundColor: _isScrolled
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
+        titleSpacing: 0,
+        title: Container(
+          height: 48,
+          margin: const EdgeInsets.only(right: 16.0),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: TextField(
+            controller: _numberController,
+            keyboardType: TextInputType.number,
+            textAlignVertical: TextAlignVertical.center,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (_) => _searchHadisByNumber(),
+            decoration: InputDecoration(
+              hintText: 'Cari nomor hadis (1-${widget.totalAvailable})...',
+              hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              isDense: true,
+            ),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ),
       ),
       body: Column(
         children: [
-          // Jump to Hadith Number input header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Container(
-              height: 48,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: TextField(
-                controller: _numberController,
-                keyboardType: TextInputType.number,
-                textAlignVertical: TextAlignVertical.center,
-                textInputAction: TextInputAction.search,
-                onSubmitted: (_) => _searchHadisByNumber(),
-                decoration: InputDecoration(
-                  hintText: 'Cari nomor hadis (1-${widget.totalAvailable})...',
-                  hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  isDense: true,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      Icons.search_rounded,
-                      color: theme.colorScheme.primary,
-                      size: 20,
-                    ),
-                    onPressed: _searchHadisByNumber,
-                  ),
-                ),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ),
 
           // Offline Warning Banner
           if (_isOffline)
