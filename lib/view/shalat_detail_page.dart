@@ -529,60 +529,63 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
                 bottomRight: Radius.circular(isLast ? 16 : 0),
               );
 
-              return Column(
-                children: [
-                  Material(
-                    color: bgColor,
-                    borderRadius: borderRadius,
-                    clipBehavior: Clip.antiAlias,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: status == 'current'
-                                  ? theme.colorScheme.primary.withValues(alpha: 0.2)
-                                  : theme.colorScheme.primary.withValues(alpha: 0.1 * iconAlpha),
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: Alignment.center,
-                            child: Icon(
-                              _getShalatIcon(item['name']!),
-                              size: 20,
-                              color: theme.colorScheme.primary.withValues(alpha: iconAlpha),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              item['name']!,
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                fontWeight: textWeight,
-                                color: textColor,
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  children: [
+                    Material(
+                      color: bgColor,
+                      borderRadius: borderRadius,
+                      clipBehavior: Clip.antiAlias,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: status == 'current'
+                                    ? theme.colorScheme.primary.withValues(alpha: 0.2)
+                                    : theme.colorScheme.primary.withValues(alpha: 0.1 * iconAlpha),
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                _getShalatIcon(item['name']!),
+                                size: 20,
+                                color: theme.colorScheme.primary.withValues(alpha: iconAlpha),
                               ),
                             ),
-                          ),
-                          Text(
-                            item['time']!,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: timeColor,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                item['name']!,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  fontWeight: textWeight,
+                                  color: textColor,
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                            Text(
+                              item['time']!,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: timeColor,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  if (!isLast)
-                    Divider(
-                      height: 1,
-                      color: theme.colorScheme.surface,
-                      thickness: 1.5,
-                    ),
-                ],
+                    if (!isLast)
+                      Divider(
+                        height: 1,
+                        color: theme.colorScheme.surface,
+                        thickness: 1.5,
+                      ),
+                  ],
+                ),
               );
             }),
           ],
