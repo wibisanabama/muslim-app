@@ -714,30 +714,26 @@ class _HomePageState extends State<HomePage> {
     
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Card.filled(
-          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-          elevation: 0,
-          margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: onTap,
-            child: AspectRatio(
-              aspectRatio: 1.0,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
-                child: CircleAvatar(
-                  radius: 22,
-                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  child: Icon(
-                    icon,
-                    size: 24,
-                    color: theme.colorScheme.primary,
-                  ),
+        SizedBox(
+          width: 56,
+          height: 56,
+          child: Card.filled(
+            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+            elevation: 0,
+            margin: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: onTap,
+              child: Center(
+                child: Icon(
+                  icon,
+                  size: 24,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ),
@@ -748,7 +744,7 @@ class _HomePageState extends State<HomePage> {
           label,
           style: theme.textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            fontSize: 12,
+            fontSize: 11,
             color: theme.colorScheme.onSurface,
           ),
           textAlign: TextAlign.center,
