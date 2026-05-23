@@ -50,8 +50,8 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
   }
 
   double _estimateAyahHeight(dynamic a) {
-    final arabLines = (a.teksArab.length / 35.0).ceil();
-    final arabHeight = arabLines * 43.0;
+    final arabLines = (a.teksArab.length / 30.0).ceil();
+    final arabHeight = arabLines * 64.0; // 32 * 2.0 = 64
 
     final latinLines = (a.teksLatin.length / 50.0).ceil();
     final latinHeight = latinLines * 20.0;
@@ -111,8 +111,7 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
     // Jump ke estimasi agar ListView merender item di sekitar target.
     final detail = _quranVM.surahDetail!;
     final estimatedOffset = _calculateEstimatedOffset(detail.ayat, targetAyah);
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    _scrollController.jumpTo(estimatedOffset.clamp(0.0, maxScroll));
+    _scrollController.jumpTo(estimatedOffset.clamp(0.0, double.infinity));
 
     // Tunggu frame berikutnya, lalu coba lagi (key seharusnya sudah terdaftar).
     WidgetsBinding.instance.addPostFrameCallback((_) {
