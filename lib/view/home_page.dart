@@ -6,7 +6,9 @@ import '../model/shalat_schedule_response.dart';
 import '../viewmodel/shalat_view_model.dart';
 import 'kiblat_page.dart';
 import 'asmaul_husna_page.dart';
+import 'tasbih_page.dart';
 import 'ramadhan_page.dart';
+
 
 import 'shalat_detail_page.dart';
 import 'muslim_drawer.dart';
@@ -334,9 +336,24 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                   ),
+                  // Tasbih Shortcut
+                  _buildShortcutItem(
+                    context: context,
+                    icon: Icons.fingerprint_rounded,
+                    label: 'Tasbih',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TasbihPage(),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
+
 
             const SizedBox(height: 32),
             _buildQuoteCard(
