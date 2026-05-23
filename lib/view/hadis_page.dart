@@ -107,7 +107,7 @@ class _HadisPageState extends State<HadisPage> {
               });
             },
             decoration: InputDecoration(
-              hintText: 'Cari Kitab Hadis...',
+              hintText: 'Cari kitab hadis...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
               ),
@@ -431,7 +431,7 @@ class _HadisListPageState extends State<HadisListPage> {
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => _searchHadisByNumber(),
             decoration: InputDecoration(
-              hintText: 'Cari nomor hadis (1-${widget.totalAvailable})...',
+              hintText: 'Cari hadis ${widget.bookName}...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
               ),

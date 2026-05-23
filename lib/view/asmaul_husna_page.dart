@@ -86,7 +86,7 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
               });
             },
             decoration: InputDecoration(
-              hintText: 'Cari Asmaul Husna...',
+              hintText: 'Cari asmaul husna...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
               ),
