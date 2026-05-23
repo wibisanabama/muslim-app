@@ -77,14 +77,6 @@ class _DoaDetailPageState extends State<DoaDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  widget.doa.doa,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Text(
                   widget.doa.ayat,
                   textAlign: TextAlign.right,
                   style: GoogleFonts.scheherazadeNew(
