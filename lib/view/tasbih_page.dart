@@ -155,7 +155,6 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
       } else {
         _targetLimit = limit;
       }
-      _count = 0;
     });
     _saveState();
   }
