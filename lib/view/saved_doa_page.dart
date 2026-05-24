@@ -118,12 +118,14 @@ class _SavedDoaPageState extends State<SavedDoaPage> {
               );
 
               return Material(
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.25,
+                ),
                 borderRadius: borderRadius,
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
-                  onTap: () {
-                    Navigator.push(
+                  onTap: () async {
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => DoaDetailPage(doa: d),
@@ -131,7 +133,10 @@ class _SavedDoaPageState extends State<SavedDoaPage> {
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 18,
+                      horizontal: 20,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -148,7 +153,9 @@ class _SavedDoaPageState extends State<SavedDoaPage> {
                         Icon(
                           Icons.chevron_right,
                           size: 20,
-                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                          color: theme.colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.8,
+                          ),
                         ),
                       ],
                     ),

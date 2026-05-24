@@ -9,15 +9,17 @@ class MuslimDrawer extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Drawer(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 24.0, top: 24.0, bottom: 16.0),
+              padding: const EdgeInsets.only(
+                left: 24.0,
+                top: 24.0,
+                bottom: 16.0,
+              ),
               child: Text(
                 'Muslim',
                 style: theme.textTheme.headlineMedium?.copyWith(
@@ -35,13 +37,11 @@ class MuslimDrawer extends StatelessWidget {
                 'Pengaturan',
                 style: TextStyle(fontWeight: FontWeight.w500),
               ),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                Navigator.push(
+              onTap: () async {
+                Navigator.pop(context);
+                await Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingsPage(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
                 );
               },
             ),

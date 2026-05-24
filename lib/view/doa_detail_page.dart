@@ -57,8 +57,8 @@ class _DoaDetailPageState extends State<DoaDetailPage> {
               isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
               color: isSaved ? theme.colorScheme.primary : null,
             ),
-            onPressed: () {
-              context.read<DoaViewModel>().toggleSavedDoa(widget.doa.id);
+            onPressed: () async {
+              await context.read<DoaViewModel>().toggleSavedDoa(widget.doa.id);
             },
           ),
           const SizedBox(width: 8),
@@ -100,18 +100,12 @@ class _DoaDetailPageState extends State<DoaDetailPage> {
                 const SizedBox(height: 12),
                 const Text(
                   'Artinya:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   widget.doa.artinya,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(fontSize: 14, height: 1.4),
                 ),
               ],
             ),

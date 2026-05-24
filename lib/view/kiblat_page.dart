@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'dart:math' as math;
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/logger.dart';
 
 class KiblatPage extends StatefulWidget {
   const KiblatPage({super.key});
@@ -16,9 +18,8 @@ class _KiblatPageState extends State<KiblatPage> {
   late final ScrollController _scrollController;
   bool _isScrolled = false;
 
-  // Lokasi & Arah Kiblat Real-time State
-  double _qiblaAngleDegrees = 295.0; // Fallback default untuk Indonesia
-  String _locationName = 'Indonesia'; // Fallback default
+  double _qiblaAngleDegrees = 295.0;
+  String _locationName = 'Indonesia';
   bool _isLoadingLocation = false;
   String? _errorMessage;
   bool _hasLoadedOnce = false;
@@ -36,12 +37,10 @@ class _KiblatPageState extends State<KiblatPage> {
         }
       });
 
-    // 1. Muat data dari cache terlebih dahulu untuk load instan
-    _loadCachedLocation();
+    unawaited(_loadCachedLocation());
 
-    // 2. Deteksi lokasi real-time GPS
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchLocationAndCalculateQibla();
+      unawaited(_fetchLocationAndCalculateQibla());
     });
   }
 
@@ -51,10 +50,17 @@ class _KiblatPageState extends State<KiblatPage> {
     super.dispose();
   }
 
-  // Fungsi untuk memuat cache lokal
   Future<void> _loadCachedLocation() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+
+      if (prefs.containsKey('cached_qibla_lat')) {
+        await prefs.remove('cached_qibla_lat');
+      }
+      if (prefs.containsKey('cached_qibla_lon')) {
+        await prefs.remove('cached_qibla_lon');
+      }
+
       final cachedAngle = prefs.getDouble('cached_qibla_angle');
       final cachedName = prefs.getString('cached_qibla_name');
 
@@ -66,11 +72,10 @@ class _KiblatPageState extends State<KiblatPage> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading cached qibla data: $e');
+      AppLogger.warningLazy(() => 'Error loading cached qibla data: $e');
     }
   }
 
-  // Fungsi untuk mendeteksi GPS dan menghitung arah kiblat
   Future<void> _fetchLocationAndCalculateQibla({bool force = false}) async {
     if (_isLoadingLocation) return;
 
@@ -80,13 +85,11 @@ class _KiblatPageState extends State<KiblatPage> {
     });
 
     try {
-      // Cek apakah layanan lokasi aktif
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         throw Exception('Layanan lokasi (GPS) belum aktif.');
       }
 
-      // Cek perizinan lokasi
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -99,7 +102,6 @@ class _KiblatPageState extends State<KiblatPage> {
         throw Exception('Izin lokasi ditolak secara permanen.');
       }
 
-      // Ambil koordinat GPS saat ini (menggunakan API non-deprecated)
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
@@ -110,37 +112,42 @@ class _KiblatPageState extends State<KiblatPage> {
       final double lat = position.latitude;
       final double lon = position.longitude;
 
-      // Hitung sudut kiblat dinamis menggunakan rumus trigonometri bola
       final double calculatedAngle = calculateQiblaDirection(lat, lon);
 
-      // Terjemahkan koordinat GPS ke nama wilayah/kota (Reverse Geocoding)
       String resolvedCity = '';
       try {
         final placemarks = await placemarkFromCoordinates(lat, lon);
         if (placemarks.isNotEmpty) {
           final place = placemarks.first;
-          if (place.subAdministrativeArea != null && place.subAdministrativeArea!.isNotEmpty) {
+          if (place.subAdministrativeArea != null &&
+              place.subAdministrativeArea!.isNotEmpty) {
             resolvedCity = place.subAdministrativeArea!
-                .replaceAll(RegExp(r'(Regency|Kabupaten|City|Kota|Regency\s+|\s+Regency|\s+City|City\s+)', caseSensitive: false), '')
+                .replaceAll(
+                  RegExp(
+                    r'(Regency|Kabupaten|City|Kota|Regency\s+|\s+Regency|\s+City|City\s+)',
+                    caseSensitive: false,
+                  ),
+                  '',
+                )
                 .trim();
           } else if (place.locality != null && place.locality!.isNotEmpty) {
             resolvedCity = place.locality!;
-          } else if (place.administrativeArea != null && place.administrativeArea!.isNotEmpty) {
+          } else if (place.administrativeArea != null &&
+              place.administrativeArea!.isNotEmpty) {
             resolvedCity = place.administrativeArea!;
           }
 
           final String country = place.country ?? 'Indonesia';
-          resolvedCity = resolvedCity.isNotEmpty ? '$resolvedCity, $country' : country;
+          resolvedCity = resolvedCity.isNotEmpty
+              ? '$resolvedCity, $country'
+              : country;
         }
       } catch (e) {
-        debugPrint('Geocoding error: $e');
+        AppLogger.warningLazy(() => 'Geocoding error: $e');
         resolvedCity = 'Lokasi Terdeteksi';
       }
 
-      // Simpan di cache lokal
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setDouble('cached_qibla_lat', lat);
-      await prefs.setDouble('cached_qibla_lon', lon);
       await prefs.setDouble('cached_qibla_angle', calculatedAngle);
       await prefs.setString('cached_qibla_name', resolvedCity);
 
@@ -150,10 +157,10 @@ class _KiblatPageState extends State<KiblatPage> {
         _hasLoadedOnce = true;
       });
     } catch (e) {
-      debugPrint('Qibla location acquisition error: $e');
+      AppLogger.warningLazy(() => 'Qibla location acquisition error: $e');
       setState(() {
         _errorMessage = e.toString();
-        // Fallback jika belum pernah ada data di cache
+
         if (!_hasLoadedOnce) {
           _qiblaAngleDegrees = 295.0;
           _locationName = 'Indonesia (Default)';
@@ -166,13 +173,10 @@ class _KiblatPageState extends State<KiblatPage> {
     }
   }
 
-  // Rumus Trigonometri Bola untuk Menghitung Arah Kiblat
   double calculateQiblaDirection(double lat1, double lon1) {
-    // Koordinat Ka'bah (Makkah)
     const double lat2 = 21.422487;
     const double lon2 = 39.826206;
 
-    // Ubah ke radian
     final double phi1 = lat1 * math.pi / 180.0;
     final double lambda1 = lon1 * math.pi / 180.0;
     final double phi2 = lat2 * math.pi / 180.0;
@@ -181,15 +185,14 @@ class _KiblatPageState extends State<KiblatPage> {
     final double deltaLambda = lambda2 - lambda1;
 
     final double y = math.sin(deltaLambda);
-    final double x = math.cos(phi1) * math.tan(phi2) - math.sin(phi1) * math.cos(deltaLambda);
+    final double x =
+        math.cos(phi1) * math.tan(phi2) -
+        math.sin(phi1) * math.cos(deltaLambda);
 
     double qiblaAngle = math.atan2(y, x) * 180.0 / math.pi;
 
-    // Normalisasi sudut ke rentang [0, 360) derajat
     return (qiblaAngle + 360.0) % 360.0;
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -220,15 +223,23 @@ class _KiblatPageState extends State<KiblatPage> {
                   color: theme.colorScheme.errorContainer,
                   margin: EdgeInsets.zero,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 12.0,
+                    ),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: theme.colorScheme.error),
+                        Icon(
+                          Icons.error_outline,
+                          color: theme.colorScheme.error,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             _errorMessage!,
-                            style: TextStyle(color: theme.colorScheme.onErrorContainer),
+                            style: TextStyle(
+                              color: theme.colorScheme.onErrorContainer,
+                            ),
                           ),
                         ),
                       ],
@@ -237,7 +248,7 @@ class _KiblatPageState extends State<KiblatPage> {
                 ),
                 const SizedBox(height: 16),
               ],
-              // Compass Container Card inside StreamBuilder
+
               StreamBuilder<CompassEvent>(
                 stream: FlutterCompass.events,
                 builder: (context, snapshot) {
@@ -246,7 +257,8 @@ class _KiblatPageState extends State<KiblatPage> {
 
                   if (snapshot.hasError) {
                     direction = null;
-                  } else if (snapshot.connectionState == ConnectionState.waiting) {
+                  } else if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
                     direction = null;
                   } else {
                     direction = snapshot.data?.heading;
@@ -255,19 +267,24 @@ class _KiblatPageState extends State<KiblatPage> {
                     }
                   }
 
-                  // Perhitungan rotasi piringan kompas:
                   final double headingDegrees = direction ?? 0.0;
-                  final double headingRadians = headingDegrees * (math.pi / 180.0);
+                  final double headingRadians =
+                      headingDegrees * (math.pi / 180.0);
 
                   return Card.filled(
                     margin: EdgeInsets.zero,
-                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                    color: theme.colorScheme.primaryContainer.withValues(
+                      alpha: 0.25,
+                    ),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 32.0,
+                        horizontal: 16.0,
+                      ),
                       child: Column(
                         children: [
                           Text(
@@ -279,22 +296,26 @@ class _KiblatPageState extends State<KiblatPage> {
                             ),
                           ),
                           const SizedBox(height: 32),
-                          
-                          // The Compass Dial Graphic
+
                           Center(
                             child: Container(
                               width: 250,
                               height: 250,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                                color: theme.colorScheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.3),
                                 border: Border.all(
-                                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                                  color: theme.colorScheme.outline.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   width: 8,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: theme.colorScheme.shadow.withValues(alpha: 0.05),
+                                    color: theme.colorScheme.shadow.withValues(
+                                      alpha: 0.05,
+                                    ),
                                     blurRadius: 10,
                                     spreadRadius: 2,
                                   ),
@@ -303,46 +324,44 @@ class _KiblatPageState extends State<KiblatPage> {
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
-                                  // Piringan Kompas Berputar (U, T, S, B, Jarum Utara, dan Jarum Kiblat)
                                   Transform.rotate(
                                     angle: -headingRadians,
                                     child: Stack(
                                       alignment: Alignment.center,
                                       children: [
-                                        // Concentric circles inside compass
                                         Container(
                                           width: 170,
                                           height: 170,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: theme.colorScheme.outline.withValues(alpha: 0.15),
+                                              color: theme.colorScheme.outline
+                                                  .withValues(alpha: 0.15),
                                               width: 1,
                                             ),
                                           ),
                                         ),
-                                        
-                                         // Jarum Arah Kiblat (Qibla Pointer)
-                                         Transform.rotate(
-                                           angle: qiblaAngleRadians,
-                                           child: CustomPaint(
-                                             size: const Size(22, 140),
-                                             painter: QiblaNeedlePainter(
-                                               color: Colors.amber.shade700,
-                                             ),
-                                           ),
-                                         ),
+
+                                        Transform.rotate(
+                                          angle: qiblaAngleRadians,
+                                          child: CustomPaint(
+                                            size: const Size(22, 140),
+                                            painter: QiblaNeedlePainter(
+                                              color: Colors.amber.shade700,
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
-                                  
-                                  // Center Pivot Dot (Statis)
+
                                   CircleAvatar(
                                     radius: 8,
                                     backgroundColor: theme.colorScheme.surface,
                                     child: CircleAvatar(
                                       radius: 4,
-                                      backgroundColor: theme.colorScheme.primary,
+                                      backgroundColor:
+                                          theme.colorScheme.primary,
                                     ),
                                   ),
                                 ],
@@ -367,14 +386,15 @@ class _KiblatPageState extends State<KiblatPage> {
                 },
               ),
               const SizedBox(height: 20),
-              
-              // Info Section - Segmented (Filled)
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                      color: theme.colorScheme.primaryContainer.withValues(
+                        alpha: 0.25,
+                      ),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -382,10 +402,16 @@ class _KiblatPageState extends State<KiblatPage> {
                         _buildInfoRow(
                           context,
                           'Lokasi Anda',
-                          _isLoadingLocation ? 'Mencari lokasi...' : _locationName,
+                          _isLoadingLocation
+                              ? 'Mencari lokasi...'
+                              : _locationName,
                           isFirst: true,
                         ),
-                        Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
+                        Divider(
+                          height: 1,
+                          color: theme.colorScheme.surface,
+                          thickness: 1.5,
+                        ),
                         _buildInfoRow(
                           context,
                           'Tujuan Arah',
@@ -405,7 +431,13 @@ class _KiblatPageState extends State<KiblatPage> {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, String title, String value, {bool isFirst = false, bool isLast = false}) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    String title,
+    String value, {
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
     final theme = Theme.of(context);
     final borderRadius = BorderRadius.only(
       topLeft: Radius.circular(isFirst ? 16 : 0),
@@ -437,8 +469,6 @@ class _KiblatPageState extends State<KiblatPage> {
   }
 }
 
-
-// Painter for Qibla Golden Needle pointer
 class QiblaNeedlePainter extends CustomPainter {
   final Color color;
 
@@ -452,7 +482,6 @@ class QiblaNeedlePainter extends CustomPainter {
 
     final path = Path();
 
-    // Drawn pointing UP towards the tip, very thin, sleek, and elegant
     path.moveTo(size.width / 2, 0);
     path.lineTo(size.width, size.height / 2);
     path.lineTo(size.width * 0.7, size.height);

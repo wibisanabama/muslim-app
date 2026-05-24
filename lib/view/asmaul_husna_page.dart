@@ -1,30 +1,8 @@
-import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-
-class AsmaulHusna {
-  final int number;
-  final String latin;
-  final String arabic;
-  final String translation;
-
-  const AsmaulHusna({
-    required this.number,
-    required this.latin,
-    required this.arabic,
-    required this.translation,
-  });
-
-  factory AsmaulHusna.fromJson(Map<String, dynamic> json) {
-    return AsmaulHusna(
-      number: (json['urutan'] as num?)?.toInt() ?? 0,
-      latin: (json['latin'] ?? '').toString(),
-      arabic: (json['arab'] ?? '').toString(),
-      translation: (json['arti'] ?? '').toString(),
-    );
-  }
-}
+import 'package:provider/provider.dart';
+import '../repository/asmaul_husna_repository.dart';
 
 class AsmaulHusnaPage extends StatefulWidget {
   const AsmaulHusnaPage({super.key});
@@ -46,7 +24,7 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
   @override
   void initState() {
     super.initState();
-    _fetchNames();
+    unawaited(_fetchNames());
     _scrollController = ScrollController()
       ..addListener(() {
         final scrolled = _scrollController.offset > 0;
@@ -65,19 +43,14 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
       _isError = false;
     });
     try {
-      final res = await http.get(Uri.parse('https://asmaul-husna-api.vercel.app/api/all'));
-      if (res.statusCode == 200) {
-        final Map<String, dynamic> jsonMap = json.decode(res.body);
-        final data = jsonMap['data'] as List?;
-        if (data != null && mounted) {
-          setState(() {
-            _allNames = data.map((e) => AsmaulHusna.fromJson(e as Map<String, dynamic>)).toList();
-            _isLoading = false;
-          });
-          return;
-        }
+      final repo = context.read<AsmaulHusnaRepository>();
+      final data = await repo.getAsmaulHusnaList();
+      if (mounted) {
+        setState(() {
+          _allNames = data;
+          _isLoading = false;
+        });
       }
-      throw Exception();
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -103,7 +76,6 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Filter names locally based on search
     final filteredNames = _allNames.where((item) {
       final normQuery = _normalizeString(_searchQuery);
       if (normQuery.isEmpty) return true;
@@ -113,8 +85,8 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
       final normArabic = item.arabic;
 
       return normLatin.contains(normQuery) ||
-             normTranslation.contains(normQuery) ||
-             normArabic.contains(_searchQuery);
+          normTranslation.contains(normQuery) ||
+          normArabic.contains(_searchQuery);
     }).toList();
 
     return Scaffold(
@@ -147,10 +119,15 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
             decoration: InputDecoration(
               hintText: 'Cari asmaul husna...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
+                color: theme.colorScheme.onPrimaryContainer.withValues(
+                  alpha: 0.6,
+                ),
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               isDense: true,
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -250,20 +227,29 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
             itemCount: filteredNames.length,
             itemBuilder: (context, index) {
               final item = filteredNames[index];
-              
-              // Segmented filled border radius calculations for 2-column grid
+
               final int total = filteredNames.length;
               final bool isTop = index < 2;
               final bool isLeft = index % 2 == 0;
               final bool isRight = index % 2 == 1;
               final bool hasNoItemBelow = (index + 2) >= total;
 
-              final Radius topLeft = (isTop && isLeft) ? const Radius.circular(24.0) : Radius.zero;
-              final Radius topRight = (isTop && isRight) ? const Radius.circular(24.0) : (total == 1 && isLeft ? const Radius.circular(24.0) : Radius.zero);
-              final Radius bottomLeft = (hasNoItemBelow && isLeft) ? const Radius.circular(24.0) : Radius.zero;
-              final Radius bottomRight = (hasNoItemBelow && isRight) 
-                  ? const Radius.circular(24.0) 
-                  : ((index == total - 1) ? const Radius.circular(24.0) : Radius.zero);
+              final Radius topLeft = (isTop && isLeft)
+                  ? const Radius.circular(24.0)
+                  : Radius.zero;
+              final Radius topRight = (isTop && isRight)
+                  ? const Radius.circular(24.0)
+                  : (total == 1 && isLeft
+                        ? const Radius.circular(24.0)
+                        : Radius.zero);
+              final Radius bottomLeft = (hasNoItemBelow && isLeft)
+                  ? const Radius.circular(24.0)
+                  : Radius.zero;
+              final Radius bottomRight = (hasNoItemBelow && isRight)
+                  ? const Radius.circular(24.0)
+                  : ((index == total - 1)
+                        ? const Radius.circular(24.0)
+                        : Radius.zero);
 
               final borderRadius = BorderRadius.only(
                 topLeft: topLeft,
@@ -274,10 +260,10 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
 
               return Card.filled(
                 margin: EdgeInsets.zero,
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                shape: RoundedRectangleBorder(
-                  borderRadius: borderRadius,
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.25,
                 ),
+                shape: RoundedRectangleBorder(borderRadius: borderRadius),
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Column(
@@ -285,9 +271,14 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.1,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(

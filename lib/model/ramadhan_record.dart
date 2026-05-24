@@ -1,12 +1,8 @@
-/// Model untuk mencatat status shalat pada hari tertentu di bulan Ramadhan.
 class ShalatDayLog {
-  final int day; // Hari ke-1 sampai ke-30
-  final Map<String, bool> prayers; // Nama shalat -> status dilakukan (true/false)
+  final int day;
+  final Map<String, bool> prayers;
 
-  ShalatDayLog({
-    required this.day,
-    required this.prayers,
-  });
+  ShalatDayLog({required this.day, required this.prayers});
 
   factory ShalatDayLog.fromJson(Map<String, dynamic> json) {
     final prayersJson = json['prayers'] as Map<String, dynamic>? ?? {};
@@ -16,12 +12,8 @@ class ShalatDayLog {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'day': day,
-        'prayers': prayers,
-      };
+  Map<String, dynamic> toJson() => {'day': day, 'prayers': prayers};
 
-  /// Template default untuk hari baru
   factory ShalatDayLog.createDefault(int day) {
     return ShalatDayLog(
       day: day,
@@ -40,7 +32,6 @@ class ShalatDayLog {
   }
 }
 
-/// Model untuk mencatat jurnal ceramah/kultum Ramadhan.
 class CeramahLog {
   final String id;
   final DateTime date;
@@ -59,7 +50,9 @@ class CeramahLog {
   factory CeramahLog.fromJson(Map<String, dynamic> json) {
     return CeramahLog(
       id: json['id'] as String? ?? '',
-      date: DateTime.parse(json['date'] as String? ?? DateTime.now().toIso8601String()),
+      date: DateTime.parse(
+        json['date'] as String? ?? DateTime.now().toIso8601String(),
+      ),
       speaker: json['speaker'] as String? ?? '',
       title: json['title'] as String? ?? '',
       summary: json['summary'] as String? ?? '',
@@ -67,15 +60,14 @@ class CeramahLog {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'date': date.toIso8601String(),
-        'speaker': speaker,
-        'title': title,
-        'summary': summary,
-      };
+    'id': id,
+    'date': date.toIso8601String(),
+    'speaker': speaker,
+    'title': title,
+    'summary': summary,
+  };
 }
 
-/// Model untuk mencatat infaq/sedekah harian Ramadhan.
 class InfaqLog {
   final String id;
   final DateTime date;
@@ -92,16 +84,18 @@ class InfaqLog {
   factory InfaqLog.fromJson(Map<String, dynamic> json) {
     return InfaqLog(
       id: json['id'] as String? ?? '',
-      date: DateTime.parse(json['date'] as String? ?? DateTime.now().toIso8601String()),
+      date: DateTime.parse(
+        json['date'] as String? ?? DateTime.now().toIso8601String(),
+      ),
       amount: (json['amount'] as num? ?? 0.0).toDouble(),
       notes: json['notes'] as String? ?? '',
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'date': date.toIso8601String(),
-        'amount': amount,
-        'notes': notes,
-      };
+    'id': id,
+    'date': date.toIso8601String(),
+    'amount': amount,
+    'notes': notes,
+  };
 }

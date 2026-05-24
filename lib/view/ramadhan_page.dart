@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/ramadhan_view_model.dart';
 import '../model/ramadhan_record.dart';
@@ -12,9 +14,8 @@ class RamadhanPage extends StatefulWidget {
 }
 
 class _RamadhanPageState extends State<RamadhanPage> {
-  final int _selectedDay = 1; // Default hari ke-1 Ramadhan
+  final int _selectedDay = 1;
 
-  // Helper untuk format rupiah sederhana tanpa library eksternal
   String _formatRupiah(double amount) {
     final int val = amount.toInt();
     final String str = val.toString();
@@ -30,12 +31,21 @@ class _RamadhanPageState extends State<RamadhanPage> {
     return 'Rp ${buffer.toString().split('').reversed.join('')}';
   }
 
-  // Helper untuk format tanggal sederhana
   String _formatDate(DateTime date) {
     final day = date.day.toString().padLeft(2, '0');
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 
-      'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agt',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
     ];
     final month = months[date.month - 1];
     final year = date.year;
@@ -102,7 +112,6 @@ class _RamadhanPageState extends State<RamadhanPage> {
     );
   }
 
-  // ================= TAB SHALAT =================
   Widget _buildShalatTab(BuildContext context, RamadhanViewModel viewModel) {
     final theme = Theme.of(context);
     final log = viewModel.shalatLogs[_selectedDay - 1];
@@ -111,11 +120,8 @@ class _RamadhanPageState extends State<RamadhanPage> {
     return ListView.separated(
       padding: const EdgeInsets.all(16.0),
       itemCount: fardhuPrayers.length,
-      separatorBuilder: (context, index) => Divider(
-        height: 1,
-        color: theme.colorScheme.surface,
-        thickness: 1.5,
-      ),
+      separatorBuilder: (context, index) =>
+          Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
       itemBuilder: (context, i) {
         final prayerName = fardhuPrayers[i];
         final isChecked = log.prayers[prayerName] ?? false;
@@ -141,7 +147,6 @@ class _RamadhanPageState extends State<RamadhanPage> {
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
               child: Row(
                 children: [
-                  // Circular Badge
                   Container(
                     width: 36,
                     height: 36,
@@ -157,7 +162,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  // Shalat Name
+
                   Expanded(
                     child: Text(
                       prayerName,
@@ -167,7 +172,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
                       ),
                     ),
                   ),
-                  // Checkbox on the right
+
                   Checkbox(
                     value: isChecked,
                     activeColor: theme.colorScheme.primary,
@@ -187,7 +192,6 @@ class _RamadhanPageState extends State<RamadhanPage> {
     );
   }
 
-  // ================= TAB CERAMAH =================
   Widget _buildCeramahTab(BuildContext context, RamadhanViewModel viewModel) {
     final theme = Theme.of(context);
 
@@ -197,16 +201,26 @@ class _RamadhanPageState extends State<RamadhanPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.assignment_late, size: 64, color: theme.colorScheme.outline.withValues(alpha: 0.5)),
+              Icon(
+                Icons.assignment_late,
+                size: 64,
+                color: theme.colorScheme.outline.withValues(alpha: 0.5),
+              ),
               const SizedBox(height: 16),
               Text(
                 'Belum ada catatan ceramah.',
-                style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Catat ceramah tarawih atau kultum Anda di sini.',
-                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.7,
+                  ),
+                ),
               ),
             ],
           ),
@@ -217,7 +231,9 @@ class _RamadhanPageState extends State<RamadhanPage> {
           icon: const Icon(Icons.add),
           backgroundColor: theme.colorScheme.primary,
           foregroundColor: theme.colorScheme.onPrimary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(100),
+          ),
         ),
       );
     }
@@ -241,7 +257,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
             bottomLeft: Radius.circular(isLast ? 16 : 0),
             bottomRight: Radius.circular(isLast ? 16 : 0),
           );
-          
+
           final deleteBackground = Container(
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -308,7 +324,8 @@ class _RamadhanPageState extends State<RamadhanPage> {
               borderRadius: borderRadius,
               clipBehavior: Clip.antiAlias,
               child: InkWell(
-                onTap: () => _showCeramahDetailBottomSheet(context, log, viewModel),
+                onTap: () =>
+                    _showCeramahDetailBottomSheet(context, log, viewModel),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -326,7 +343,11 @@ class _RamadhanPageState extends State<RamadhanPage> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.person_outline, size: 16, color: theme.colorScheme.primary),
+                          Icon(
+                            Icons.person_outline,
+                            size: 16,
+                            color: theme.colorScheme.primary,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             log.speaker,
@@ -338,7 +359,9 @@ class _RamadhanPageState extends State<RamadhanPage> {
                           const Spacer(),
                           Text(
                             _formatDate(log.date),
-                            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
                           ),
                         ],
                       ),
@@ -375,33 +398,241 @@ class _RamadhanPageState extends State<RamadhanPage> {
     );
   }
 
-  void _showAddCeramahBottomSheet(BuildContext context, RamadhanViewModel viewModel) {
+  void _showAddCeramahBottomSheet(
+    BuildContext context,
+    RamadhanViewModel viewModel,
+  ) {
     final titleController = TextEditingController();
     final speakerController = TextEditingController();
     final summaryController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) {
+          final theme = Theme.of(context);
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.3,
+                            ),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Catat Ceramah',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: titleController,
+                        maxLength: 200,
+                        decoration: const InputDecoration(
+                          labelText: 'Judul / Tema Materi',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          prefixIcon: Icon(Icons.title),
+                        ),
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Judul tidak boleh kosong'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: speakerController,
+                        maxLength: 100,
+                        decoration: const InputDecoration(
+                          labelText: 'Penceramah / Ustadz',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Nama penceramah tidak boleh kosong'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: summaryController,
+                        maxLines: 4,
+                        maxLength: 5000,
+                        decoration: const InputDecoration(
+                          labelText: 'Ringkasan Catatan Materi',
+                          alignLabelWithHint: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                        ),
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Ringkasan tidak boleh kosong'
+                            : null,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: theme.colorScheme.primary,
+                              backgroundColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text(
+                              'Batal',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                            onPressed: () {
+                              if (formKey.currentState!.validate()) {
+                                final messenger = ScaffoldMessenger.of(context);
+                                try {
+                                  viewModel.addCeramahLog(
+                                    speaker: speakerController.text,
+                                    title: titleController.text,
+                                    summary: summaryController.text,
+                                  );
+                                  Navigator.pop(context);
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: const Color(0xFF2C2C2C),
+                                      elevation: 4.0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          10.0,
+                                        ),
+                                      ),
+                                      content: const Text(
+                                        'Catatan ceramah berhasil ditambahkan!',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      duration: const Duration(seconds: 3),
+                                    ),
+                                  );
+                                } on RamadhanValidationError catch (e) {
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: theme.colorScheme.error,
+                                      content: Text(
+                                        e.message,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                } catch (_) {
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: theme.colorScheme.error,
+                                      content: const Text(
+                                        'Gagal menambahkan catatan ceramah.',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            child: const Text(
+                              'Simpan',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
-      builder: (context) {
-        final theme = Theme.of(context);
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: formKey,
+    );
+  }
+
+  void _showCeramahDetailBottomSheet(
+    BuildContext context,
+    CeramahLog log,
+    RamadhanViewModel viewModel,
+  ) {
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) {
+          final theme = Theme.of(context);
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            maxChildSize: 0.9,
+            minChildSize: 0.4,
+            expand: false,
+            builder: (context, scrollController) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(24.0),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
                       child: Container(
@@ -409,356 +640,317 @@ class _RamadhanPageState extends State<RamadhanPage> {
                         height: 4,
                         margin: const EdgeInsets.only(bottom: 20),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                          color: theme.colorScheme.outline.withValues(
+                            alpha: 0.3,
+                          ),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
-                    Text(
-                      'Catat Ceramah',
-                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 24),
-                    TextFormField(
-                      controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Judul / Tema Materi',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                        prefixIcon: Icon(Icons.title),
-                      ),
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Judul tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: speakerController,
-                      decoration: const InputDecoration(
-                        labelText: 'Penceramah / Ustadz',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                        prefixIcon: Icon(Icons.person),
-                      ),
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Nama penceramah tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: summaryController,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'Ringkasan Catatan Materi',
-                        alignLabelWithHint: true,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                      ),
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Ringkasan tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 24),
-                     Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: theme.colorScheme.primary,
-                            backgroundColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100),
+                        Expanded(
+                          child: Text(
+                            log.title,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           ),
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
-                        const SizedBox(width: 12),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: theme.colorScheme.onPrimary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined),
+                          tooltip: 'Ubah Catatan',
                           onPressed: () {
-                            if (formKey.currentState!.validate()) {
-                              final messenger = ScaffoldMessenger.of(context);
-                              viewModel.addCeramahLog(
-                                speaker: speakerController.text,
-                                title: titleController.text,
-                                summary: summaryController.text,
-                              );
-                              Navigator.pop(context);
-                              messenger.clearSnackBars();
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  behavior: SnackBarBehavior.floating,
-                                  backgroundColor: const Color(0xFF2C2C2C),
-                                  elevation: 4.0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  content: const Text(
-                                    'Catatan ceramah berhasil ditambahkan!',
-                                    style: TextStyle(color: Colors.white, fontSize: 14),
-                                  ),
-                                  duration: const Duration(seconds: 3),
-                                ),
-                              );
-                            }
+                            Navigator.pop(context);
+                            _showEditCeramahBottomSheet(
+                              context,
+                              log,
+                              viewModel,
+                            );
                           },
-                          child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showCeramahDetailBottomSheet(BuildContext context, CeramahLog log, RamadhanViewModel viewModel) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (context) {
-        final theme = Theme.of(context);
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          maxChildSize: 0.9,
-          minChildSize: 0.4,
-          expand: false,
-          builder: (context, scrollController) {
-            return SingleChildScrollView(
-              controller: scrollController,
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 20),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.person,
+                                size: 14,
+                                color: theme.colorScheme.onPrimaryContainer,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                log.speaker,
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: theme.colorScheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _formatDate(log.date),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 32),
+                    Text(
+                      'Ringkasan Ceramah:',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
                       ),
                     ),
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          log.title,
-                          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                        ),
+                    const SizedBox(height: 8),
+                    Text(
+                      log.summary,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        height: 1.5,
+                        color: theme.colorScheme.onSurface,
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        tooltip: 'Ubah Catatan',
-                        onPressed: () {
-                          Navigator.pop(context); // Close detail sheet
-                          _showEditCeramahBottomSheet(context, log, viewModel); // Open edit sheet
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.person, size: 14, color: theme.colorScheme.onPrimaryContainer),
-                            const SizedBox(width: 4),
-                            Text(
-                              log.speaker,
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: theme.colorScheme.onPrimaryContainer,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _formatDate(log.date),
-                        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 32),
-                  Text(
-                    'Ringkasan Ceramah:',
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    log.summary,
-                    style: theme.textTheme.bodyLarge?.copyWith(height: 1.5, color: theme.colorScheme.onSurface),
-                  ),
-                  const SizedBox(height: 32),
-                ],
-              ),
-            );
-          },
-        );
-      },
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
-  void _showEditCeramahBottomSheet(BuildContext context, CeramahLog log, RamadhanViewModel viewModel) {
+  void _showEditCeramahBottomSheet(
+    BuildContext context,
+    CeramahLog log,
+    RamadhanViewModel viewModel,
+  ) {
     final titleController = TextEditingController(text: log.title);
     final speakerController = TextEditingController(text: log.speaker);
     final summaryController = TextEditingController(text: log.summary);
     final formKey = GlobalKey<FormState>();
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        final theme = Theme.of(context);
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        margin: const EdgeInsets.only(bottom: 20),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'Ubah Catatan Ceramah',
-                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 24),
-                    TextFormField(
-                      controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Judul / Tema Materi',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                        prefixIcon: Icon(Icons.title),
-                      ),
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Judul tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: speakerController,
-                      decoration: const InputDecoration(
-                        labelText: 'Penceramah / Ustadz',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                        prefixIcon: Icon(Icons.person),
-                      ),
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Nama penceramah tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: summaryController,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'Ringkasan Catatan Materi',
-                        alignLabelWithHint: true,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                      ),
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Ringkasan tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: theme.colorScheme.primary,
-                            backgroundColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100),
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) {
+          final theme = Theme.of(context);
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.3,
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            borderRadius: BorderRadius.circular(2),
                           ),
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
-                        const SizedBox(width: 12),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: theme.colorScheme.onPrimary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100),
+                      ),
+                      Text(
+                        'Ubah Catatan Ceramah',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: titleController,
+                        maxLength: 200,
+                        decoration: const InputDecoration(
+                          labelText: 'Judul / Tema Materi',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          prefixIcon: Icon(Icons.title),
+                        ),
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Judul tidak boleh kosong'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: speakerController,
+                        maxLength: 100,
+                        decoration: const InputDecoration(
+                          labelText: 'Penceramah / Ustadz',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Nama penceramah tidak boleh kosong'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: summaryController,
+                        maxLines: 4,
+                        maxLength: 5000,
+                        decoration: const InputDecoration(
+                          labelText: 'Ringkasan Catatan Materi',
+                          alignLabelWithHint: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                        ),
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Ringkasan tidak boleh kosong'
+                            : null,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: theme.colorScheme.primary,
+                              backgroundColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text(
+                              'Batal',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
-                          onPressed: () {
-                            if (formKey.currentState!.validate()) {
-                              final messenger = ScaffoldMessenger.of(context);
-                              viewModel.updateCeramahLog(
-                                id: log.id,
-                                speaker: speakerController.text,
-                                title: titleController.text,
-                                summary: summaryController.text,
-                              );
-                              Navigator.pop(context);
-                              messenger.clearSnackBars();
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  behavior: SnackBarBehavior.floating,
-                                  backgroundColor: const Color(0xFF2C2C2C),
-                                  elevation: 4.0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  content: const Text(
-                                    'Catatan ceramah berhasil diperbarui!',
-                                    style: TextStyle(color: Colors.white, fontSize: 14),
-                                  ),
-                                  duration: const Duration(seconds: 3),
-                                ),
-                              );
-                            }
-                          },
-                          child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 12),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                            onPressed: () {
+                              if (formKey.currentState!.validate()) {
+                                final messenger = ScaffoldMessenger.of(context);
+                                try {
+                                  viewModel.updateCeramahLog(
+                                    id: log.id,
+                                    speaker: speakerController.text,
+                                    title: titleController.text,
+                                    summary: summaryController.text,
+                                  );
+                                  Navigator.pop(context);
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: const Color(0xFF2C2C2C),
+                                      elevation: 4.0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          10.0,
+                                        ),
+                                      ),
+                                      content: const Text(
+                                        'Catatan ceramah berhasil diperbarui!',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      duration: const Duration(seconds: 3),
+                                    ),
+                                  );
+                                } on RamadhanValidationError catch (e) {
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: theme.colorScheme.error,
+                                      content: Text(
+                                        e.message,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                } catch (_) {
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: theme.colorScheme.error,
+                                      content: const Text(
+                                        'Gagal memperbarui catatan ceramah.',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            child: const Text(
+                              'Simpan',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
-  // ================= TAB INFAQ =================
   Widget _buildInfaqTab(BuildContext context, RamadhanViewModel viewModel) {
     final theme = Theme.of(context);
 
@@ -768,16 +960,26 @@ class _RamadhanPageState extends State<RamadhanPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.volunteer_activism_outlined, size: 64, color: theme.colorScheme.outline.withValues(alpha: 0.5)),
+                  Icon(
+                    Icons.volunteer_activism_outlined,
+                    size: 64,
+                    color: theme.colorScheme.outline.withValues(alpha: 0.5),
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Belum ada transaksi infaq.',
-                    style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     'Mulai tabungan akhirat dengan berinfaq.',
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.7,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -805,7 +1007,9 @@ class _RamadhanPageState extends State<RamadhanPage> {
                   alignment: Alignment.centerLeft,
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.errorContainer.withValues(alpha: 0.5),
+                    color: theme.colorScheme.errorContainer.withValues(
+                      alpha: 0.5,
+                    ),
                     borderRadius: borderRadius,
                   ),
                   child: Icon(
@@ -819,7 +1023,9 @@ class _RamadhanPageState extends State<RamadhanPage> {
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.errorContainer.withValues(alpha: 0.5),
+                    color: theme.colorScheme.errorContainer.withValues(
+                      alpha: 0.5,
+                    ),
                     borderRadius: borderRadius,
                   ),
                   child: Icon(
@@ -847,7 +1053,10 @@ class _RamadhanPageState extends State<RamadhanPage> {
                         ),
                         content: Text(
                           'Transaksi infaq ${_formatRupiah(log.amount)} berhasil dihapus',
-                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                         ),
                         duration: const Duration(seconds: 3),
                         persist: false,
@@ -863,15 +1072,27 @@ class _RamadhanPageState extends State<RamadhanPage> {
                     );
                   },
                   child: Material(
-                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                    color: theme.colorScheme.primaryContainer.withValues(
+                      alpha: 0.25,
+                    ),
                     borderRadius: borderRadius,
                     clipBehavior: Clip.antiAlias,
                     child: ListTile(
-                      onTap: () => _showInfaqDetailBottomSheet(context, log, viewModel),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                      onTap: () =>
+                          _showInfaqDetailBottomSheet(context, log, viewModel),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 4.0,
+                      ),
                       leading: CircleAvatar(
-                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                        child: Icon(Icons.volunteer_activism, color: theme.colorScheme.primary, size: 20),
+                        backgroundColor: theme.colorScheme.primary.withValues(
+                          alpha: 0.1,
+                        ),
+                        child: Icon(
+                          Icons.volunteer_activism,
+                          color: theme.colorScheme.primary,
+                          size: 20,
+                        ),
                       ),
                       title: Text(
                         _formatRupiah(log.amount),
@@ -914,32 +1135,252 @@ class _RamadhanPageState extends State<RamadhanPage> {
     );
   }
 
-  void _showAddInfaqBottomSheet(BuildContext context, RamadhanViewModel viewModel) {
+  void _showAddInfaqBottomSheet(
+    BuildContext context,
+    RamadhanViewModel viewModel,
+  ) {
     final amountController = TextEditingController();
     final notesController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) {
+          final theme = Theme.of(context);
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.3,
+                            ),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Catat Sedekah / Infaq',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: amountController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: const InputDecoration(
+                          labelText: 'Nominal Rupiah',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          prefixIcon: Padding(
+                            padding: EdgeInsets.only(left: 16, right: 8),
+                            child: Text(
+                              'Rp',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          prefixIconConstraints: BoxConstraints(
+                            minWidth: 0,
+                            minHeight: 0,
+                          ),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Nominal tidak boleh kosong';
+                          }
+                          final amount = double.tryParse(val);
+                          if (amount == null || amount <= 0) {
+                            return 'Nominal harus berupa angka lebih besar dari 0';
+                          }
+                          if (amount >= 1e12) {
+                            return 'Nominal tidak boleh mencapai atau melebihi 1 triliun';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: notesController,
+                        maxLength: 500,
+                        decoration: const InputDecoration(
+                          labelText: 'Keterangan (Penerima / Peruntukan)',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          prefixIcon: Icon(Icons.info_outline),
+                        ),
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Keterangan tidak boleh kosong'
+                            : null,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: theme.colorScheme.primary,
+                              backgroundColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text(
+                              'Batal',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                            onPressed: () {
+                              if (formKey.currentState!.validate()) {
+                                final messenger = ScaffoldMessenger.of(context);
+                                final amount = double.parse(
+                                  amountController.text,
+                                );
+                                try {
+                                  viewModel.addInfaqLog(
+                                    amount: amount,
+                                    notes: notesController.text,
+                                  );
+                                  Navigator.pop(context);
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: const Color(0xFF2C2C2C),
+                                      elevation: 4.0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          10.0,
+                                        ),
+                                      ),
+                                      content: const Text(
+                                        'Catatan sedekah berhasil disimpan!',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      duration: const Duration(seconds: 3),
+                                    ),
+                                  );
+                                } on RamadhanValidationError catch (e) {
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: theme.colorScheme.error,
+                                      content: Text(
+                                        e.message,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                } catch (_) {
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: theme.colorScheme.error,
+                                      content: const Text(
+                                        'Gagal menyimpan catatan sedekah.',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            child: const Text(
+                              'Simpan',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
-      builder: (context) {
-        final theme = Theme.of(context);
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: formKey,
+    );
+  }
+
+  void _showInfaqDetailBottomSheet(
+    BuildContext context,
+    InfaqLog log,
+    RamadhanViewModel viewModel,
+  ) {
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) {
+          final theme = Theme.of(context);
+          return DraggableScrollableSheet(
+            initialChildSize: 0.45,
+            maxChildSize: 0.9,
+            minChildSize: 0.3,
+            expand: false,
+            builder: (context, scrollController) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(24.0),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
                       child: Container(
@@ -947,356 +1388,311 @@ class _RamadhanPageState extends State<RamadhanPage> {
                         height: 4,
                         margin: const EdgeInsets.only(bottom: 20),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                          color: theme.colorScheme.outline.withValues(
+                            alpha: 0.3,
+                          ),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
-                    Text(
-                      'Catat Sedekah / Infaq',
-                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 24),
-                    TextFormField(
-                      controller: amountController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Nominal Rupiah',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.only(left: 16, right: 8),
-                          child: Text('Rp', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                        ),
-                        prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
-                      ),
-                      validator: (val) {
-                        if (val == null || val.trim().isEmpty) {
-                          return 'Nominal tidak boleh kosong';
-                        }
-                        final amount = double.tryParse(val);
-                        if (amount == null || amount <= 0) {
-                          return 'Nominal harus berupa angka lebih besar dari 0';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: notesController,
-                      decoration: const InputDecoration(
-                        labelText: 'Keterangan (Penerima / Peruntukan)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                        prefixIcon: Icon(Icons.info_outline),
-                      ),
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Keterangan tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 24),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: theme.colorScheme.primary,
-                            backgroundColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100),
+                        Expanded(
+                          child: Text(
+                            _formatRupiah(log.amount),
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           ),
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
-                        const SizedBox(width: 12),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: theme.colorScheme.onPrimary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined),
+                          tooltip: 'Ubah Transaksi',
                           onPressed: () {
-                            if (formKey.currentState!.validate()) {
-                              final messenger = ScaffoldMessenger.of(context);
-                              final amount = double.parse(amountController.text);
-                              viewModel.addInfaqLog(
-                                amount: amount,
-                                notes: notesController.text,
-                              );
-                              Navigator.pop(context);
-                              messenger.clearSnackBars();
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  behavior: SnackBarBehavior.floating,
-                                  backgroundColor: const Color(0xFF2C2C2C),
-                                  elevation: 4.0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  content: const Text(
-                                    'Catatan sedekah berhasil disimpan!',
-                                    style: TextStyle(color: Colors.white, fontSize: 14),
-                                  ),
-                                  duration: const Duration(seconds: 3),
-                                ),
-                              );
-                            }
+                            Navigator.pop(context);
+                            _showEditInfaqBottomSheet(context, log, viewModel);
                           },
-                          child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showInfaqDetailBottomSheet(BuildContext context, InfaqLog log, RamadhanViewModel viewModel) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (context) {
-        final theme = Theme.of(context);
-        return DraggableScrollableSheet(
-          initialChildSize: 0.45,
-          maxChildSize: 0.9,
-          minChildSize: 0.3,
-          expand: false,
-          builder: (context, scrollController) {
-            return SingleChildScrollView(
-              controller: scrollController,
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 20),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _formatRupiah(log.amount),
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.volunteer_activism,
+                                size: 14,
+                                color: theme.colorScheme.onPrimaryContainer,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Infaq & Sedekah',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: theme.colorScheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        tooltip: 'Ubah Transaksi',
-                        onPressed: () {
-                          Navigator.pop(context); // Close detail sheet
-                          _showEditInfaqBottomSheet(context, log, viewModel); // Open edit sheet
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(8),
+                        const SizedBox(width: 8),
+                        Text(
+                          _formatDate(log.date),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.volunteer_activism, size: 14, color: theme.colorScheme.onPrimaryContainer),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Infaq & Sedekah',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: theme.colorScheme.onPrimaryContainer,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+                      ],
+                    ),
+                    const Divider(height: 32),
+                    Text(
+                      'Keterangan:',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _formatDate(log.date),
-                        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      log.notes,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        height: 1.5,
+                        color: theme.colorScheme.onSurface,
                       ),
-                    ],
-                  ),
-                  const Divider(height: 32),
-                  Text(
-                    'Keterangan:',
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    log.notes,
-                    style: theme.textTheme.bodyLarge?.copyWith(height: 1.5, color: theme.colorScheme.onSurface),
-                  ),
-                  const SizedBox(height: 32),
-                ],
-              ),
-            );
-          },
-        );
-      },
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
-  void _showEditInfaqBottomSheet(BuildContext context, InfaqLog log, RamadhanViewModel viewModel) {
-    final amountController = TextEditingController(text: log.amount.toInt().toString());
+  void _showEditInfaqBottomSheet(
+    BuildContext context,
+    InfaqLog log,
+    RamadhanViewModel viewModel,
+  ) {
+    final amountController = TextEditingController(
+      text: log.amount.toInt().toString(),
+    );
     final notesController = TextEditingController(text: log.notes);
     final formKey = GlobalKey<FormState>();
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        final theme = Theme.of(context);
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        margin: const EdgeInsets.only(bottom: 20),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'Ubah Catatan Sedekah / Infaq',
-                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 24),
-                    TextFormField(
-                      controller: amountController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Nominal Rupiah (Rp)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                        prefixText: 'Rp ',
-                      ),
-                      validator: (val) {
-                        if (val == null || val.trim().isEmpty) {
-                          return 'Nominal tidak boleh kosong';
-                        }
-                        final amount = double.tryParse(val);
-                        if (amount == null || amount <= 0) {
-                          return 'Nominal harus berupa angka lebih besar dari 0';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: notesController,
-                      decoration: const InputDecoration(
-                        labelText: 'Keterangan (Penerima / Peruntukan)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                        prefixIcon: Icon(Icons.info_outline),
-                      ),
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Keterangan tidak boleh kosong' : null,
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: theme.colorScheme.primary,
-                            backgroundColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100),
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) {
+          final theme = Theme.of(context);
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.3,
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            borderRadius: BorderRadius.circular(2),
                           ),
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
-                        const SizedBox(width: 12),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: theme.colorScheme.onPrimary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100),
+                      ),
+                      Text(
+                        'Ubah Catatan Sedekah / Infaq',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: amountController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: const InputDecoration(
+                          labelText: 'Nominal Rupiah (Rp)',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          prefixText: 'Rp ',
+                        ),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Nominal tidak boleh kosong';
+                          }
+                          final amount = double.tryParse(val);
+                          if (amount == null || amount <= 0) {
+                            return 'Nominal harus berupa angka lebih besar dari 0';
+                          }
+                          if (amount >= 1e12) {
+                            return 'Nominal tidak boleh mencapai atau melebihi 1 triliun';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: notesController,
+                        maxLength: 500,
+                        decoration: const InputDecoration(
+                          labelText: 'Keterangan (Penerima / Peruntukan)',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          prefixIcon: Icon(Icons.info_outline),
+                        ),
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Keterangan tidak boleh kosong'
+                            : null,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: theme.colorScheme.primary,
+                              backgroundColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text(
+                              'Batal',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
-                          onPressed: () {
-                            if (formKey.currentState!.validate()) {
-                              final messenger = ScaffoldMessenger.of(context);
-                              final amount = double.parse(amountController.text);
-                              viewModel.updateInfaqLog(
-                                id: log.id,
-                                amount: amount,
-                                notes: notesController.text,
-                              );
-                              Navigator.pop(context);
-                              messenger.clearSnackBars();
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  behavior: SnackBarBehavior.floating,
-                                  backgroundColor: const Color(0xFF2C2C2C),
-                                  elevation: 4.0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  content: const Text(
-                                    'Catatan sedekah berhasil diperbarui!',
-                                    style: TextStyle(color: Colors.white, fontSize: 14),
-                                  ),
-                                  duration: const Duration(seconds: 3),
-                                ),
-                              );
-                            }
-                          },
-                          child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 12),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                            onPressed: () {
+                              if (formKey.currentState!.validate()) {
+                                final messenger = ScaffoldMessenger.of(context);
+                                final amount = double.parse(
+                                  amountController.text,
+                                );
+                                try {
+                                  viewModel.updateInfaqLog(
+                                    id: log.id,
+                                    amount: amount,
+                                    notes: notesController.text,
+                                  );
+                                  Navigator.pop(context);
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: const Color(0xFF2C2C2C),
+                                      elevation: 4.0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          10.0,
+                                        ),
+                                      ),
+                                      content: const Text(
+                                        'Catatan sedekah berhasil diperbarui!',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      duration: const Duration(seconds: 3),
+                                    ),
+                                  );
+                                } on RamadhanValidationError catch (e) {
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: theme.colorScheme.error,
+                                      content: Text(
+                                        e.message,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                } catch (_) {
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: theme.colorScheme.error,
+                                      content: const Text(
+                                        'Gagal memperbarui catatan sedekah.',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            child: const Text(
+                              'Simpan',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

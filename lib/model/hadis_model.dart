@@ -18,10 +18,6 @@ class Hadis {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'number': number,
-      'arab': arabic,
-      'id': translation,
-    };
+    return {'number': number, 'arab': arabic, 'id': translation};
   }
 }

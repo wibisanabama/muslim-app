@@ -24,7 +24,7 @@ class ShalatScheduleResponse {
 }
 
 class ShalatDaySchedule {
-  final String tanggal; // contoh: "2025-01-01" atau format lain dari API
+  final String tanggal;
   final String imsak;
   final String subuh;
   final String terbit;

@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../viewmodel/quran_view_model.dart';
@@ -31,12 +33,12 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScrollListener);
-    
+
     _quranVM = context.read<QuranViewModel>();
     _quranVM.addListener(_scrollToInitialAyahListener);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _quranVM.fetchSurahDetail(widget.nomorSurah);
+      unawaited(_quranVM.fetchSurahDetail(widget.nomorSurah));
     });
   }
 
@@ -51,7 +53,7 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
 
   double _estimateAyahHeight(dynamic a) {
     final arabLines = (a.teksArab.length / 30.0).ceil();
-    final arabHeight = arabLines * 64.0; // 32 * 2.0 = 64
+    final arabHeight = arabLines * 64.0;
 
     final latinLines = (a.teksLatin.length / 50.0).ceil();
     final latinHeight = latinLines * 20.0;
@@ -59,12 +61,15 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
     final indoLines = (a.teksIndonesia.length / 60.0).ceil();
     final indoHeight = indoLines * 20.0;
 
-    const staticHeight = 32.0 + 36.0 + 28.0 + 1.5; // padding + spacings + divider
+    const staticHeight = 32.0 + 36.0 + 28.0 + 1.5;
     return arabHeight + latinHeight + indoHeight + staticHeight;
   }
 
-  double _calculateEstimatedOffset(List<dynamic> ayatList, int targetAyahNumber) {
-    double offset = 12.0; // padding top
+  double _calculateEstimatedOffset(
+    List<dynamic> ayatList,
+    int targetAyahNumber,
+  ) {
+    double offset = 12.0;
     for (int i = 0; i < targetAyahNumber - 1; i++) {
       if (i < ayatList.length) {
         offset += _estimateAyahHeight(ayatList[i]);
@@ -82,36 +87,55 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
       _isScrollScheduled = true;
 
       final detail = _quranVM.surahDetail!;
-      final estimatedOffset = _calculateEstimatedOffset(detail.ayat, widget.initialAyahNumber!);
+      final estimatedOffset = _calculateEstimatedOffset(
+        detail.ayat,
+        widget.initialAyahNumber!,
+      );
 
-      // Dispose controller lama dan buat baru dengan offset awal
-      _scrollController.dispose();
-      _scrollController = ScrollController(initialScrollOffset: estimatedOffset)
-        ..addListener(_onScrollListener);
-
-      // Setelah render frame pertama di offset awal, lakukan alignment presisi
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _doPreciseScroll();
+        if (_scrollController.hasClients) {
+          _scrollController.jumpTo(estimatedOffset);
+        }
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _doPreciseScrollWithRetry(0);
+        });
       });
     }
   }
 
-  void _doPreciseScroll() {
-    if (!_scrollController.hasClients) return;
+  void _doPreciseScrollWithRetry(int retryCount) {
+    if (!mounted || !_scrollController.hasClients) return;
 
     final targetAyah = widget.initialAyahNumber!;
     final key = _ayahKeys[targetAyah];
 
     if (key != null && key.currentContext != null) {
-      Scrollable.ensureVisible(
-        key.currentContext!,
-        duration: Duration.zero,
-        alignment: 0.0,
+      unawaited(
+        Scrollable.ensureVisible(
+          key.currentContext!,
+          duration: Duration.zero,
+          alignment: 0.0,
+        ),
       );
+      if (mounted) {
+        setState(() {
+          _hasScrolledToInitial = true;
+        });
+      }
+    } else {
+      if (retryCount < 5) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _doPreciseScrollWithRetry(retryCount + 1);
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _hasScrolledToInitial = true;
+          });
+        }
+      }
     }
-    setState(() {
-      _hasScrolledToInitial = true;
-    });
   }
 
   @override
@@ -203,8 +227,8 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(12),
-            // ignore: deprecated_member_use
-            cacheExtent: 5000.0, // Large cache to guarantee target key registration
+
+            scrollCacheExtent: const ScrollCacheExtent.pixels(5000.0),
             itemCount: detail.ayat.length,
             separatorBuilder: (context, index) => Divider(
               height: 1,
@@ -224,11 +248,15 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
               );
 
               final key = _ayahKeys.putIfAbsent(a.nomorAyat, () => GlobalKey());
-              final isBookmarked = (vm.lastReadSurah == widget.nomorSurah && vm.lastReadAyah == a.nomorAyat);
+              final isBookmarked =
+                  (vm.lastReadSurah == widget.nomorSurah &&
+                  vm.lastReadAyah == a.nomorAyat);
 
               return Material(
                 key: key,
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.25,
+                ),
                 borderRadius: borderRadius,
                 clipBehavior: Clip.antiAlias,
                 child: Padding(
@@ -243,21 +271,31 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
                             radius: 14,
                             child: Text(
                               a.nomorAyat.toString(),
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           IconButton(
                             icon: Icon(
-                              isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                              isBookmarked
+                                  ? Icons.bookmark_rounded
+                                  : Icons.bookmark_border_rounded,
                               color: isBookmarked
                                   ? theme.colorScheme.primary
-                                  : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                                  : theme.colorScheme.onSurfaceVariant
+                                        .withValues(alpha: 0.6),
                             ),
-                            onPressed: () {
+                            onPressed: () async {
                               if (isBookmarked) {
-                                context.read<QuranViewModel>().clearLastRead();
+                                await context
+                                    .read<QuranViewModel>()
+                                    .clearLastRead();
                               } else {
-                                context.read<QuranViewModel>().saveLastRead(
+                                await context
+                                    .read<QuranViewModel>()
+                                    .saveLastRead(
                                       widget.nomorSurah,
                                       widget.namaLatin,
                                       a.nomorAyat,
@@ -289,9 +327,7 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
                       const SizedBox(height: 8),
                       Text(
                         a.teksIndonesia,
-                        style: const TextStyle(
-                            fontSize: 14,
-                        ),
+                        style: const TextStyle(fontSize: 14),
                       ),
                     ],
                   ),
@@ -300,10 +336,6 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
             },
           );
 
-          // PENTING: Selalu gunakan Stack ketika initialAyahNumber != null,
-          // agar widget tree STABIL saat overlay dihapus. Jika tree berubah
-          // dari Stack>ListView menjadi ListView, Flutter akan re-create
-          // ListView dan mereset scroll position ke 0.
           if (widget.initialAyahNumber != null) {
             final showOverlay = !_hasScrolledToInitial;
             return Stack(
@@ -313,9 +345,7 @@ class _QuranDetailPageState extends State<QuranDetailPage> {
                   Positioned.fill(
                     child: Container(
                       color: theme.scaffoldBackgroundColor,
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
+                      child: const Center(child: CircularProgressIndicator()),
                     ),
                   ),
               ],

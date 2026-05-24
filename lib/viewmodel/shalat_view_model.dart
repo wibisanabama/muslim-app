@@ -1,13 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../utils/logger.dart';
 
 import '../model/shalat_schedule_response.dart';
 import '../repository/shalat_repository.dart';
 
 class ShalatViewModel extends ChangeNotifier {
   final ShalatRepository _repo;
+  static const _secureStorage = FlutterSecureStorage();
+
   ShalatViewModel(this._repo);
 
   bool _isLoading = false;
@@ -16,7 +19,7 @@ class ShalatViewModel extends ChangeNotifier {
   List<ShalatDaySchedule> _schedules = [];
 
   String _cityName = 'Jakarta';
-  int _cityId = 1206; // Default Jakarta ID
+  int _cityId = 1206;
 
   bool get isLoading => _isLoading;
   bool get isLoadingLocation => _isLoadingLocation;
@@ -58,26 +61,29 @@ class ShalatViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-
-      // 1. Cek jika data ada di cache dan tidak forceGPS
       if (!forceGPS) {
-        final cachedCityId = prefs.getInt('cached_city_id');
-        final cachedCityName = prefs.getString('cached_city_name');
-        if (cachedCityId != null && cachedCityName != null) {
-          _cityId = cachedCityId;
+        final cachedCityIdStr = await _secureStorage.read(
+          key: 'cached_city_id',
+        );
+        final cachedCityName = await _secureStorage.read(
+          key: 'cached_city_name',
+        );
+        if (cachedCityIdStr != null && cachedCityName != null) {
+          _cityId = int.tryParse(cachedCityIdStr) ?? 1206;
           _cityName = cachedCityName;
           _isLoadingLocation = false;
           notifyListeners();
-          
-          // Ambil jadwal bulanan langsung
+
           final now = DateTime.now();
-          await fetchMonthlySchedule(cityId: _cityId, year: now.year, month: now.month);
+          await fetchMonthlySchedule(
+            cityId: _cityId,
+            year: now.year,
+            month: now.month,
+          );
           return;
         }
       }
 
-      // 2. Gunakan GPS untuk mencari koordinat real-time
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         throw Exception('Layanan lokasi (GPS) aktifkan terlebih dahulu.');
@@ -95,7 +101,6 @@ class ShalatViewModel extends ChangeNotifier {
         throw Exception('Izin akses lokasi ditolak secara permanen.');
       }
 
-      // Ambil posisi GPS (menggunakan API non-deprecated)
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
@@ -103,7 +108,6 @@ class ShalatViewModel extends ChangeNotifier {
         ),
       );
 
-      // Terjemahkan koordinat ke nama kota/wilayah (Reverse Geocoding)
       final placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
@@ -113,48 +117,62 @@ class ShalatViewModel extends ChangeNotifier {
         final place = placemarks.first;
         String searchKeyword = '';
 
-        if (place.subAdministrativeArea != null && place.subAdministrativeArea!.isNotEmpty) {
+        if (place.subAdministrativeArea != null &&
+            place.subAdministrativeArea!.isNotEmpty) {
           searchKeyword = place.subAdministrativeArea!
-              .replaceAll(RegExp(r'(Regency|Kabupaten|City|Kota|Regency\s+|\s+Regency|\s+City|City\s+)', caseSensitive: false), '')
+              .replaceAll(
+                RegExp(
+                  r'(Regency|Kabupaten|City|Kota|Regency\s+|\s+Regency|\s+City|City\s+)',
+                  caseSensitive: false,
+                ),
+                '',
+              )
               .trim();
         } else if (place.locality != null && place.locality!.isNotEmpty) {
           searchKeyword = place.locality!;
         }
 
         if (searchKeyword.isNotEmpty) {
-          // Cari ID kota di API MyQuran
           final resolvedId = await _repo.searchCity(searchKeyword);
           if (resolvedId != null) {
             _cityId = resolvedId;
             _cityName = searchKeyword;
-            
-            // Simpan di cache SharedPreferences
-            await prefs.setInt('cached_city_id', _cityId);
-            await prefs.setString('cached_city_name', _cityName);
+
+            await _secureStorage.write(
+              key: 'cached_city_id',
+              value: _cityId.toString(),
+            );
+            await _secureStorage.write(
+              key: 'cached_city_name',
+              value: _cityName,
+            );
           } else {
-            // Jika ID kota tidak terdaftar di API, tetap tampilkan lokasi GPS terdeteksi tapi pakai default ID
             _cityName = searchKeyword;
           }
         }
       }
     } catch (e) {
-      final prefs = await SharedPreferences.getInstance();
-      if (prefs.getInt('cached_city_id') != null) {
-        _cityId = prefs.getInt('cached_city_id')!;
-        _cityName = prefs.getString('cached_city_name') ?? 'Jakarta';
+      final cachedCityIdStr = await _secureStorage.read(key: 'cached_city_id');
+      final cachedCityName = await _secureStorage.read(key: 'cached_city_name');
+      if (cachedCityIdStr != null) {
+        _cityId = int.tryParse(cachedCityIdStr) ?? 1206;
+        _cityName = cachedCityName ?? 'Jakarta';
       } else {
-        _cityId = 1206; // Fallback Jakarta
+        _cityId = 1206;
         _cityName = 'Jakarta';
       }
-      debugPrint('Location error: $e');
+      AppLogger.warningLazy(() => 'Location error: $e');
     } finally {
       _isLoadingLocation = false;
       notifyListeners();
     }
 
-    // Ambil jadwal bulanan berdasarkan data final
     final now = DateTime.now();
-    await fetchMonthlySchedule(cityId: _cityId, year: now.year, month: now.month);
+    await fetchMonthlySchedule(
+      cityId: _cityId,
+      year: now.year,
+      month: now.month,
+    );
   }
 
   Future<void> selectCity(int cityId, String cityName) async {
@@ -164,12 +182,18 @@ class ShalatViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('cached_city_id', _cityId);
-      await prefs.setString('cached_city_name', _cityName);
-      
+      await _secureStorage.write(
+        key: 'cached_city_id',
+        value: _cityId.toString(),
+      );
+      await _secureStorage.write(key: 'cached_city_name', value: _cityName);
+
       final now = DateTime.now();
-      await fetchMonthlySchedule(cityId: _cityId, year: now.year, month: now.month);
+      await fetchMonthlySchedule(
+        cityId: _cityId,
+        year: now.year,
+        month: now.month,
+      );
     } catch (e) {
       _error = e.toString();
       notifyListeners();

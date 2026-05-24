@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/doa.dart';
@@ -6,7 +7,7 @@ import '../repository/doa_repository.dart';
 class DoaViewModel extends ChangeNotifier {
   final DoaRepository _repo;
   DoaViewModel(this._repo) {
-    loadSavedDoaIds();
+    unawaited(loadSavedDoaIds());
   }
 
   bool _isLoading = false;
@@ -64,4 +65,3 @@ class DoaViewModel extends ChangeNotifier {
     return _doas.where((d) => _savedDoaIds.contains(d.id)).toList();
   }
 }
-

@@ -9,14 +9,19 @@ class ApiListPage extends StatefulWidget {
 }
 
 class _ApiListPageState extends State<ApiListPage> {
-  void _copyToClipboard(String text, String label) {
-    Clipboard.setData(ClipboardData(text: text));
+  void _copyToClipboard(String text, String label) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!mounted) return;
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+            const Icon(
+              Icons.check_circle_outline,
+              color: Colors.white,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -43,7 +48,8 @@ class _ApiListPageState extends State<ApiListPage> {
         'name': 'MyQuran API',
         'url': 'https://api.myquran.com',
         'icon': Icons.access_time_rounded,
-        'description': 'Layanan API Jadwal Shalat terbaik di Indonesia yang terkalibrasi secara astronomis. Digunakan untuk pencarian koordinat kota/kabupaten serta pengambilan jadwal shalat bulanan presisi sesuai lokasi pengguna.',
+        'description':
+            'Layanan API Jadwal Shalat terbaik di Indonesia yang terkalibrasi secara astronomis. Digunakan untuk pencarian koordinat kota/kabupaten serta pengambilan jadwal shalat bulanan presisi sesuai lokasi pengguna.',
         'endpoints': [
           'GET /v2/sholat/kota/cari/{nama} - Mencari ID kota berdasarkan nama',
           'GET /v2/sholat/jadwal/{cityId}/{tahun}/{bulan} - Mengambil jadwal shalat bulanan',
@@ -55,7 +61,8 @@ class _ApiListPageState extends State<ApiListPage> {
         'name': 'equran.id API',
         'url': 'https://equran.id',
         'icon': Icons.menu_book_rounded,
-        'description': 'Digunakan untuk menyuplai seluruh data Al-Quran digital meliputi daftar surat, detail surat (ayat-ayat), audio murottal per ayat, serta terjemahan bahasa Indonesia dan transliterasi latin.',
+        'description':
+            'Digunakan untuk menyuplai seluruh data Al-Quran digital meliputi daftar surat, detail surat (ayat-ayat), audio murottal per ayat, serta terjemahan bahasa Indonesia dan transliterasi latin.',
         'endpoints': [
           'GET /api/v2/surat - Mengambil daftar seluruh surat',
           'GET /api/v2/surat/{nomor} - Mengambil detail surat beserta ayatnya (v2)',
@@ -68,10 +75,9 @@ class _ApiListPageState extends State<ApiListPage> {
         'name': 'Ahmad Ramadhan Doa API',
         'url': 'https://doa-doa-api-ahmadramadhan.fly.dev',
         'icon': Icons.favorite_border_rounded,
-        'description': 'Menyediakan kumpulan doa harian islami yang lengkap dengan teks Arab, transliterasi latin, terjemahan Indonesia, serta sumber sanad/riwayat doa.',
-        'endpoints': [
-          'GET /api - Mengambil seluruh daftar doa harian lengkap',
-        ],
+        'description':
+            'Menyediakan kumpulan doa harian islami yang lengkap dengan teks Arab, transliterasi latin, terjemahan Indonesia, serta sumber sanad/riwayat doa.',
+        'endpoints': ['GET /api - Mengambil seluruh daftar doa harian lengkap'],
         'status': 'Aktif',
         'isExpanded': false,
       },
@@ -79,10 +85,9 @@ class _ApiListPageState extends State<ApiListPage> {
         'name': 'Asmaul Husna API',
         'url': 'https://asmaul-husna-api.vercel.app',
         'icon': Icons.brightness_5_rounded,
-        'description': 'Penyedia data 99 Nama Baik Allah (Asmaul Husna) lengkap dengan penulisan Arab yang indah, ejaan latin, dan penjelasan makna mendalam dari setiap nama.',
-        'endpoints': [
-          'GET /api/all - Mengambil 99 nama Asmaul Husna lengkap',
-        ],
+        'description':
+            'Penyedia data 99 Nama Baik Allah (Asmaul Husna) lengkap dengan penulisan Arab yang indah, ejaan latin, dan penjelasan makna mendalam dari setiap nama.',
+        'endpoints': ['GET /api/all - Mengambil 99 nama Asmaul Husna lengkap'],
         'status': 'Aktif',
         'isExpanded': false,
       },
@@ -90,7 +95,8 @@ class _ApiListPageState extends State<ApiListPage> {
         'name': 'Gading Hadith API',
         'url': 'https://api.hadith.gading.dev',
         'icon': Icons.bookmark_border_rounded,
-        'description': 'API hadis terlengkap yang menyediakan kompilasi sanad dan matan hadis dari 9 kitab perawi hadis utama (Kutubut Tis\'ah) seperti Bukhari, Muslim, Abu Daud, dll.',
+        'description':
+            'API hadis terlengkap yang menyediakan kompilasi sanad dan matan hadis dari 9 kitab perawi hadis utama (Kutubut Tis\'ah) seperti Bukhari, Muslim, Abu Daud, dll.',
         'endpoints': [
           'GET /books - Mengambil daftar kitab hadis beserta jumlah hadis',
           'GET /books/{bookId}?range={start}-{end} - Mengambil hadis dengan batasan range',
@@ -102,14 +108,10 @@ class _ApiListPageState extends State<ApiListPage> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Daftar API'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Daftar API'), centerTitle: false),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         children: [
-          // Header Card
           Card.filled(
             color: theme.colorScheme.primaryContainer.withValues(alpha: 0.2),
             elevation: 0,
@@ -126,7 +128,9 @@ class _ApiListPageState extends State<ApiListPage> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.15,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -184,7 +188,7 @@ class _ApiListPageState extends State<ApiListPage> {
             ),
           ),
           const SizedBox(height: 12),
-          // API List
+
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -192,15 +196,21 @@ class _ApiListPageState extends State<ApiListPage> {
             itemBuilder: (context, index) {
               final api = apis[index];
               final isExpanded = api['isExpanded'] as bool;
-              final double bottomMargin = (index == apis.length - 1) ? 0.0 : 4.0;
+              final double bottomMargin = (index == apis.length - 1)
+                  ? 0.0
+                  : 4.0;
 
               final BorderRadius borderRadius;
               if (apis.length == 1) {
                 borderRadius = BorderRadius.circular(16.0);
               } else if (index == 0) {
-                borderRadius = const BorderRadius.vertical(top: Radius.circular(16.0));
+                borderRadius = const BorderRadius.vertical(
+                  top: Radius.circular(16.0),
+                );
               } else if (index == apis.length - 1) {
-                borderRadius = const BorderRadius.vertical(bottom: Radius.circular(16.0));
+                borderRadius = const BorderRadius.vertical(
+                  bottom: Radius.circular(16.0),
+                );
               } else {
                 borderRadius = BorderRadius.zero;
               }
@@ -209,11 +219,11 @@ class _ApiListPageState extends State<ApiListPage> {
                 padding: EdgeInsets.only(bottom: bottomMargin),
                 child: Card.filled(
                   margin: EdgeInsets.zero,
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.12),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: borderRadius,
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.12,
                   ),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: borderRadius),
                   clipBehavior: Clip.antiAlias,
                   child: Theme(
                     data: theme.copyWith(dividerColor: Colors.transparent),
@@ -313,7 +323,10 @@ class _ApiListPageState extends State<ApiListPage> {
                                       api['url'] as String,
                                       api['name'] as String,
                                     ),
-                                    icon: const Icon(Icons.copy_rounded, size: 14),
+                                    icon: const Icon(
+                                      Icons.copy_rounded,
+                                      size: 14,
+                                    ),
                                     label: const Text(
                                       'Salin URL',
                                       style: TextStyle(fontSize: 12),
@@ -325,16 +338,21 @@ class _ApiListPageState extends State<ApiListPage> {
                               ...List.generate(
                                 (api['endpoints'] as List<String>).length,
                                 (i) {
-                                  final endpoint = (api['endpoints'] as List<String>)[i];
+                                  final endpoint =
+                                      (api['endpoints'] as List<String>)[i];
                                   return Container(
                                     width: double.maxFinite,
                                     margin: const EdgeInsets.only(bottom: 6.0),
                                     padding: const EdgeInsets.all(10.0),
                                     decoration: BoxDecoration(
-                                      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                                      color: theme
+                                          .colorScheme
+                                          .surfaceContainerHighest
+                                          .withValues(alpha: 0.4),
                                       borderRadius: BorderRadius.circular(8.0),
                                       border: Border.all(
-                                        color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                        color: theme.colorScheme.outlineVariant
+                                            .withValues(alpha: 0.5),
                                       ),
                                     ),
                                     child: Text(
@@ -342,7 +360,8 @@ class _ApiListPageState extends State<ApiListPage> {
                                       style: TextStyle(
                                         fontFamily: 'monospace',
                                         fontSize: 11.5,
-                                        color: theme.colorScheme.onSurfaceVariant,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
                                         height: 1.3,
                                       ),
                                     ),

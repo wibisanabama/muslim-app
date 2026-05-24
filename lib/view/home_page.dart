@@ -35,7 +35,6 @@ class _HomePageState extends State<HomePage> {
   int _quoteSurahNum = 94;
   String _quoteSurahName = 'Al-Insyirah';
 
-  // Inline static fallback quote if offline/error
   static final Ayat _fallbackAyat = Ayat(
     nomorAyat: 5,
     teksArab: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
@@ -46,7 +45,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _fetchRandomQuote();
+    unawaited(_fetchRandomQuote());
     _scrollController = ScrollController()
       ..addListener(() {
         final scrolled = _scrollController.offset > 0;
@@ -57,18 +56,16 @@ class _HomePageState extends State<HomePage> {
         }
       });
 
-    // Jalankan timer untuk mengupdate waktu mundur setiap detik
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {});
       }
     });
 
-    // Trigger fetch jadwal jika belum termuat
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = context.read<ShalatViewModel>();
       if (vm.schedules.isEmpty && !vm.isLoading && !vm.isLoadingLocation) {
-        vm.updateLocationAndFetchSchedule();
+        unawaited(vm.updateLocationAndFetchSchedule());
       }
     });
   }
@@ -80,11 +77,10 @@ class _HomePageState extends State<HomePage> {
     });
 
     try {
-      // Pick a random surah number from 1 to 114
       final randomSurah = Random().nextInt(114) + 1;
-      final quranRepo = QuranRepository();
+      final quranRepo = context.read<QuranRepository>();
       final surahDetail = await quranRepo.getSurahDetail(randomSurah);
-      
+
       if (surahDetail.ayat.isNotEmpty && mounted) {
         final randomAyatIndex = Random().nextInt(surahDetail.ayat.length);
         setState(() {
@@ -119,7 +115,6 @@ class _HomePageState extends State<HomePage> {
     final theme = Theme.of(context);
     final vm = context.watch<ShalatViewModel>();
 
-    // Temukan shalat terdekat
     Map<String, String>? upcomingShalat;
     Duration? timeRemaining;
     ShalatDaySchedule? targetSchedule;
@@ -151,7 +146,6 @@ class _HomePageState extends State<HomePage> {
         } catch (_) {}
       }
 
-      // Deteksi waktu Isya hari ini
       DateTime? todayIsyaTime;
       if (todaySchedule != null) {
         try {
@@ -162,10 +156,13 @@ class _HomePageState extends State<HomePage> {
         } catch (_) {}
       }
 
-      final bool isAfterTodayIsya = todayIsyaTime != null && (now.isAfter(todayIsyaTime) || now.isAtSameMomentAs(todayIsyaTime));
+      final bool isAfterTodayIsya =
+          todayIsyaTime != null &&
+          (now.isAfter(todayIsyaTime) || now.isAtSameMomentAs(todayIsyaTime));
 
-      // Tentukan jadwal mana yang aktif untuk pencarian shalat mendatang
-      final activeSchedule = isAfterTodayIsya ? tomorrowSchedule : todaySchedule;
+      final activeSchedule = isAfterTodayIsya
+          ? tomorrowSchedule
+          : todaySchedule;
       final activeDate = isAfterTodayIsya ? tomorrowDate : todayDate;
 
       if (activeSchedule != null) {
@@ -185,15 +182,17 @@ class _HomePageState extends State<HomePage> {
             final timeParts = timeStr.split(':');
             final hour = int.parse(timeParts[0]);
             final minute = int.parse(timeParts[1]);
-            final targetTime = DateTime(activeDate.year, activeDate.month, activeDate.day, hour, minute);
+            final targetTime = DateTime(
+              activeDate.year,
+              activeDate.month,
+              activeDate.day,
+              hour,
+              minute,
+            );
 
             if (targetTime.isAfter(now)) {
-              candidates.add({
-                'item': item,
-                'dateTime': targetTime,
-              });
+              candidates.add({'item': item, 'dateTime': targetTime});
             } else {
-              // Kandidat hari berikutnya
               final tomorrowTime = targetTime.add(const Duration(days: 1));
               candidates.add({
                 'item': {
@@ -207,14 +206,22 @@ class _HomePageState extends State<HomePage> {
         }
 
         if (candidates.isNotEmpty) {
-          candidates.sort((a, b) => (a['dateTime'] as DateTime).compareTo(b['dateTime'] as DateTime));
+          candidates.sort(
+            (a, b) => (a['dateTime'] as DateTime).compareTo(
+              b['dateTime'] as DateTime,
+            ),
+          );
           final nextCandidate = candidates.first;
-          upcomingShalat = Map<String, String>.from(nextCandidate['item'] as Map);
-          timeRemaining = (nextCandidate['dateTime'] as DateTime).difference(now);
+          upcomingShalat = Map<String, String>.from(
+            nextCandidate['item'] as Map,
+          );
+          timeRemaining = (nextCandidate['dateTime'] as DateTime).difference(
+            now,
+          );
         }
       }
     }
-    
+
     return Scaffold(
       drawer: const MuslimDrawer(),
       appBar: AppBar(
@@ -251,7 +258,9 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => context.read<ShalatViewModel>().updateLocationAndFetchSchedule(forceGPS: true),
+        onRefresh: () => context
+            .read<ShalatViewModel>()
+            .updateLocationAndFetchSchedule(forceGPS: true),
         child: SingleChildScrollView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
@@ -261,7 +270,9 @@ class _HomePageState extends State<HomePage> {
             children: [
               if (vm.isLoading || vm.isLoadingLocation) ...[
                 _buildLoadingCard(theme: theme),
-              ] else if (upcomingShalat != null && timeRemaining != null && targetSchedule != null) ...[
+              ] else if (upcomingShalat != null &&
+                  timeRemaining != null &&
+                  targetSchedule != null) ...[
                 _buildUpcomingPrayerCard(
                   context: context,
                   theme: theme,
@@ -272,18 +283,19 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
 
-              // Catatan Ramadhan Card
               Card.filled(
                 margin: EdgeInsets.zero,
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.25,
+                ),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    Navigator.push(
+                  onTap: () async {
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const RamadhanPage(),
@@ -291,14 +303,19 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 16.0,
+                    ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.15,
+                            ),
                           ),
                           child: Icon(
                             Icons.event_note_rounded,
@@ -334,8 +351,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 32),
-              
-              // Section Fitur Tambahan
+
               Padding(
                 padding: EdgeInsets.zero,
                 child: Text(
@@ -347,19 +363,17 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 16),
-              
-              // Shortcuts Row
+
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Qibla Direction Shortcut
                   Expanded(
                     child: _buildShortcutItem(
                       context: context,
                       icon: Icons.explore,
                       label: 'Arah Kiblat',
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const KiblatPage(),
@@ -369,14 +383,14 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Asmaul Husna Shortcut
+
                   Expanded(
                     child: _buildShortcutItem(
                       context: context,
                       icon: Icons.brightness_5_rounded,
                       label: 'Asmaul Husna',
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const AsmaulHusnaPage(),
@@ -386,14 +400,14 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Tasbih Shortcut
+
                   Expanded(
                     child: _buildShortcutItem(
                       context: context,
                       icon: Icons.fingerprint_rounded,
                       label: 'Tasbih',
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const TasbihPage(),
@@ -403,14 +417,14 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Hadis Shortcut
+
                   Expanded(
                     child: _buildShortcutItem(
                       context: context,
                       icon: Icons.menu_book_rounded,
                       label: 'Hadis',
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const HadisPage(),
@@ -452,9 +466,7 @@ class _HomePageState extends State<HomePage> {
             color: theme.colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(24),
           ),
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
+          child: const Center(child: CircularProgressIndicator()),
         ),
       );
     }
@@ -471,8 +483,8 @@ class _HomePageState extends State<HomePage> {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => QuranDetailPage(
@@ -552,8 +564,8 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(24),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => ShalatDetailPage(schedule: schedule),
@@ -638,7 +650,9 @@ class _HomePageState extends State<HomePage> {
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    theme.colorScheme.primary,
+                  ),
                 ),
               ),
             ),
@@ -696,7 +710,7 @@ class _HomePageState extends State<HomePage> {
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -722,11 +736,7 @@ class _HomePageState extends State<HomePage> {
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
-                  child: Icon(
-                    icon,
-                    size: 22,
-                    color: theme.colorScheme.primary,
-                  ),
+                  child: Icon(icon, size: 22, color: theme.colorScheme.primary),
                 ),
               ),
             ),

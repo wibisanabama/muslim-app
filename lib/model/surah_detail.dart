@@ -62,7 +62,9 @@ class SurahDetail {
       arti: (json['arti'] ?? '').toString(),
       deskripsi: (json['deskripsi'] ?? '').toString(),
       ayat: listAyat != null
-          ? listAyat.map((e) => Ayat.fromJson(e as Map<String, dynamic>)).toList()
+          ? listAyat
+                .map((e) => Ayat.fromJson(e as Map<String, dynamic>))
+                .toList()
           : [],
     );
   }
@@ -78,7 +80,9 @@ class SurahDetail {
       arti: (json['arti'] ?? '').toString(),
       deskripsi: (json['deskripsi'] ?? '').toString(),
       ayat: listAyat != null
-          ? listAyat.map((e) => Ayat.fromV1Json(e as Map<String, dynamic>)).toList()
+          ? listAyat
+                .map((e) => Ayat.fromV1Json(e as Map<String, dynamic>))
+                .toList()
           : [],
     );
   }

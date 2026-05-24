@@ -16,19 +16,14 @@ class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    // Halaman Beranda
     const HomePage(),
-    
-    // Halaman Jadwal Shalat (Menggunakan ShalatPage)
+
     const ShalatPage(),
 
-    // Halaman Quran (Menggunakan QuranPage)
     const QuranPage(),
 
-    // Halaman Doa (Menggunakan DoaPage)
     const DoaPage(),
 
-    // Halaman Tentang (Menggunakan AboutPage)
     const AboutPage(),
   ];
 

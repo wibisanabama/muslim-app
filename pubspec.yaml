@@ -20,6 +20,7 @@ dependencies:
   code_assets: ^1.1.0
   hooks: ^2.0.0
   logging: ^1.3.0
+  flutter_secure_storage: ^10.3.0
 
 dev_dependencies:
   flutter_test:
@@ -28,3 +29,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/quran.json
+    - assets/asmaul_husna.json
+    - assets/doa.json
+

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/surah.dart';
@@ -7,7 +8,7 @@ import '../repository/quran_repository.dart';
 class QuranViewModel extends ChangeNotifier {
   final QuranRepository _repo;
   QuranViewModel(this._repo) {
-    loadLastRead();
+    unawaited(loadLastRead());
   }
 
   bool _isLoading = false;
@@ -44,13 +45,17 @@ class QuranViewModel extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<void> saveLastRead(int surahNumber, String surahName, int ayahNumber) async {
+  Future<void> saveLastRead(
+    int surahNumber,
+    String surahName,
+    int ayahNumber,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('last_read_surah', surahNumber);
       await prefs.setString('last_read_surah_name', surahName);
       await prefs.setInt('last_read_ayah', ayahNumber);
-      
+
       _lastReadSurah = surahNumber;
       _lastReadSurahName = surahName;
       _lastReadAyah = ayahNumber;
@@ -64,7 +69,7 @@ class QuranViewModel extends ChangeNotifier {
       await prefs.remove('last_read_surah');
       await prefs.remove('last_read_surah_name');
       await prefs.remove('last_read_ayah');
-      
+
       _lastReadSurah = null;
       _lastReadSurahName = null;
       _lastReadAyah = null;

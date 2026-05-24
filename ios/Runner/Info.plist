@@ -66,5 +66,18 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Aplikasi memerlukan lokasi untuk menampilkan jadwal shalat yang akurat di daerah Anda serta menghitung arah kiblat.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Aplikasi memerlukan lokasi untuk menampilkan jadwal shalat yang akurat di daerah Anda serta menghitung arah kiblat.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>Aplikasi memerlukan lokasi untuk menampilkan jadwal shalat yang akurat di daerah Anda serta menghitung arah kiblat.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSAllowsLocalNetworking</key>
+		<false/>
+	</dict>
 </dict>
 </plist>

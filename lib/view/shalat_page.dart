@@ -35,9 +35,8 @@ class _ShalatPageState extends State<ShalatPage> {
     _viewModel = context.read<ShalatViewModel>();
     _viewModel.addListener(_onViewModelChanged);
 
-    // panggil setelah build pertama supaya aman akses context
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _viewModel.updateLocationAndFetchSchedule();
+      unawaited(_viewModel.updateLocationAndFetchSchedule());
     });
   }
 
@@ -86,12 +85,10 @@ class _ShalatPageState extends State<ShalatPage> {
       _needsScrollToToday = false;
       final index = _findCurrentDayIndex();
       if (index >= 0) {
-        // 12.0 adalah padding top ListView, dan 73.0 adalah tinggi presisi setiap item list dua baris
         final offset = index == 0 ? 0.0 : (12.0 + index * 73.0);
         _scrollController.dispose();
-        _scrollController = ScrollController(
-          initialScrollOffset: offset,
-        )..addListener(_onScroll);
+        _scrollController = ScrollController(initialScrollOffset: offset)
+          ..addListener(_onScroll);
         _isScrolled = offset > 0;
       }
     }
@@ -160,10 +157,15 @@ class _ShalatPageState extends State<ShalatPage> {
             decoration: InputDecoration(
               hintText: 'Cari kota...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
+                color: theme.colorScheme.onPrimaryContainer.withValues(
+                  alpha: 0.6,
+                ),
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               isDense: true,
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -196,7 +198,9 @@ class _ShalatPageState extends State<ShalatPage> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => context.read<ShalatViewModel>().updateLocationAndFetchSchedule(forceGPS: true),
+        onRefresh: () => context
+            .read<ShalatViewModel>()
+            .updateLocationAndFetchSchedule(forceGPS: true),
         child: Builder(
           builder: (context) {
             if (_searchQuery.isNotEmpty) {
@@ -228,7 +232,9 @@ class _ShalatPageState extends State<ShalatPage> {
                           Icon(
                             Icons.location_off,
                             size: 64,
-                            color: theme.colorScheme.error.withValues(alpha: 0.2),
+                            color: theme.colorScheme.error.withValues(
+                              alpha: 0.2,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -243,9 +249,13 @@ class _ShalatPageState extends State<ShalatPage> {
                   }
 
                   return ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     itemCount: cities.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 2),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 2),
                     itemBuilder: (context, index) {
                       final city = cities[index];
                       final cityName = city['lokasi'] as String? ?? '';
@@ -263,13 +273,18 @@ class _ShalatPageState extends State<ShalatPage> {
 
                       return Card.filled(
                         margin: EdgeInsets.zero,
-                        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
+                        color: theme.colorScheme.primaryContainer.withValues(
+                          alpha: 0.15,
+                        ),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: borderRadius,
                         ),
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 4.0,
+                          ),
                           leading: Icon(
                             Icons.location_city,
                             color: theme.colorScheme.primary,
@@ -280,7 +295,8 @@ class _ShalatPageState extends State<ShalatPage> {
                           ),
                           trailing: Icon(
                             Icons.chevron_right,
-                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.8),
                             size: 20,
                           ),
                           shape: RoundedRectangleBorder(
@@ -288,7 +304,7 @@ class _ShalatPageState extends State<ShalatPage> {
                           ),
                           onTap: () {
                             if (cityId != null) {
-                              vm.selectCity(cityId, cityName);
+                              unawaited(vm.selectCity(cityId, cityName));
                               _searchController.clear();
                               FocusScope.of(context).unfocus();
                               setState(() {
@@ -346,8 +362,11 @@ class _ShalatPageState extends State<ShalatPage> {
                             ),
                             const SizedBox(height: 12),
                             FilledButton(
-                              onPressed: () =>
-                                  context.read<ShalatViewModel>().updateLocationAndFetchSchedule(forceGPS: true),
+                              onPressed: () => context
+                                  .read<ShalatViewModel>()
+                                  .updateLocationAndFetchSchedule(
+                                    forceGPS: true,
+                                  ),
                               child: const Text('Coba Lagi'),
                             ),
                           ],
@@ -369,9 +388,7 @@ class _ShalatPageState extends State<ShalatPage> {
                       constraints: BoxConstraints(
                         minHeight: constraints.maxHeight,
                       ),
-                      child: Center(
-                        child: const Text('Data kosong'),
-                      ),
+                      child: Center(child: const Text('Data kosong')),
                     ),
                   );
                 },
@@ -388,7 +405,10 @@ class _ShalatPageState extends State<ShalatPage> {
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -397,7 +417,9 @@ class _ShalatPageState extends State<ShalatPage> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.18),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.18,
+                            ),
                             shape: BoxShape.circle,
                           ),
                           alignment: Alignment.center,
@@ -439,7 +461,6 @@ class _ShalatPageState extends State<ShalatPage> {
                       final now = DateTime.now();
                       final todayDate = DateTime(now.year, now.month, now.day);
 
-                      // Parse d.tanggal ("Jumat, 22/05/2026")
                       DateTime? scheduleDate;
                       try {
                         final parts = d.tanggal.split(', ');
@@ -454,7 +475,6 @@ class _ShalatPageState extends State<ShalatPage> {
                         }
                       } catch (_) {}
 
-                      // Tentukan status: passed (terlewat), current (hari ini / sedang berlangsung), upcoming (akan datang)
                       String status = 'upcoming';
                       if (scheduleDate != null) {
                         if (scheduleDate.isBefore(todayDate)) {
@@ -464,7 +484,6 @@ class _ShalatPageState extends State<ShalatPage> {
                         }
                       }
 
-                      // Styling berdasarkan status
                       Color bgColor;
                       Color textColor;
                       Color chevronColor;
@@ -472,21 +491,29 @@ class _ShalatPageState extends State<ShalatPage> {
 
                       switch (status) {
                         case 'passed':
-                          bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.10);
-                          textColor = theme.colorScheme.onSurface.withValues(alpha: 0.4);
-                          chevronColor = theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3);
+                          bgColor = theme.colorScheme.primaryContainer
+                              .withValues(alpha: 0.10);
+                          textColor = theme.colorScheme.onSurface.withValues(
+                            alpha: 0.4,
+                          );
+                          chevronColor = theme.colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.3);
                           textWeight = FontWeight.w400;
                           break;
                         case 'current':
-                          bgColor = theme.colorScheme.primary.withValues(alpha: 0.15);
+                          bgColor = theme.colorScheme.primary.withValues(
+                            alpha: 0.15,
+                          );
                           textColor = theme.colorScheme.primary;
                           chevronColor = theme.colorScheme.primary;
                           textWeight = FontWeight.bold;
                           break;
-                        default: // upcoming
-                          bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.25);
+                        default:
+                          bgColor = theme.colorScheme.primaryContainer
+                              .withValues(alpha: 0.25);
                           textColor = theme.colorScheme.onSurface;
-                          chevronColor = theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8);
+                          chevronColor = theme.colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.8);
                           textWeight = FontWeight.w500;
                       }
 
@@ -502,24 +529,42 @@ class _ShalatPageState extends State<ShalatPage> {
                             final day = int.parse(dateParts[0]);
                             final month = int.parse(dateParts[1]);
                             final year = int.parse(dateParts[2]);
-                            
+
                             final months = [
-                              'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                              'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                              'Januari',
+                              'Februari',
+                              'Maret',
+                              'April',
+                              'Mei',
+                              'Juni',
+                              'Juli',
+                              'Agustus',
+                              'September',
+                              'Oktober',
+                              'November',
+                              'Desember',
                             ];
                             final monthName = months[month - 1];
-                            
+
                             final today = DateTime.now();
-                            final todayDate = DateTime(today.year, today.month, today.day);
+                            final todayDate = DateTime(
+                              today.year,
+                              today.month,
+                              today.day,
+                            );
                             final targetDate = DateTime(year, month, day);
-                            
+
                             if (targetDate.isAtSameMomentAs(todayDate)) {
                               mainTitle = 'Hari Ini';
                               subtitle = "$dayName, $day $monthName $year";
-                            } else if (targetDate.isAtSameMomentAs(todayDate.add(const Duration(days: 1)))) {
+                            } else if (targetDate.isAtSameMomentAs(
+                              todayDate.add(const Duration(days: 1)),
+                            )) {
                               mainTitle = 'Besok';
                               subtitle = "$dayName, $day $monthName $year";
-                            } else if (targetDate.isAtSameMomentAs(todayDate.subtract(const Duration(days: 1)))) {
+                            } else if (targetDate.isAtSameMomentAs(
+                              todayDate.subtract(const Duration(days: 1)),
+                            )) {
                               mainTitle = 'Kemarin';
                               subtitle = "$dayName, $day $monthName $year";
                             } else {
@@ -546,14 +591,20 @@ class _ShalatPageState extends State<ShalatPage> {
                         clipBehavior: Clip.antiAlias,
                         child: InkWell(
                           onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => ShalatDetailPage(schedule: d),
+                            unawaited(
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ShalatDetailPage(schedule: d),
+                                ),
                               ),
                             );
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 20,
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -562,20 +613,26 @@ class _ShalatPageState extends State<ShalatPage> {
                                   children: [
                                     Text(
                                       mainTitle,
-                                      style: theme.textTheme.titleMedium?.copyWith(
-                                        fontWeight: textWeight,
-                                        color: textColor,
-                                      ),
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontWeight: textWeight,
+                                            color: textColor,
+                                          ),
                                     ),
                                     if (subtitle.isNotEmpty) ...[
                                       const SizedBox(height: 4),
                                       Text(
                                         subtitle,
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          color: status == 'passed'
-                                              ? theme.colorScheme.onSurface.withValues(alpha: 0.3)
-                                              : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                                        ),
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              color: status == 'passed'
+                                                  ? theme.colorScheme.onSurface
+                                                        .withValues(alpha: 0.3)
+                                                  : theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant
+                                                        .withValues(alpha: 0.8),
+                                            ),
                                       ),
                                     ],
                                   ],

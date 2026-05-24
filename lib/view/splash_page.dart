@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'main_page.dart';
 
@@ -12,13 +13,12 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    
-    // Berpindah ke MainPage setelah 2 detik
+
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const MainPage(),
+        unawaited(
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const MainPage()),
           ),
         );
       }

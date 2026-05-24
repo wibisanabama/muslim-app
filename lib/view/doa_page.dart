@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/doa_view_model.dart';
@@ -31,7 +32,7 @@ class _DoaPageState extends State<DoaPage> {
         }
       });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DoaViewModel>().fetchDoas();
+      unawaited(context.read<DoaViewModel>().fetchDoas());
     });
   }
 
@@ -47,7 +48,6 @@ class _DoaPageState extends State<DoaPage> {
     final vm = context.watch<DoaViewModel>();
     final theme = Theme.of(context);
 
-    // Filter doas locally
     final filteredDoas = vm.doas.where((d) {
       final query = _searchQuery.toLowerCase();
       return d.doa.toLowerCase().contains(query);
@@ -89,10 +89,15 @@ class _DoaPageState extends State<DoaPage> {
             decoration: InputDecoration(
               hintText: 'Cari doa...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
+                color: theme.colorScheme.onPrimaryContainer.withValues(
+                  alpha: 0.6,
+                ),
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               isDense: true,
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -156,7 +161,8 @@ class _DoaPageState extends State<DoaPage> {
                               ),
                               const SizedBox(height: 12),
                               FilledButton(
-                                onPressed: () => context.read<DoaViewModel>().fetchDoas(),
+                                onPressed: () =>
+                                    context.read<DoaViewModel>().fetchDoas(),
                                 child: const Text('Coba Lagi'),
                               ),
                             ],
@@ -179,9 +185,7 @@ class _DoaPageState extends State<DoaPage> {
                       constraints: BoxConstraints(
                         minHeight: constraints.maxHeight,
                       ),
-                      child: Center(
-                        child: const Text('Data kosong'),
-                      ),
+                      child: Center(child: const Text('Data kosong')),
                     ),
                   );
                 },
@@ -205,7 +209,9 @@ class _DoaPageState extends State<DoaPage> {
                             Icon(
                               Icons.search_off,
                               size: 48,
-                              color: theme.colorScheme.secondary.withValues(alpha: 0.5),
+                              color: theme.colorScheme.secondary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Text(
@@ -246,12 +252,14 @@ class _DoaPageState extends State<DoaPage> {
                 );
 
                 return Material(
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.25,
+                  ),
                   borderRadius: borderRadius,
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
-                    onTap: () {
-                      Navigator.push(
+                    onTap: () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => DoaDetailPage(doa: d),
@@ -259,7 +267,10 @@ class _DoaPageState extends State<DoaPage> {
                       );
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 18,
+                        horizontal: 20,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -276,7 +287,8 @@ class _DoaPageState extends State<DoaPage> {
                           Icon(
                             Icons.chevron_right,
                             size: 20,
-                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.8),
                           ),
                         ],
                       ),
@@ -304,8 +316,8 @@ class _DoaPageState extends State<DoaPage> {
                   ),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(24),
-                    onTap: () {
-                      Navigator.push(
+                    onTap: () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const SavedDoaPage(),
@@ -313,7 +325,10 @@ class _DoaPageState extends State<DoaPage> {
                       );
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20,
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -322,7 +337,9 @@ class _DoaPageState extends State<DoaPage> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.18),
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.18,
+                              ),
                               shape: BoxShape.circle,
                             ),
                             alignment: Alignment.center,

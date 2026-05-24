@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -8,7 +9,7 @@ class ThemeViewModel extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
 
   ThemeViewModel() {
-    _loadFromPrefs();
+    unawaited(_loadFromPrefs());
   }
 
   Future<void> _loadFromPrefs() async {
@@ -26,7 +27,6 @@ class ThemeViewModel extends ChangeNotifier {
     await prefs.setString(_key, _toString(mode));
   }
 
-  /// Label yang ditampilkan di Settings
   String get label {
     switch (_themeMode) {
       case ThemeMode.system:

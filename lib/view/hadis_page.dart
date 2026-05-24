@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../model/hadis_model.dart';
 import '../repository/hadis_repository.dart';
 
-// Book Model
 class HadisBook {
   final String id;
   final String name;
@@ -18,7 +17,6 @@ class HadisBook {
   });
 }
 
-// 9 Canonical Hadith Books metadata
 const List<HadisBook> hadisBooks = [
   HadisBook(id: "bukhari", name: "HR. Bukhari", available: 6638),
   HadisBook(id: "muslim", name: "HR. Muslim", available: 4930),
@@ -57,7 +55,7 @@ class _HadisPageState extends State<HadisPage> {
           });
         }
       });
-    _loadGlobalSavedCount();
+    unawaited(_loadGlobalSavedCount());
   }
 
   Future<void> _loadGlobalSavedCount() async {
@@ -89,7 +87,6 @@ class _HadisPageState extends State<HadisPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Filter books locally based on search
     final filteredBooks = hadisBooks.where((book) {
       final normQuery = _normalizeString(_searchQuery);
       if (normQuery.isEmpty) return true;
@@ -126,10 +123,15 @@ class _HadisPageState extends State<HadisPage> {
             decoration: InputDecoration(
               hintText: 'Cari kitab hadis...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
+                color: theme.colorScheme.onPrimaryContainer.withValues(
+                  alpha: 0.6,
+                ),
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               isDense: true,
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -176,7 +178,6 @@ class _HadisPageState extends State<HadisPage> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Global Saved Hadith Card
               if (_searchQuery.isEmpty)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -195,10 +196,13 @@ class _HadisPageState extends State<HadisPage> {
                             builder: (context) => const SavedHadisPage(),
                           ),
                         );
-                        _loadGlobalSavedCount(); // Refresh total count when returning
+                        await _loadGlobalSavedCount();
                       },
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 20,
+                        ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -207,7 +211,9 @@ class _HadisPageState extends State<HadisPage> {
                               width: 48,
                               height: 48,
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.18),
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.18,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               alignment: Alignment.center,
@@ -241,14 +247,19 @@ class _HadisPageState extends State<HadisPage> {
                   itemCount: filteredBooks.length,
                   itemBuilder: (context, index) {
                     final book = filteredBooks[index];
-                    final double bottomMargin = (index == filteredBooks.length - 1) ? 0.0 : 2.0;
+                    final double bottomMargin =
+                        (index == filteredBooks.length - 1) ? 0.0 : 2.0;
                     final BorderRadius borderRadius;
                     if (filteredBooks.length == 1) {
                       borderRadius = BorderRadius.circular(24.0);
                     } else if (index == 0) {
-                      borderRadius = const BorderRadius.vertical(top: Radius.circular(24.0));
+                      borderRadius = const BorderRadius.vertical(
+                        top: Radius.circular(24.0),
+                      );
                     } else if (index == filteredBooks.length - 1) {
-                      borderRadius = const BorderRadius.vertical(bottom: Radius.circular(24.0));
+                      borderRadius = const BorderRadius.vertical(
+                        bottom: Radius.circular(24.0),
+                      );
                     } else {
                       borderRadius = BorderRadius.zero;
                     }
@@ -257,7 +268,9 @@ class _HadisPageState extends State<HadisPage> {
                       padding: EdgeInsets.only(bottom: bottomMargin),
                       child: Card.filled(
                         margin: EdgeInsets.zero,
-                        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                        color: theme.colorScheme.primaryContainer.withValues(
+                          alpha: 0.25,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: borderRadius,
                         ),
@@ -274,18 +287,22 @@ class _HadisPageState extends State<HadisPage> {
                                 ),
                               ),
                             );
-                            _loadGlobalSavedCount(); // Refresh when returning
+                            await _loadGlobalSavedCount();
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0,
+                              vertical: 20.0,
+                            ),
                             child: Row(
                               children: [
-                                // Rounded Book Icon Container
                                 Container(
                                   width: 48,
                                   height: 48,
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
@@ -296,28 +313,36 @@ class _HadisPageState extends State<HadisPage> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         book.name,
-                                        style: theme.textTheme.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: theme.colorScheme.onSurface,
-                                        ),
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  theme.colorScheme.onSurface,
+                                            ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
                                         'Tersedia ${book.available} Hadis',
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          color: theme.colorScheme.onSurfaceVariant,
-                                        ),
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                            ),
                                       ),
                                     ],
                                   ),
                                 ),
                                 Icon(
                                   Icons.chevron_right_rounded,
-                                  color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.7,
+                                  ),
                                 ),
                               ],
                             ),
@@ -373,8 +398,8 @@ class _HadisListPageState extends State<HadisListPage> {
   @override
   void initState() {
     super.initState();
-    _fetchNextBatch();
-    _loadSavedHadis();
+    unawaited(_fetchNextBatch());
+    unawaited(_loadSavedHadis());
     _scrollController.addListener(() {
       final scrolled = _scrollController.offset > 0;
       if (scrolled != _isScrolled) {
@@ -382,8 +407,9 @@ class _HadisListPageState extends State<HadisListPage> {
           _isScrolled = scrolled;
         });
       }
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-        _fetchNextBatch();
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        unawaited(_fetchNextBatch());
       }
     });
   }
@@ -399,7 +425,10 @@ class _HadisListPageState extends State<HadisListPage> {
     final prefs = await SharedPreferences.getInstance();
     final savedList = prefs.getStringList('saved_hadis_${widget.bookId}') ?? [];
     setState(() {
-      _savedHadisNumbers = savedList.map((e) => int.tryParse(e) ?? 0).where((e) => e != 0).toList();
+      _savedHadisNumbers = savedList
+          .map((e) => int.tryParse(e) ?? 0)
+          .where((e) => e != 0)
+          .toList();
     });
   }
 
@@ -418,7 +447,11 @@ class _HadisListPageState extends State<HadisListPage> {
     }
 
     try {
-      final newHadiths = await _repository.getHadisRange(widget.bookId, _currentStart, end);
+      final newHadiths = await _repository.getHadisRange(
+        widget.bookId,
+        _currentStart,
+        end,
+      );
       setState(() {
         _hadiths.addAll(newHadiths);
         _currentStart = end + 1;
@@ -440,14 +473,13 @@ class _HadisListPageState extends State<HadisListPage> {
     if (parsed == null || parsed < 1 || parsed > widget.totalAvailable) {
       return;
     }
-    
+
     await _openHadisByNumber(parsed);
   }
 
   Future<void> _openHadisByNumber(int number) async {
     final theme = Theme.of(context);
-    
-    // Check if already in memory
+
     Hadis? foundHadis;
     final inMemory = _hadiths.where((h) => h.number == number).toList();
     if (inMemory.isNotEmpty) {
@@ -457,7 +489,6 @@ class _HadisListPageState extends State<HadisListPage> {
     }
 
     if (foundHadis != null) {
-      // Open immediately if already loaded
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -468,25 +499,26 @@ class _HadisListPageState extends State<HadisListPage> {
           ),
         ),
       );
-      _loadSavedHadis();
+      await _loadSavedHadis();
       return;
     }
 
-    // Show a loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const Center(
-        child: CircularProgressIndicator(),
+    unawaited(
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const Center(child: CircularProgressIndicator()),
       ),
     );
 
     try {
-      final singleHadis = await _repository.getSingleHadis(widget.bookId, number);
+      final singleHadis = await _repository.getSingleHadis(
+        widget.bookId,
+        number,
+      );
       if (mounted) {
-        Navigator.pop(context); // Pop loading dialog
-        
-        // Save to searched hadiths so we have it in cache next time
+        Navigator.pop(context);
+
         setState(() {
           _searchedHadiths[number] = singleHadis;
         });
@@ -501,14 +533,16 @@ class _HadisListPageState extends State<HadisListPage> {
             ),
           ),
         );
-        _loadSavedHadis(); // Refresh saved hadiths count
+        await _loadSavedHadis();
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Pop loading dialog
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal memuat hadis nomor $number. Pastikan koneksi internet aktif.'),
+            content: Text(
+              'Gagal memuat hadis nomor $number. Pastikan koneksi internet aktif.',
+            ),
             backgroundColor: theme.colorScheme.error,
           ),
         );
@@ -518,10 +552,13 @@ class _HadisListPageState extends State<HadisListPage> {
 
   Future<void> _lazyFetchHadis(int number) async {
     if (_fetchingNumbers.contains(number)) return;
-    
+
     _fetchingNumbers.add(number);
     try {
-      final singleHadis = await _repository.getSingleHadis(widget.bookId, number);
+      final singleHadis = await _repository.getSingleHadis(
+        widget.bookId,
+        number,
+      );
       if (mounted && _searchQuery.isNotEmpty) {
         setState(() {
           _searchedHadiths[number] = singleHadis;
@@ -578,9 +615,12 @@ class _HadisListPageState extends State<HadisListPage> {
               }
 
               final parsed = int.tryParse(trimmed);
-              if (parsed == null || parsed < 1 || parsed > widget.totalAvailable) {
+              if (parsed == null ||
+                  parsed < 1 ||
+                  parsed > widget.totalAvailable) {
                 setState(() {
-                  _searchError = 'Nomor hadis harus antara 1 dan ${widget.totalAvailable}';
+                  _searchError =
+                      'Nomor hadis harus antara 1 dan ${widget.totalAvailable}';
                 });
                 return;
               }
@@ -588,10 +628,15 @@ class _HadisListPageState extends State<HadisListPage> {
             decoration: InputDecoration(
               hintText: 'Cari hadis ${widget.bookName}...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
+                color: theme.colorScheme.onPrimaryContainer.withValues(
+                  alpha: 0.6,
+                ),
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               isDense: true,
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -615,7 +660,6 @@ class _HadisListPageState extends State<HadisListPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Hadis Disimpan shortcut card
           if (_searchQuery.isEmpty && !_isLoading && _hadiths.isNotEmpty)
             Builder(
               builder: (context) {
@@ -640,10 +684,13 @@ class _HadisListPageState extends State<HadisListPage> {
                           ),
                         ),
                       );
-                      _loadSavedHadis(); // Refresh saved hadiths count when returning
+                      await _loadSavedHadis();
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20,
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -652,7 +699,9 @@ class _HadisListPageState extends State<HadisListPage> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.18),
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.18,
+                              ),
                               shape: BoxShape.circle,
                             ),
                             alignment: Alignment.center,
@@ -678,7 +727,7 @@ class _HadisListPageState extends State<HadisListPage> {
                     ),
                   ),
                 );
-              }
+              },
             ),
 
           Expanded(
@@ -695,7 +744,9 @@ class _HadisListPageState extends State<HadisListPage> {
                                 Icon(
                                   Icons.search_off_rounded,
                                   size: 48,
-                                  color: theme.colorScheme.secondary.withValues(alpha: 0.5),
+                                  color: theme.colorScheme.secondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
@@ -715,14 +766,12 @@ class _HadisListPageState extends State<HadisListPage> {
                       final List<int> matchingNumbers = [];
                       final parsedQuery = int.tryParse(query);
 
-                      // Generate matching numbers dynamically
                       for (int i = 1; i <= widget.totalAvailable; i++) {
                         if (i.toString().contains(query)) {
                           matchingNumbers.add(i);
                         }
                       }
 
-                      // Sort: exact match first, startsWith next, then contains
                       matchingNumbers.sort((a, b) {
                         if (a == parsedQuery) return -1;
                         if (b == parsedQuery) return 1;
@@ -739,8 +788,9 @@ class _HadisListPageState extends State<HadisListPage> {
                         return a.compareTo(b);
                       });
 
-                      // Display up to 100 results to maintain performance
-                      final displayedMatches = matchingNumbers.take(100).toList();
+                      final displayedMatches = matchingNumbers
+                          .take(100)
+                          .toList();
 
                       if (displayedMatches.isEmpty) {
                         return Center(
@@ -752,7 +802,9 @@ class _HadisListPageState extends State<HadisListPage> {
                                 Icon(
                                   Icons.search_off_rounded,
                                   size: 48,
-                                  color: theme.colorScheme.secondary.withValues(alpha: 0.5),
+                                  color: theme.colorScheme.secondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
@@ -773,51 +825,59 @@ class _HadisListPageState extends State<HadisListPage> {
                         itemBuilder: (context, index) {
                           final num = displayedMatches[index];
 
-                          // Check if loaded in memory
                           Hadis? foundHadis;
-                          final inMemory = _hadiths.where((h) => h.number == num).toList();
+                          final inMemory = _hadiths
+                              .where((h) => h.number == num)
+                              .toList();
                           if (inMemory.isNotEmpty) {
                             foundHadis = inMemory.first;
                           } else {
                             foundHadis = _searchedHadiths[num];
                           }
 
-                          final double bottomMargin = (index == displayedMatches.length - 1) ? 0.0 : 2.0;
+                          final double bottomMargin =
+                              (index == displayedMatches.length - 1)
+                              ? 0.0
+                              : 2.0;
                           final BorderRadius borderRadius;
                           if (displayedMatches.length == 1) {
                             borderRadius = BorderRadius.circular(24.0);
                           } else if (index == 0) {
-                            borderRadius = const BorderRadius.vertical(top: Radius.circular(24.0));
+                            borderRadius = const BorderRadius.vertical(
+                              top: Radius.circular(24.0),
+                            );
                           } else if (index == displayedMatches.length - 1) {
-                            borderRadius = const BorderRadius.vertical(bottom: Radius.circular(24.0));
+                            borderRadius = const BorderRadius.vertical(
+                              bottom: Radius.circular(24.0),
+                            );
                           } else {
                             borderRadius = BorderRadius.zero;
                           }
 
                           if (foundHadis == null) {
-                            // Dynamically fetch missing hadith content in the background
-                            _lazyFetchHadis(num);
+                            unawaited(_lazyFetchHadis(num));
 
-                            // Return a premium skeleton loader card
                             return Padding(
                               padding: EdgeInsets.only(bottom: bottomMargin),
                               child: Card.filled(
                                 margin: EdgeInsets.zero,
-                                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                                color: theme.colorScheme.primaryContainer
+                                    .withValues(alpha: 0.25),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: borderRadius,
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(20.0),
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      // Loading Badge
                                       Container(
                                         width: 40,
                                         height: 40,
                                         decoration: BoxDecoration(
-                                          color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                                          color: theme.colorScheme.primary
+                                              .withValues(alpha: 0.05),
                                           shape: BoxShape.circle,
                                         ),
                                         alignment: Alignment.center,
@@ -826,34 +886,44 @@ class _HadisListPageState extends State<HadisListPage> {
                                           height: 16,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation<Color>(
-                                              theme.colorScheme.primary.withValues(alpha: 0.4),
-                                            ),
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  theme.colorScheme.primary
+                                                      .withValues(alpha: 0.4),
+                                                ),
                                           ),
                                         ),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            // Arabic skeleton block
                                             Container(
                                               width: 120,
                                               height: 16,
                                               decoration: BoxDecoration(
-                                                color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
-                                                borderRadius: BorderRadius.circular(8),
+                                                color: theme
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withValues(alpha: 0.05),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
                                             ),
                                             const SizedBox(height: 12),
-                                            // Translation skeleton block
+
                                             Container(
                                               width: double.infinity,
                                               height: 12,
                                               decoration: BoxDecoration(
-                                                color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
-                                                borderRadius: BorderRadius.circular(6),
+                                                color: theme
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withValues(alpha: 0.05),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
                                               ),
                                             ),
                                           ],
@@ -870,7 +940,8 @@ class _HadisListPageState extends State<HadisListPage> {
                             padding: EdgeInsets.only(bottom: bottomMargin),
                             child: Card.filled(
                               margin: EdgeInsets.zero,
-                              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                              color: theme.colorScheme.primaryContainer
+                                  .withValues(alpha: 0.25),
                               shape: RoundedRectangleBorder(
                                 borderRadius: borderRadius,
                               ),
@@ -880,48 +951,59 @@ class _HadisListPageState extends State<HadisListPage> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(20.0),
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      // Number Circle Badge
                                       Container(
                                         width: 40,
                                         height: 40,
                                         decoration: BoxDecoration(
-                                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                          color: theme.colorScheme.primary
+                                              .withValues(alpha: 0.1),
                                           shape: BoxShape.circle,
                                         ),
                                         alignment: Alignment.center,
                                         child: Text(
                                           num.toString(),
-                                          style: theme.textTheme.titleMedium?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color: theme.colorScheme.primary,
-                                          ),
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                color:
+                                                    theme.colorScheme.primary,
+                                              ),
                                         ),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               foundHadis.arabic,
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.scheherazadeNew(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.bold,
-                                                height: 1.2,
-                                                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                                              ),
+                                              style:
+                                                  GoogleFonts.scheherazadeNew(
+                                                    fontSize: 22,
+                                                    fontWeight: FontWeight.bold,
+                                                    height: 1.2,
+                                                    color: theme
+                                                        .colorScheme
+                                                        .onSurface
+                                                        .withValues(alpha: 0.8),
+                                                  ),
                                             ),
                                             const SizedBox(height: 8),
                                             Text(
                                               foundHadis.translation,
-                                              style: theme.textTheme.bodyMedium?.copyWith(
-                                                color: theme.colorScheme.onSurfaceVariant,
-                                                height: 1.4,
-                                              ),
+                                              style: theme.textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
+                                                    height: 1.4,
+                                                  ),
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -931,7 +1013,8 @@ class _HadisListPageState extends State<HadisListPage> {
                                       const SizedBox(width: 8),
                                       Icon(
                                         Icons.chevron_right_rounded,
-                                        color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.7),
                                       ),
                                     ],
                                   ),
@@ -944,158 +1027,173 @@ class _HadisListPageState extends State<HadisListPage> {
                     },
                   )
                 : _isError && _hadiths.isEmpty
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.cloud_off_rounded,
-                                size: 48,
-                                color: theme.colorScheme.error,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Gagal memuat daftar hadis',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: theme.colorScheme.onSurface,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Pastikan Anda terhubung ke internet dan coba lagi.',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 16),
-                              FilledButton(
-                                onPressed: _fetchNextBatch,
-                                child: const Text('Coba Lagi'),
-                              ),
-                            ],
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.cloud_off_rounded,
+                            size: 48,
+                            color: theme.colorScheme.error,
                           ),
-                        ),
-                      )
-                    : _hadiths.isEmpty && _isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.all(16),
-                            itemCount: _hadiths.length + (_isLoading ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index == _hadiths.length) {
-                                return const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                                  child: Center(child: CircularProgressIndicator()),
-                                );
-                              }
+                          const SizedBox(height: 12),
+                          Text(
+                            'Gagal memuat daftar hadis',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Pastikan Anda terhubung ke internet dan coba lagi.',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          FilledButton(
+                            onPressed: _fetchNextBatch,
+                            child: const Text('Coba Lagi'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : _hadiths.isEmpty && _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _hadiths.length + (_isLoading ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _hadiths.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
 
-                              final item = _hadiths[index];
-                              final double bottomMargin = (index == _hadiths.length - 1) ? 0.0 : 2.0;
-                              final BorderRadius borderRadius;
-                              if (_hadiths.length == 1) {
-                                borderRadius = BorderRadius.circular(24.0);
-                              } else if (index == 0) {
-                                borderRadius = const BorderRadius.vertical(top: Radius.circular(24.0));
-                              } else if (index == _hadiths.length - 1) {
-                                borderRadius = const BorderRadius.vertical(bottom: Radius.circular(24.0));
-                              } else {
-                                borderRadius = BorderRadius.zero;
-                              }
+                      final item = _hadiths[index];
+                      final double bottomMargin = (index == _hadiths.length - 1)
+                          ? 0.0
+                          : 2.0;
+                      final BorderRadius borderRadius;
+                      if (_hadiths.length == 1) {
+                        borderRadius = BorderRadius.circular(24.0);
+                      } else if (index == 0) {
+                        borderRadius = const BorderRadius.vertical(
+                          top: Radius.circular(24.0),
+                        );
+                      } else if (index == _hadiths.length - 1) {
+                        borderRadius = const BorderRadius.vertical(
+                          bottom: Radius.circular(24.0),
+                        );
+                      } else {
+                        borderRadius = BorderRadius.zero;
+                      }
 
-                              return Padding(
-                                padding: EdgeInsets.only(bottom: bottomMargin),
-                                child: Card.filled(
-                                  margin: EdgeInsets.zero,
-                                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: borderRadius,
-                                  ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: InkWell(
-                                    onTap: () async {
-                                      await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => HadisDetailPage(
-                                            hadis: item,
-                                            bookId: widget.bookId,
-                                            bookName: widget.bookName,
-                                          ),
-                                        ),
-                                      );
-                                      _loadSavedHadis(); // Refresh saved status when returning
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(20.0),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          // Number Circle Badge
-                                          Container(
-                                            width: 40,
-                                            height: 40,
-                                            decoration: BoxDecoration(
-                                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              item.number.toString(),
-                                              style: theme.textTheme.titleMedium?.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: theme.colorScheme.primary,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          // Translation preview snippet
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                // Quick snippet of Arabic text
-                                                Text(
-                                                  item.arabic,
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: GoogleFonts.scheherazadeNew(
-                                                    fontSize: 22,
-                                                    fontWeight: FontWeight.bold,
-                                                    height: 1.2,
-                                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Text(
-                                                  item.translation,
-                                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                                    color: theme.colorScheme.onSurfaceVariant,
-                                                    height: 1.4,
-                                                  ),
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Icon(
-                                            Icons.chevron_right_rounded,
-                                            color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: bottomMargin),
+                        child: Card.filled(
+                          margin: EdgeInsets.zero,
+                          color: theme.colorScheme.primaryContainer.withValues(
+                            alpha: 0.25,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: borderRadius,
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HadisDetailPage(
+                                    hadis: item,
+                                    bookId: widget.bookId,
+                                    bookName: widget.bookName,
                                   ),
                                 ),
                               );
+                              await _loadSavedHadis();
                             },
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      item.number.toString(),
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: theme.colorScheme.primary,
+                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.arabic,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.scheherazadeNew(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            height: 1.2,
+                                            color: theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.8),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          item.translation,
+                                          style: theme.textTheme.bodyMedium
+                                              ?.copyWith(
+                                                color: theme
+                                                    .colorScheme
+                                                    .onSurfaceVariant,
+                                                height: 1.4,
+                                              ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.7,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -1125,7 +1223,7 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
   @override
   void initState() {
     super.initState();
-    _checkBookmarkStatus();
+    unawaited(_checkBookmarkStatus());
   }
 
   Future<void> _checkBookmarkStatus() async {
@@ -1171,7 +1269,9 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
         actions: [
           IconButton(
             icon: Icon(
-              _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+              _isBookmarked
+                  ? Icons.bookmark_rounded
+                  : Icons.bookmark_border_rounded,
               color: _isBookmarked ? theme.colorScheme.primary : null,
             ),
             tooltip: 'Simpan Hadis',
@@ -1184,10 +1284,11 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header Card: Book Name & Hadith Number
             Card.filled(
               color: theme.colorScheme.primary.withValues(alpha: 0.15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
               margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -1205,7 +1306,6 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
             ),
             const SizedBox(height: 32),
 
-            // Teks Arab
             Text(
               widget.hadis.arabic,
               textAlign: TextAlign.center,
@@ -1218,11 +1318,12 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
             ),
             const SizedBox(height: 28),
 
-            // Divider
-            Divider(height: 1, color: theme.colorScheme.outline.withValues(alpha: 0.2)),
+            Divider(
+              height: 1,
+              color: theme.colorScheme.outline.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 28),
 
-            // Terjemah Indonesia & Syarah (if fallback)
             Text(
               widget.hadis.translation,
               textAlign: TextAlign.left,
@@ -1255,11 +1356,7 @@ class SavedHadisPage extends StatefulWidget {
   final String? bookId;
   final String? bookName;
 
-  const SavedHadisPage({
-    super.key,
-    this.bookId,
-    this.bookName,
-  });
+  const SavedHadisPage({super.key, this.bookId, this.bookName});
 
   bool get isGlobal => bookId == null;
 
@@ -1286,7 +1383,7 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
         });
       }
     });
-    _loadSavedHadiths();
+    unawaited(_loadSavedHadiths());
   }
 
   @override
@@ -1297,7 +1394,7 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
 
   Future<void> _loadSavedHadiths() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     setState(() {
       _isLoading = true;
       _isError = false;
@@ -1305,11 +1402,10 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
 
     try {
       final List<GlobalSavedHadisItem> tempItems = [];
-      
+
       if (widget.isGlobal) {
-        // Global mode: Load saved hadiths from all 9 books in parallel
         final List<Future<List<GlobalSavedHadisItem>>> futures = [];
-        
+
         for (final book in hadisBooks) {
           final numbers = prefs.getStringList('saved_hadis_${book.id}') ?? [];
           if (numbers.isNotEmpty) {
@@ -1319,50 +1415,50 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                 final num = int.parse(numStr);
                 try {
                   final h = await _repository.getSingleHadis(book.id, num);
-                  bookItems.add(GlobalSavedHadisItem(
-                    hadis: h,
-                    bookId: book.id,
-                    bookName: book.name,
-                  ));
-                } catch (_) {
-                  // Ignore failed single hadith fetches to let other loaded ones render successfully
-                }
+                  bookItems.add(
+                    GlobalSavedHadisItem(
+                      hadis: h,
+                      bookId: book.id,
+                      bookName: book.name,
+                    ),
+                  );
+                } catch (_) {}
               }).toList();
-              
+
               await Future.wait(bookFutures);
               return bookItems;
             }());
           }
         }
-        
+
         final results = await Future.wait(futures);
         for (final list in results) {
           tempItems.addAll(list);
         }
-        
-        // Sort globally loaded hadiths by book name alphabetically and then by hadith number
+
         tempItems.sort((a, b) {
           final bookCompare = a.bookName.compareTo(b.bookName);
           if (bookCompare != 0) return bookCompare;
           return a.hadis.number.compareTo(b.hadis.number);
         });
       } else {
-        // Single book mode: Load saved hadiths for the specific book
-        final numbers = prefs.getStringList('saved_hadis_${widget.bookId}') ?? [];
+        final numbers =
+            prefs.getStringList('saved_hadis_${widget.bookId}') ?? [];
         if (numbers.isNotEmpty) {
           final bookFutures = numbers.map((numStr) async {
             final num = int.parse(numStr);
             final h = await _repository.getSingleHadis(widget.bookId!, num);
-            tempItems.add(GlobalSavedHadisItem(
-              hadis: h,
-              bookId: widget.bookId!,
-              bookName: widget.bookName!,
-            ));
+            tempItems.add(
+              GlobalSavedHadisItem(
+                hadis: h,
+                bookId: widget.bookId!,
+                bookName: widget.bookName!,
+              ),
+            );
           }).toList();
-          
+
           await Future.wait(bookFutures);
-          
-          // Sort numerically by hadith number
+
           tempItems.sort((a, b) => a.hadis.number.compareTo(b.hadis.number));
         }
       }
@@ -1387,9 +1483,11 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isGlobal
-            ? 'Semua Hadis Disimpan'
-            : 'Hadis ${widget.bookName!.replaceAll("HR. ", "")} Disimpan'),
+        title: Text(
+          widget.isGlobal
+              ? 'Semua Hadis Disimpan'
+              : 'Hadis ${widget.bookName!.replaceAll("HR. ", "")} Disimpan',
+        ),
         centerTitle: false,
         backgroundColor: _isScrolled
             ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
@@ -1494,14 +1592,20 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
             itemBuilder: (context, index) {
               final item = _savedItems[index];
               final hadis = item.hadis;
-              final double bottomMargin = (index == _savedItems.length - 1) ? 0.0 : 2.0;
+              final double bottomMargin = (index == _savedItems.length - 1)
+                  ? 0.0
+                  : 2.0;
               final BorderRadius borderRadius;
               if (_savedItems.length == 1) {
                 borderRadius = BorderRadius.circular(24.0);
               } else if (index == 0) {
-                borderRadius = const BorderRadius.vertical(top: Radius.circular(24.0));
+                borderRadius = const BorderRadius.vertical(
+                  top: Radius.circular(24.0),
+                );
               } else if (index == _savedItems.length - 1) {
-                borderRadius = const BorderRadius.vertical(bottom: Radius.circular(24.0));
+                borderRadius = const BorderRadius.vertical(
+                  bottom: Radius.circular(24.0),
+                );
               } else {
                 borderRadius = BorderRadius.zero;
               }
@@ -1510,10 +1614,10 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                 padding: EdgeInsets.only(bottom: bottomMargin),
                 child: Card.filled(
                   margin: EdgeInsets.zero,
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: borderRadius,
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.25,
                   ),
+                  shape: RoundedRectangleBorder(borderRadius: borderRadius),
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     onTap: () async {
@@ -1527,19 +1631,20 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                           ),
                         ),
                       );
-                      _loadSavedHadiths(); // Refresh after coming back in case they unbookmarked
+                      await _loadSavedHadiths();
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Number Circle Badge
                           Container(
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.1,
+                              ),
                               shape: BoxShape.circle,
                             ),
                             alignment: Alignment.center,
@@ -1558,17 +1663,22 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                               children: [
                                 if (widget.isGlobal) ...[
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       item.bookName,
-                                      style: theme.textTheme.labelSmall?.copyWith(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: theme.colorScheme.primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
                                   ),
                                   const SizedBox(height: 6),
@@ -1581,7 +1691,8 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                     height: 1.2,
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.8),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -1600,7 +1711,9 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                           const SizedBox(width: 8),
                           Icon(
                             Icons.chevron_right_rounded,
-                            color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.7,
+                            ),
                           ),
                         ],
                       ),

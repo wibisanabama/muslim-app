@@ -32,7 +32,6 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
         }
       });
 
-    // Jalankan timer untuk mengupdate waktu mundur setiap detik
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {});
@@ -68,21 +67,31 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
     try {
       final parts = rawDate.split(', ');
       if (parts.length < 2) return rawDate;
-      
+
       final dayName = parts[0];
       final dateParts = parts[1].split('/');
       if (dateParts.length < 3) return rawDate;
-      
+
       final day = int.parse(dateParts[0]);
       final month = int.parse(dateParts[1]);
       final year = int.parse(dateParts[2]);
-      
+
       final months = [
-        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
       ];
       final monthName = months[month - 1];
-      
+
       return "$dayName, $day $monthName $year";
     } catch (_) {
       return rawDate;
@@ -106,7 +115,9 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
     required Duration? timeRemaining,
   }) {
     if (isPastDay) {
-      final bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.10);
+      final bgColor = theme.colorScheme.primaryContainer.withValues(
+        alpha: 0.10,
+      );
       final textColor = theme.colorScheme.onSurface.withValues(alpha: 0.4);
 
       return SizedBox(
@@ -150,7 +161,9 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
         ),
       );
     } else if (isFutureDay) {
-      final bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.25);
+      final bgColor = theme.colorScheme.primaryContainer.withValues(
+        alpha: 0.25,
+      );
       final textColor = theme.colorScheme.onSurface;
 
       return SizedBox(
@@ -268,14 +281,12 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
       {'name': 'Isya', 'time': widget.schedule.isya},
     ];
 
-    // Hitung shalat berikutnya & waktu mundur (selalu tampil)
     Map<String, String>? upcomingShalat;
     Duration? timeRemaining;
     final now = DateTime.now();
     final todayDate = DateTime(now.year, now.month, now.day);
     final tomorrowDate = todayDate.add(const Duration(days: 1));
 
-    // Parse widget.schedule.tanggal ("Jumat, 22/05/2026")
     DateTime? scheduleDate;
     try {
       final parts = widget.schedule.tanggal.split(', ');
@@ -292,9 +303,9 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
 
     final isPastDay = scheduleDate != null && scheduleDate.isBefore(todayDate);
     final isFutureDay = scheduleDate != null && scheduleDate.isAfter(todayDate);
-    final isToday = scheduleDate == null || scheduleDate.isAtSameMomentAs(todayDate);
+    final isToday =
+        scheduleDate == null || scheduleDate.isAtSameMomentAs(todayDate);
 
-    // Cari jadwal hari ini untuk mendeteksi waktu Isya hari ini
     final vm = context.read<ShalatViewModel>();
     ShalatDaySchedule? todaySchedule;
     for (final s in vm.schedules) {
@@ -326,7 +337,9 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
       } catch (_) {}
     }
 
-    final bool isAfterTodayIsya = todayIsyaTime != null && (now.isAfter(todayIsyaTime) || now.isAtSameMomentAs(todayIsyaTime));
+    final bool isAfterTodayIsya =
+        todayIsyaTime != null &&
+        (now.isAfter(todayIsyaTime) || now.isAtSameMomentAs(todayIsyaTime));
 
     bool headerIsToday = isToday;
     bool headerIsPastDay = isPastDay;
@@ -335,12 +348,10 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
     if (isAfterTodayIsya) {
       if (scheduleDate != null) {
         if (scheduleDate.isAtSameMomentAs(todayDate)) {
-          // Kartu shalat mendatang hari ini jadi "off" (inactive/terlewat)
           headerIsToday = false;
           headerIsPastDay = true;
           headerIsFutureDay = false;
         } else if (scheduleDate.isAtSameMomentAs(tomorrowDate)) {
-          // Kartu shalat mendatang hari besok mulai aktif
           headerIsToday = true;
           headerIsPastDay = false;
           headerIsFutureDay = false;
@@ -358,23 +369,21 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
           final hour = int.parse(timeParts[0]);
           final minute = int.parse(timeParts[1]);
 
-          // Tentukan tanggal target kalkulasi (hari ini atau besok)
           final targetDate = scheduleDate ?? todayDate;
-          final targetTime = DateTime(targetDate.year, targetDate.month, targetDate.day, hour, minute);
+          final targetTime = DateTime(
+            targetDate.year,
+            targetDate.month,
+            targetDate.day,
+            hour,
+            minute,
+          );
 
           if (targetTime.isAfter(now)) {
-            candidates.add({
-              'item': item,
-              'dateTime': targetTime,
-            });
+            candidates.add({'item': item, 'dateTime': targetTime});
           } else {
-            // Kandidat hari berikutnya
             final tomorrowTime = targetTime.add(const Duration(days: 1));
             candidates.add({
-              'item': {
-                'name': '${item['name']} (Besok)',
-                'time': item['time'],
-              },
+              'item': {'name': '${item['name']} (Besok)', 'time': item['time']},
               'dateTime': tomorrowTime,
             });
           }
@@ -382,7 +391,10 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
       }
 
       if (candidates.isNotEmpty) {
-        candidates.sort((a, b) => (a['dateTime'] as DateTime).compareTo(b['dateTime'] as DateTime));
+        candidates.sort(
+          (a, b) =>
+              (a['dateTime'] as DateTime).compareTo(b['dateTime'] as DateTime),
+        );
         final nextCandidate = candidates.first;
         upcomingShalat = Map<String, String>.from(nextCandidate['item'] as Map);
         timeRemaining = (nextCandidate['dateTime'] as DateTime).difference(now);
@@ -403,7 +415,9 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
             Text(
               _formatFriendlyDate(widget.schedule.tanggal),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.8,
+                ),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -423,9 +437,12 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Kartu Shalat Mendatang
             Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 16.0),
+              padding: const EdgeInsets.only(
+                left: 8.0,
+                right: 8.0,
+                bottom: 16.0,
+              ),
               child: _buildHeaderCard(
                 context: context,
                 theme: theme,
@@ -437,14 +454,12 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
               ),
             ),
 
-            // List Jadwal Shalat
             ...shalatItems.asMap().entries.map((entry) {
               final i = entry.key;
               final item = entry.value;
               final isFirst = i == 0;
               final isLast = i == shalatItems.length - 1;
 
-              // Tentukan status shalat: passed, current, upcoming
               String status = 'upcoming';
               if (isPastDay) {
                 status = 'passed';
@@ -456,9 +471,14 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
                   final timeParts = timeStr.split(':');
                   final hour = int.parse(timeParts[0]);
                   final minute = int.parse(timeParts[1]);
-                  final shalatTime = DateTime(now.year, now.month, now.day, hour, minute);
+                  final shalatTime = DateTime(
+                    now.year,
+                    now.month,
+                    now.day,
+                    hour,
+                    minute,
+                  );
 
-                  // Waktu shalat berikutnya (untuk menentukan rentang "sedang berlangsung")
                   String? nextTimeStr;
                   if (item['name'] == 'Subuh') {
                     nextTimeStr = widget.schedule.terbit;
@@ -470,11 +490,19 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
                     final nextParts = nextTimeStr.split(':');
                     final nextHour = int.parse(nextParts[0]);
                     final nextMinute = int.parse(nextParts[1]);
-                    final nextShalatTime = DateTime(now.year, now.month, now.day, nextHour, nextMinute);
+                    final nextShalatTime = DateTime(
+                      now.year,
+                      now.month,
+                      now.day,
+                      nextHour,
+                      nextMinute,
+                    );
 
-                    if (now.isAfter(shalatTime) && now.isBefore(nextShalatTime)) {
+                    if (now.isAfter(shalatTime) &&
+                        now.isBefore(nextShalatTime)) {
                       status = 'current';
-                    } else if (now.isAfter(nextShalatTime) || now.isAtSameMomentAs(nextShalatTime)) {
+                    } else if (now.isAfter(nextShalatTime) ||
+                        now.isAtSameMomentAs(nextShalatTime)) {
                       status = 'passed';
                     } else if (now.isBefore(shalatTime)) {
                       status = 'upcoming';
@@ -482,8 +510,8 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
                       status = 'passed';
                     }
                   } else {
-                    // Item terakhir (Isya)
-                    if (now.isAfter(shalatTime) || now.isAtSameMomentAs(shalatTime)) {
+                    if (now.isAfter(shalatTime) ||
+                        now.isAtSameMomentAs(shalatTime)) {
                       status = 'current';
                     } else {
                       status = 'upcoming';
@@ -492,7 +520,6 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
                 } catch (_) {}
               }
 
-              // Styling berdasarkan status
               Color bgColor;
               double iconAlpha;
               Color textColor;
@@ -501,10 +528,16 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
 
               switch (status) {
                 case 'passed':
-                  bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.10);
+                  bgColor = theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.10,
+                  );
                   iconAlpha = 0.3;
-                  textColor = theme.colorScheme.onSurface.withValues(alpha: 0.4);
-                  timeColor = theme.colorScheme.onSurface.withValues(alpha: 0.4);
+                  textColor = theme.colorScheme.onSurface.withValues(
+                    alpha: 0.4,
+                  );
+                  timeColor = theme.colorScheme.onSurface.withValues(
+                    alpha: 0.4,
+                  );
                   textWeight = FontWeight.w400;
                   break;
                 case 'current':
@@ -514,8 +547,10 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
                   timeColor = theme.colorScheme.primary;
                   textWeight = FontWeight.bold;
                   break;
-                default: // upcoming
-                  bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.25);
+                default:
+                  bgColor = theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.25,
+                  );
                   iconAlpha = 1.0;
                   textColor = theme.colorScheme.onSurface;
                   timeColor = theme.colorScheme.onSurface;
@@ -538,7 +573,10 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
                       borderRadius: borderRadius,
                       clipBehavior: Clip.antiAlias,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 16,
+                        ),
                         child: Row(
                           children: [
                             Container(
@@ -546,15 +584,21 @@ class _ShalatDetailPageState extends State<ShalatDetailPage> {
                               height: 36,
                               decoration: BoxDecoration(
                                 color: status == 'current'
-                                    ? theme.colorScheme.primary.withValues(alpha: 0.2)
-                                    : theme.colorScheme.primary.withValues(alpha: 0.1 * iconAlpha),
+                                    ? theme.colorScheme.primary.withValues(
+                                        alpha: 0.2,
+                                      )
+                                    : theme.colorScheme.primary.withValues(
+                                        alpha: 0.1 * iconAlpha,
+                                      ),
                                 shape: BoxShape.circle,
                               ),
                               alignment: Alignment.center,
                               child: Icon(
                                 _getShalatIcon(item['name']!),
                                 size: 20,
-                                color: theme.colorScheme.primary.withValues(alpha: iconAlpha),
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: iconAlpha,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 16),

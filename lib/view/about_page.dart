@@ -56,22 +56,26 @@ class _AboutPageState extends State<AboutPage> {
     final additionalFeatures = [
       {
         'title': 'Arah Kiblat',
-        'subtitle': 'Menemukan arah kiblat secara akurat menggunakan sensor perangkat.',
+        'subtitle':
+            'Menemukan arah kiblat secara akurat menggunakan sensor perangkat.',
         'icon': Icons.explore,
       },
       {
         'title': 'Asmaul Husna',
-        'subtitle': '99 Nama Allah lengkap dengan teks Arab, latin, dan maknanya dari live API.',
+        'subtitle':
+            '99 Nama Allah lengkap dengan teks Arab, latin, dan maknanya dari live API.',
         'icon': Icons.brightness_5_rounded,
       },
       {
         'title': 'Tasbih Digital',
-        'subtitle': 'Penghitung tasbih digital dengan antarmuka yang bersih untuk berdzikir.',
+        'subtitle':
+            'Penghitung tasbih digital dengan antarmuka yang bersih untuk berdzikir.',
         'icon': Icons.fingerprint_rounded,
       },
       {
         'title': 'Hadis Nabawi',
-        'subtitle': 'Kumpulan hadis dari 9 kitab hadis utama dengan pencarian dinamis.',
+        'subtitle':
+            'Kumpulan hadis dari 9 kitab hadis utama dengan pencarian dinamis.',
         'icon': Icons.menu_book_rounded,
       },
     ];
@@ -118,7 +122,7 @@ class _AboutPageState extends State<AboutPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24),
-            // Logo Aplikasi
+
             Center(
               child: CircleAvatar(
                 radius: 48,
@@ -131,7 +135,7 @@ class _AboutPageState extends State<AboutPage> {
               ),
             ),
             const SizedBox(height: 16),
-            // Nama Aplikasi
+
             Center(
               child: Text(
                 'Muslim',
@@ -142,7 +146,7 @@ class _AboutPageState extends State<AboutPage> {
               ),
             ),
             const SizedBox(height: 4),
-            // Versi
+
             Center(
               child: Text(
                 'Versi 1.0.0',
@@ -152,7 +156,7 @@ class _AboutPageState extends State<AboutPage> {
               ),
             ),
             const SizedBox(height: 32),
-            // Deskripsi Aplikasi
+
             Card.filled(
               color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
               child: Padding(
@@ -169,16 +173,14 @@ class _AboutPageState extends State<AboutPage> {
                     const SizedBox(height: 8),
                     Text(
                       'Muslim adalah aplikasi penunjang ibadah harian umat Muslim yang dirancang dengan antarmuka yang bersih, responsif, dan mudah digunakan. Aplikasi ini dibangun sepenuhnya menggunakan arsitektur MVVM (Model-View-ViewModel) yang modular dan andal.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        height: 1.5,
-                      ),
+                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 24),
-            // Fitur Utama
+
             Padding(
               padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
               child: Text(
@@ -210,7 +212,9 @@ class _AboutPageState extends State<AboutPage> {
                 );
 
                 return Material(
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.25,
+                  ),
                   borderRadius: borderRadius,
                   clipBehavior: Clip.antiAlias,
                   child: Padding(
@@ -242,7 +246,7 @@ class _AboutPageState extends State<AboutPage> {
               },
             ),
             const SizedBox(height: 24),
-            // Fitur Tambahan
+
             Padding(
               padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
               child: Text(
@@ -274,7 +278,9 @@ class _AboutPageState extends State<AboutPage> {
                 );
 
                 return Material(
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.25,
+                  ),
                   borderRadius: borderRadius,
                   clipBehavior: Clip.antiAlias,
                   child: Padding(
@@ -306,20 +312,138 @@ class _AboutPageState extends State<AboutPage> {
               },
             ),
             const SizedBox(height: 32),
-            // Footer
+
+            Card.filled(
+              margin: EdgeInsets.zero,
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.security_rounded,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Informasi Keamanan & Data',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Aplikasi Muslim Modern dirancang dengan memprioritaskan keamanan, privasi data pengguna, dan fungsionalitas luring yang tangguh (offline-first).',
+                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
+                    ),
+                    const Divider(height: 24),
+                    Text(
+                      'Cara Data Anda Dikelola secara Lokal:',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSecurityInfoItem(
+                      theme: theme,
+                      number: '1',
+                      title: 'Log Nominal Infaq Terenkripsi',
+                      description:
+                          'Disimpan secara terenkripsi penuh menggunakan standar AES-256 pada kompartemen aman sistem (Keychain untuk iOS/macOS & Android KeyStore via FlutterSecureStorage).',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSecurityInfoItem(
+                      theme: theme,
+                      number: '2',
+                      title: 'Cache Lokasi & GPS Dinamis',
+                      description:
+                          'Hanya menyimpan nama kota pencarian shalat dan koordinat arah kiblat lokal yang dihitung secara dinamis. Koordinat GPS mentah Anda tidak pernah disimpan secara permanen demi privasi lokasi Anda.',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSecurityInfoItem(
+                      theme: theme,
+                      number: '3',
+                      title: 'Log Ibadah & Jurnal',
+                      description:
+                          'Jurnal ibadah shalat dan catatan ceramah disimpan secara terisolasi pada SharedPreferences lokal yang ter-sandbox di perangkat Anda.',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSecurityInfoItem(
+                      theme: theme,
+                      number: '4',
+                      title: 'Integritas Konten Offline',
+                      description:
+                          'Membaca data Al-Quran, Asmaul Husna, dan Doa terpopuler secara 100% luring untuk menghemat kuota. Integritas data diverifikasi secara mandiri di tingkat lokal.',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+
             const Center(
               child: Text(
                 '© 2026 Tim Muslim',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ),
             const SizedBox(height: 24),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSecurityInfoItem({
+    required ThemeData theme,
+    required String number,
+    required String title,
+    required String description,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 10,
+          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+          child: Text(
+            number,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                description,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

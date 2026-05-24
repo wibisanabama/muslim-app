@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,7 +8,11 @@ class DhikrItem {
   final String arabic;
   final String latin;
   final String meaning;
-  const DhikrItem({required this.arabic, required this.latin, required this.meaning});
+  const DhikrItem({
+    required this.arabic,
+    required this.latin,
+    required this.meaning,
+  });
 }
 
 class TasbihPage extends StatefulWidget {
@@ -17,18 +22,39 @@ class TasbihPage extends StatefulWidget {
   State<TasbihPage> createState() => _TasbihPageState();
 }
 
-class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateMixin {
+class _TasbihPageState extends State<TasbihPage>
+    with SingleTickerProviderStateMixin {
   static const List<DhikrItem> _dhikrs = [
-    DhikrItem(arabic: "سُبْحَانَ ٱللَّٰهِ", latin: "Subhanallah", meaning: "Maha Suci Allah"),
-    DhikrItem(arabic: "ٱلْحَمْدُ لِلَّٰهِ", latin: "Alhamdulillah", meaning: "Segala puji bagi Allah"),
-    DhikrItem(arabic: "ٱللَّٰهُ أَكْبَرُ", latin: "Allahu Akbar", meaning: "Allah Maha Besar"),
-    DhikrItem(arabic: "لَا إِلَٰهَ إِلَّا ٱللَّٰهُ", latin: "La ilaha illallah", meaning: "Tiada tuhan selain Allah"),
-    DhikrItem(arabic: "أَسْتَغْفِرُ ٱللَّٰهَ", latin: "Astaghfirullah", meaning: "Aku memohon ampun kepada Allah"),
+    DhikrItem(
+      arabic: "سُبْحَانَ ٱللَّٰهِ",
+      latin: "Subhanallah",
+      meaning: "Maha Suci Allah",
+    ),
+    DhikrItem(
+      arabic: "ٱلْحَمْدُ لِلَّٰهِ",
+      latin: "Alhamdulillah",
+      meaning: "Segala puji bagi Allah",
+    ),
+    DhikrItem(
+      arabic: "ٱللَّٰهُ أَكْبَرُ",
+      latin: "Allahu Akbar",
+      meaning: "Allah Maha Besar",
+    ),
+    DhikrItem(
+      arabic: "لَا إِلَٰهَ إِلَّا ٱللَّٰهُ",
+      latin: "La ilaha illallah",
+      meaning: "Tiada tuhan selain Allah",
+    ),
+    DhikrItem(
+      arabic: "أَسْتَغْفِرُ ٱللَّٰهَ",
+      latin: "Astaghfirullah",
+      meaning: "Aku memohon ampun kepada Allah",
+    ),
   ];
 
   int _count = 0;
   int _dhikrIndex = 0;
-  int _targetLimit = 33; // Default limit
+  int _targetLimit = 33;
   bool _isVibrationEnabled = true;
   bool _isAutoSwitchEnabled = true;
   bool _isPressed = false;
@@ -47,7 +73,7 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
           });
         }
       });
-    _loadState();
+    unawaited(_loadState());
   }
 
   @override
@@ -82,20 +108,17 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
 
   void _increment() {
     if (_isVibrationEnabled) {
-      HapticFeedback.lightImpact();
+      unawaited(HapticFeedback.lightImpact());
     }
 
     setState(() {
       _count++;
-      
-      // Cek jika batas tercapai
+
       if (_targetLimit > 0 && _count >= _targetLimit) {
         if (_isVibrationEnabled) {
-          // Umpan balik haptic yang lebih terasa untuk menandai tercapainya batas target
-          HapticFeedback.mediumImpact();
+          unawaited(HapticFeedback.mediumImpact());
         }
 
-        // Tampilkan pesan target tercapai di bagian bawah layar
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -121,42 +144,42 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
         }
       }
     });
-    _saveState();
+    unawaited(_saveState());
   }
 
   void _reset() {
     if (_isVibrationEnabled) {
-      HapticFeedback.mediumImpact();
+      unawaited(HapticFeedback.mediumImpact());
     }
     setState(() {
       _count = 0;
     });
-    _saveState();
+    unawaited(_saveState());
   }
 
   void _changeDhikr(int index) {
     if (_isVibrationEnabled) {
-      HapticFeedback.lightImpact();
+      unawaited(HapticFeedback.lightImpact());
     }
     setState(() {
       _dhikrIndex = index;
       _count = 0;
     });
-    _saveState();
+    unawaited(_saveState());
   }
 
   void _changeLimit(int limit) {
     if (_isVibrationEnabled) {
-      HapticFeedback.lightImpact();
+      unawaited(HapticFeedback.lightImpact());
     }
     setState(() {
       if (_targetLimit == limit) {
-        _targetLimit = 0; // Unselect -> Tanpa Batas
+        _targetLimit = 0;
       } else {
         _targetLimit = limit;
       }
     });
-    _saveState();
+    unawaited(_saveState());
   }
 
   @override
@@ -174,7 +197,6 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
-          // Tombol Reset
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Reset Hitungan',
@@ -190,10 +212,11 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Panel Pilihan Dhikr
             Card.filled(
               color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
               margin: EdgeInsets.zero,
               clipBehavior: Clip.antiAlias,
               child: InkWell(
@@ -202,7 +225,12 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
                   _showDhikrSelectionBottomSheet(theme);
                 },
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 36.0, bottom: 28.0),
+                  padding: const EdgeInsets.only(
+                    left: 20.0,
+                    right: 20.0,
+                    top: 36.0,
+                    bottom: 28.0,
+                  ),
                   child: Column(
                     children: [
                       Text(
@@ -239,7 +267,6 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
             ),
             const SizedBox(height: 32),
 
-            // area Lingkaran Tasbih Utama
             Center(
               child: GestureDetector(
                 onTapDown: (_) {
@@ -268,12 +295,16 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
                       shape: BoxShape.circle,
                       color: theme.colorScheme.primary.withValues(alpha: 0.15),
                       border: Border.all(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.25),
+                        color: theme.colorScheme.primary.withValues(
+                          alpha: 0.25,
+                        ),
                         width: 4,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.08,
+                          ),
                           blurRadius: 24,
                           spreadRadius: 4,
                         ),
@@ -285,10 +316,14 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
                       height: 220,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+                        color: theme.colorScheme.primaryContainer.withValues(
+                          alpha: 0.5,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.1,
+                            ),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -311,7 +346,9 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
                               '/ $_targetLimit',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.7,
+                                ),
                               ),
                             ),
                         ],
@@ -323,10 +360,11 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
             ),
             const SizedBox(height: 32),
 
-            // Pengaturan Batas Target & Fitur
             Card.filled(
               color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -350,7 +388,7 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 8),
-                    // Switch Getar
+
                     SwitchListTile.adaptive(
                       contentPadding: EdgeInsets.zero,
                       title: Text(
@@ -359,16 +397,18 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      subtitle: const Text('Bergetar setiap ketukan dan batas selesai.'),
+                      subtitle: const Text(
+                        'Bergetar setiap ketukan dan batas selesai.',
+                      ),
                       value: _isVibrationEnabled,
                       onChanged: (value) {
                         setState(() {
                           _isVibrationEnabled = value;
                         });
-                        _saveState();
+                        unawaited(_saveState());
                       },
                     ),
-                    // Switch Otomatis Ganti
+
                     SwitchListTile.adaptive(
                       contentPadding: EdgeInsets.zero,
                       title: Text(
@@ -377,13 +417,15 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      subtitle: const Text('Pindah ke bacaan berikutnya setelah target selesai.'),
+                      subtitle: const Text(
+                        'Pindah ke bacaan berikutnya setelah target selesai.',
+                      ),
                       value: _isAutoSwitchEnabled,
                       onChanged: (value) {
                         setState(() {
                           _isAutoSwitchEnabled = value;
                         });
-                        _saveState();
+                        unawaited(_saveState());
                       },
                     ),
                   ],
@@ -416,7 +458,9 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
               label,
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary,
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.primary,
               ),
             ),
           ),
@@ -426,112 +470,134 @@ class _TasbihPageState extends State<TasbihPage> with SingleTickerProviderStateM
   }
 
   void _showDhikrSelectionBottomSheet(ThemeData theme) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 20),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2),
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: theme.colorScheme.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.outline.withValues(
+                            alpha: 0.3,
+                          ),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                  ),
-                  Text(
-                    'Pilih Bacaan Dhikr',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    Text(
+                      'Pilih Bacaan Dhikr',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _dhikrs.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final item = _dhikrs[index];
-                      final isSelected = _dhikrIndex == index;
+                    const SizedBox(height: 16),
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _dhikrs.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final item = _dhikrs[index];
+                        final isSelected = _dhikrIndex == index;
 
-                      return Material(
-                        color: isSelected
-                            ? theme.colorScheme.primary.withValues(alpha: 0.12)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(16),
-                        clipBehavior: Clip.antiAlias,
-                        child: InkWell(
-                          onTap: () {
-                            _changeDhikr(index);
-                            Navigator.pop(context);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.latin,
-                                        style: theme.textTheme.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                        return Material(
+                          color: isSelected
+                              ? theme.colorScheme.primary.withValues(
+                                  alpha: 0.12,
+                                )
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () {
+                              _changeDhikr(index);
+                              Navigator.pop(context);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 12.0,
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.latin,
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                color: isSelected
+                                                    ? theme.colorScheme.primary
+                                                    : theme
+                                                          .colorScheme
+                                                          .onSurface,
+                                              ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        item.meaning,
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          color: isSelected 
-                                              ? theme.colorScheme.primary.withValues(alpha: 0.8)
-                                              : theme.colorScheme.onSurfaceVariant,
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          item.meaning,
+                                          style: theme.textTheme.bodyMedium
+                                              ?.copyWith(
+                                                color: isSelected
+                                                    ? theme.colorScheme.primary
+                                                          .withValues(
+                                                            alpha: 0.8,
+                                                          )
+                                                    : theme
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                              ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 16),
-                                Text(
-                                  item.arabic,
-                                  style: GoogleFonts.scheherazadeNew(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.primary,
+                                  const SizedBox(width: 16),
+                                  Text(
+                                    item.arabic,
+                                    style: GoogleFonts.scheherazadeNew(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

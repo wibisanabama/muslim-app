@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,7 +32,7 @@ class _QuranPageState extends State<QuranPage> {
         }
       });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<QuranViewModel>().fetchSurahs();
+      unawaited(context.read<QuranViewModel>().fetchSurahs());
     });
   }
 
@@ -51,7 +52,6 @@ class _QuranPageState extends State<QuranPage> {
     final vm = context.watch<QuranViewModel>();
     final theme = Theme.of(context);
 
-    // Filter surahs locally
     final filteredSurahs = vm.surahs.where((s) {
       final normQuery = _normalizeString(_searchQuery);
       if (normQuery.isEmpty) return true;
@@ -61,7 +61,7 @@ class _QuranPageState extends State<QuranPage> {
       final normQueryArabic = _searchQuery.toLowerCase();
 
       return normNamaLatin.contains(normQuery) ||
-             normNama.contains(normQueryArabic);
+          normNama.contains(normQueryArabic);
     }).toList();
 
     return Scaffold(
@@ -100,10 +100,15 @@ class _QuranPageState extends State<QuranPage> {
             decoration: InputDecoration(
               hintText: 'Cari surah...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
+                color: theme.colorScheme.onPrimaryContainer.withValues(
+                  alpha: 0.6,
+                ),
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               isDense: true,
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -167,7 +172,9 @@ class _QuranPageState extends State<QuranPage> {
                               ),
                               const SizedBox(height: 12),
                               FilledButton(
-                                onPressed: () => context.read<QuranViewModel>().fetchSurahs(),
+                                onPressed: () => context
+                                    .read<QuranViewModel>()
+                                    .fetchSurahs(),
                                 child: const Text('Coba Lagi'),
                               ),
                             ],
@@ -190,9 +197,7 @@ class _QuranPageState extends State<QuranPage> {
                       constraints: BoxConstraints(
                         minHeight: constraints.maxHeight,
                       ),
-                      child: Center(
-                        child: const Text('Data kosong'),
-                      ),
+                      child: Center(child: const Text('Data kosong')),
                     ),
                   );
                 },
@@ -216,7 +221,9 @@ class _QuranPageState extends State<QuranPage> {
                             Icon(
                               Icons.search_off,
                               size: 48,
-                              color: theme.colorScheme.secondary.withValues(alpha: 0.5),
+                              color: theme.colorScheme.secondary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Text(
@@ -256,16 +263,20 @@ class _QuranPageState extends State<QuranPage> {
                   bottomRight: Radius.circular(isLast ? 16 : 0),
                 );
 
-                final String place = s.tempatTurun == 'Mekah' ? 'Mekah' : 'Madinah';
+                final String place = s.tempatTurun == 'Mekah'
+                    ? 'Mekah'
+                    : 'Madinah';
                 final String versesTag = 'Ayat';
 
                 return Material(
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.25,
+                  ),
                   borderRadius: borderRadius,
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
-                    onTap: () {
-                      Navigator.push(
+                    onTap: () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => QuranDetailPage(
@@ -276,15 +287,19 @@ class _QuranPageState extends State<QuranPage> {
                       );
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
                       child: Row(
                         children: [
-                          // Leading Surah Number circle
                           Container(
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.1,
+                              ),
                               shape: BoxShape.circle,
                             ),
                             alignment: Alignment.center,
@@ -297,7 +312,7 @@ class _QuranPageState extends State<QuranPage> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          // Surah Details (Title & Subtitle)
+
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,13 +328,14 @@ class _QuranPageState extends State<QuranPage> {
                                 Text(
                                   '$place • ${s.jumlahAyat} $versesTag',
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                                    color: theme.colorScheme.onSurfaceVariant
+                                        .withValues(alpha: 0.8),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          // Arabic Name
+
                           Text(
                             s.nama,
                             style: GoogleFonts.scheherazadeNew(
@@ -332,7 +348,8 @@ class _QuranPageState extends State<QuranPage> {
                           Icon(
                             Icons.chevron_right,
                             size: 20,
-                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.8),
                           ),
                         ],
                       ),
@@ -360,8 +377,8 @@ class _QuranPageState extends State<QuranPage> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(24),
                     onTap: hasLastRead
-                        ? () {
-                            Navigator.push(
+                        ? () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => QuranDetailPage(
@@ -374,7 +391,10 @@ class _QuranPageState extends State<QuranPage> {
                           }
                         : null,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20,
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -383,7 +403,9 @@ class _QuranPageState extends State<QuranPage> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.18),
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.18,
+                              ),
                               shape: BoxShape.circle,
                             ),
                             alignment: Alignment.center,
@@ -400,8 +422,8 @@ class _QuranPageState extends State<QuranPage> {
                                 : 'Belum ada riwayat baca',
                             textAlign: TextAlign.center,
                             style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
                         ],

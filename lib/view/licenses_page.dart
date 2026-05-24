@@ -25,7 +25,6 @@ class _LicensesPageState extends State<LicensesPage> {
       }
     }
 
-    // Sort packages alphabetically
     final sortedPackages = packageLicenses.keys.toList()..sort();
     return sortedPackages.map((package) {
       return _PackageLicense(
@@ -39,10 +38,7 @@ class _LicensesPageState extends State<LicensesPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lisensi'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Lisensi'), centerTitle: false),
       body: FutureBuilder<List<_PackageLicense>>(
         future: _licensesFuture,
         builder: (context, snapshot) {
@@ -59,11 +55,15 @@ class _LicensesPageState extends State<LicensesPage> {
           }
           final packages = snapshot.data ?? [];
           return ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 12.0,
+            ),
             children: [
-              // Header Card
               Card.filled(
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.25,
+                ),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -114,16 +114,22 @@ class _LicensesPageState extends State<LicensesPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              // Segmented filled package licenses list
+
               ...List.generate(packages.length, (i) {
-                final double bottomMargin = (i == packages.length - 1) ? 0.0 : 2.0;
+                final double bottomMargin = (i == packages.length - 1)
+                    ? 0.0
+                    : 2.0;
                 final BorderRadius borderRadius;
                 if (packages.length == 1) {
                   borderRadius = BorderRadius.circular(16.0);
                 } else if (i == 0) {
-                  borderRadius = const BorderRadius.vertical(top: Radius.circular(16.0));
+                  borderRadius = const BorderRadius.vertical(
+                    top: Radius.circular(16.0),
+                  );
                 } else if (i == packages.length - 1) {
-                  borderRadius = const BorderRadius.vertical(bottom: Radius.circular(16.0));
+                  borderRadius = const BorderRadius.vertical(
+                    bottom: Radius.circular(16.0),
+                  );
                 } else {
                   borderRadius = BorderRadius.zero;
                 }
@@ -132,14 +138,17 @@ class _LicensesPageState extends State<LicensesPage> {
                   padding: EdgeInsets.only(bottom: bottomMargin),
                   child: Card.filled(
                     margin: EdgeInsets.zero,
-                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: borderRadius,
+                    color: theme.colorScheme.primaryContainer.withValues(
+                      alpha: 0.15,
                     ),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: borderRadius),
                     clipBehavior: Clip.antiAlias,
                     child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 4.0,
+                      ),
                       title: Text(
                         packages[i].packageName,
                         style: const TextStyle(fontWeight: FontWeight.w600),
@@ -152,10 +161,12 @@ class _LicensesPageState extends State<LicensesPage> {
                       ),
                       trailing: Icon(
                         Icons.chevron_right,
-                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.8,
+                        ),
                       ),
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => PackageLicenseDetailPage(
@@ -188,7 +199,8 @@ class PackageLicenseDetailPage extends StatefulWidget {
   });
 
   @override
-  State<PackageLicenseDetailPage> createState() => _PackageLicenseDetailPageState();
+  State<PackageLicenseDetailPage> createState() =>
+      _PackageLicenseDetailPageState();
 }
 
 class _PackageLicenseDetailPageState extends State<PackageLicenseDetailPage> {
@@ -201,17 +213,16 @@ class _PackageLicenseDetailPageState extends State<PackageLicenseDetailPage> {
     for (int i = 0; i < widget.entries.length; i++) {
       final entry = widget.entries[i];
       if (widget.entries.length > 1) {
-        _items.add(_LicenseItem(
-          isHeader: true,
-          text: 'Lisensi ${i + 1}',
-        ));
+        _items.add(_LicenseItem(isHeader: true, text: 'Lisensi ${i + 1}'));
       }
       for (final paragraph in entry.paragraphs) {
-        _items.add(_LicenseItem(
-          isHeader: false,
-          text: paragraph.text,
-          indent: paragraph.indent,
-        ));
+        _items.add(
+          _LicenseItem(
+            isHeader: false,
+            text: paragraph.text,
+            indent: paragraph.indent,
+          ),
+        );
       }
       if (i < widget.entries.length - 1) {
         _items.add(_LicenseItem(isHeader: false, text: '', isSpacer: true));
@@ -223,10 +234,7 @@ class _PackageLicenseDetailPageState extends State<PackageLicenseDetailPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.packageName),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: Text(widget.packageName), centerTitle: false),
       body: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
         itemCount: _items.length,
@@ -247,14 +255,13 @@ class _PackageLicenseDetailPageState extends State<PackageLicenseDetailPage> {
               ),
             );
           }
-          final double leftPadding = (item.indent < 0 ? 0.0 : item.indent) * 16.0;
-          final TextAlign textAlign = item.indent < 0 ? TextAlign.center : TextAlign.left;
+          final double leftPadding =
+              (item.indent < 0 ? 0.0 : item.indent) * 16.0;
+          final TextAlign textAlign = item.indent < 0
+              ? TextAlign.center
+              : TextAlign.left;
           return Padding(
-            padding: EdgeInsets.only(
-              left: leftPadding,
-              top: 2.0,
-              bottom: 2.0,
-            ),
+            padding: EdgeInsets.only(left: leftPadding, top: 2.0, bottom: 2.0),
             child: Text(
               item.text,
               textAlign: textAlign,

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strict network security config with dynamic-verified SSL pinning. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- SSL Pinning for api.myquran.com -->
+    <!-- Generated 2026-05-24 from CN=myquran.com, SAN=*.myquran.com -->
+    <domain-config>
+        <domain includeSubdomains="true">api.myquran.com</domain>
+        <pin-set expiration="2026-06-29">
+            <!-- Active Leaf Cert Pin -->
+            <pin digest="SHA-256">+HFwVc++umLz88L7pVI94qDiyU6FvmQRWKPBcvUttu0=</pin>
+            <!-- Intermediate CA Pin: GTS WE1 -->
+            <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+        </pin-set>
+    </domain-config>
+
+    <!-- SSL Pinning for equran.id -->
+    <!-- Generated 2026-05-24 from CN=equran.id -->
+    <domain-config>
+        <domain includeSubdomains="true">equran.id</domain>
+        <pin-set expiration="2026-07-11">
+            <!-- Active Leaf Cert Pin -->
+            <pin digest="SHA-256">EdsBSwmrjRNCEjJSR6t4akyTrpyzecC3qQFYW66P7K8=</pin>
+            <!-- Intermediate CA Pin: GTS WE1 -->
+            <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+        </pin-set>
+    </domain-config>
+
+    <!-- SSL Pinning for api.hadith.gading.dev -->
+    <!-- Generated 2026-05-24 from CN=api.hadith.gading.dev -->
+    <domain-config>
+        <domain includeSubdomains="true">api.hadith.gading.dev</domain>
+        <pin-set expiration="2026-08-16">
+            <!-- Active Leaf Cert Pin -->
+            <pin digest="SHA-256">96ytwM5p0RTCmIUFirCjp15bk7qL4Y/6kaf/YD8pVTQ=</pin>
+            <!-- Intermediate CA Pin: Let's Encrypt R12 -->
+            <pin digest="SHA-256">kZwN96eHtZftBWrOZUsd6cA4es80n3NzSk/XtYz2EqQ=</pin>
+        </pin-set>
+    </domain-config>
+
+    <!-- SSL Pinning for doa-doa-api-ahmadramadhan.fly.dev -->
+    <!-- Generated 2026-05-24 from CN=*.fly.dev -->
+    <domain-config>
+        <domain includeSubdomains="true">doa-doa-api-ahmadramadhan.fly.dev</domain>
+        <pin-set expiration="2026-07-21">
+            <!-- Active Leaf Cert Pin -->
+            <pin digest="SHA-256">dncYzPg27R2z4PCLjxxzsVJE4m2/d9nPxpLNu0rQ+0U=</pin>
+            <!-- Intermediate CA Pin: Let's Encrypt E8 -->
+            <pin digest="SHA-256">iFvwVyJSxnQdyaUvUERIf+8qk7gRze3612JMwoO3zdU=</pin>
+        </pin-set>
+    </domain-config>
+
+    <!-- SSL Pinning for asmaul-husna-api.vercel.app -->
+    <!-- Generated 2026-05-24 from CN=*.vercel.app -->
+    <domain-config>
+        <domain includeSubdomains="true">asmaul-husna-api.vercel.app</domain>
+        <pin-set expiration="2026-07-27">
+            <!-- Active Leaf Cert Pin -->
+            <pin digest="SHA-256">fndKWNHkmWFva8LCkbaQ6j1HS5JLIT9dD8JdQm41s7o=</pin>
+            <!-- Intermediate CA Pin: GTS WR1 -->
+            <pin digest="SHA-256">yDu9og255NN5GEf+Bwa9rTrqFQ0EydZ0r1FCh9TdAW4=</pin>
+        </pin-set>
+    </domain-config>
+
+</network-security-config>
