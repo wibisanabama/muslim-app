@@ -17,6 +17,19 @@ class SafeHttpClient extends http.BaseClient {
 
   SafeHttpClient(this._inner, {this.maxBytes = 5 * 1024 * 1024});
 
+  http.BaseRequest _cloneRequest(http.BaseRequest original) {
+    if (original is http.Request) {
+      final clone = http.Request(original.method, original.url)
+        ..headers.addAll(original.headers)
+        ..bodyBytes = original.bodyBytes
+        ..persistentConnection = original.persistentConnection
+        ..followRedirects = original.followRedirects
+        ..maxRedirects = original.maxRedirects;
+      return clone;
+    }
+    return original;
+  }
+
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     int attempt = 0;
@@ -26,7 +39,8 @@ class SafeHttpClient extends http.BaseClient {
     while (true) {
       attempt++;
       try {
-        final responseFuture = _inner.send(request);
+        final currentRequest = attempt == 1 ? request : _cloneRequest(request);
+        final responseFuture = _inner.send(currentRequest);
         final streamedResponse = await responseFuture.timeout(
           const Duration(seconds: 10),
           onTimeout: () => throw TimeoutException('Permintaan kedaluwarsa'),
@@ -70,7 +84,7 @@ class SafeHttpClient extends http.BaseClient {
           isRedirect: streamedResponse.isRedirect,
           persistentConnection: streamedResponse.persistentConnection,
           reasonPhrase: streamedResponse.reasonPhrase,
-          request: request,
+          request: currentRequest,
           contentLength: streamedResponse.contentLength,
         );
       } catch (e) {
