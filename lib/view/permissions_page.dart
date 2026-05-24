@@ -55,7 +55,39 @@ class PermissionsPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16.0),
               ),
               onTap: () async {
-                await Geolocator.openAppSettings();
+                final messenger = ScaffoldMessenger.of(context);
+                final permission = await Geolocator.checkPermission();
+                if (permission == LocationPermission.denied) {
+                  final newPermission = await Geolocator.requestPermission();
+                  if (newPermission == LocationPermission.always ||
+                      newPermission == LocationPermission.whileInUse) {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Izin lokasi berhasil diaktifkan!'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                } else if (permission == LocationPermission.deniedForever) {
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Mohon aktifkan izin Lokasi pada menu Izin di pengaturan sistem.',
+                      ),
+                      behavior: SnackBarBehavior.floating,
+                      duration: Duration(seconds: 4),
+                    ),
+                  );
+                  await Future.delayed(const Duration(milliseconds: 800));
+                  await Geolocator.openAppSettings();
+                } else {
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Izin lokasi sudah aktif.'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
               },
             ),
           ),
