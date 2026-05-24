@@ -9,7 +9,6 @@ import 'repository/doa_repository.dart';
 import 'viewmodel/doa_view_model.dart';
 import 'viewmodel/ramadhan_view_model.dart';
 import 'viewmodel/theme_view_model.dart';
-import 'viewmodel/language_view_model.dart';
 import 'view/splash_page.dart';
 import 'theme.dart';
 
@@ -56,9 +55,6 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<ThemeViewModel>(
           create: (_) => ThemeViewModel(),
-        ),
-        ChangeNotifierProvider<LanguageViewModel>(
-          create: (_) => LanguageViewModel(),
         ),
       ],
       child: Consumer<ThemeViewModel>(

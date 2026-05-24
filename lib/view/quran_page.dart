@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../viewmodel/quran_view_model.dart';
-import '../viewmodel/language_view_model.dart';
 import 'quran_detail_page.dart';
 import 'muslim_drawer.dart';
 
@@ -50,7 +49,6 @@ class _QuranPageState extends State<QuranPage> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<QuranViewModel>();
-    final langVm = context.watch<LanguageViewModel>();
     final theme = Theme.of(context);
 
     // Filter surahs locally
@@ -100,7 +98,7 @@ class _QuranPageState extends State<QuranPage> {
               });
             },
             decoration: InputDecoration(
-              hintText: langVm.translate('Cari surah...', 'Search surah...'),
+              hintText: 'Cari surah...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
               ),
@@ -164,13 +162,13 @@ class _QuranPageState extends State<QuranPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                langVm.translate('Gagal memuat data:\n${vm.error}', 'Failed to load data:\n${vm.error}'),
+                                'Gagal memuat data:\n${vm.error}',
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 12),
                               FilledButton(
                                 onPressed: () => context.read<QuranViewModel>().fetchSurahs(),
-                                child: Text(langVm.translate('Coba Lagi', 'Retry')),
+                                child: const Text('Coba Lagi'),
                               ),
                             ],
                           ),
@@ -193,7 +191,7 @@ class _QuranPageState extends State<QuranPage> {
                         minHeight: constraints.maxHeight,
                       ),
                       child: Center(
-                        child: Text(langVm.translate('Data kosong', 'No data available')),
+                        child: const Text('Data kosong'),
                       ),
                     ),
                   );
@@ -222,7 +220,7 @@ class _QuranPageState extends State<QuranPage> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              langVm.translate('Surah "$_searchQuery" tidak ditemukan', 'Surah "$_searchQuery" not found'),
+                              'Surah "$_searchQuery" tidak ditemukan',
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -258,10 +256,8 @@ class _QuranPageState extends State<QuranPage> {
                   bottomRight: Radius.circular(isLast ? 16 : 0),
                 );
 
-                final String place = s.tempatTurun == 'Mekah'
-                    ? langVm.translate('Mekah', 'Meccan')
-                    : langVm.translate('Madinah', 'Medinan');
-                final String versesTag = langVm.translate('Ayat', 'Verses');
+                final String place = s.tempatTurun == 'Mekah' ? 'Mekah' : 'Madinah';
+                final String versesTag = 'Ayat';
 
                 return Material(
                   color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
@@ -400,11 +396,8 @@ class _QuranPageState extends State<QuranPage> {
                           const SizedBox(height: 10),
                           Text(
                             hasLastRead
-                                ? langVm.translate(
-                                    'Surah ${vm.lastReadSurahName}, Ayat ${vm.lastReadAyah}',
-                                    'Surah ${vm.lastReadSurahName}, Verse ${vm.lastReadAyah}',
-                                  )
-                                : langVm.translate('Belum ada riwayat baca', 'No reading history yet'),
+                                ? 'Surah ${vm.lastReadSurahName}, Ayat ${vm.lastReadAyah}'
+                                : 'Belum ada riwayat baca',
                             textAlign: TextAlign.center,
                             style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,

@@ -10,16 +10,13 @@ import 'tasbih_page.dart';
 import 'ramadhan_page.dart';
 import 'hadis_page.dart';
 
-
 import 'shalat_detail_page.dart';
 import 'muslim_drawer.dart';
-import '../viewmodel/language_view_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'quran_detail_page.dart';
 import '../repository/quran_repository.dart';
 import '../model/surah_detail.dart';
 import 'dart:math';
-
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -38,10 +35,10 @@ class _HomePageState extends State<HomePage> {
   int _quoteSurahNum = 94;
   String _quoteSurahName = 'Al-Insyirah';
 
-  // Inline static fallback quote if offline/error (no helper file!)
+  // Inline static fallback quote if offline/error
   static final Ayat _fallbackAyat = Ayat(
     nomorAyat: 5,
-    teksArab: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا", // Note: arab text
+    teksArab: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
     teksLatin: "Fa inna ma'al-'usri yusrā",
     teksIndonesia: "Karena sesungguhnya sesudah kesulitan itu ada kemudahan.",
   );
@@ -98,9 +95,7 @@ class _HomePageState extends State<HomePage> {
         });
         return;
       }
-    } catch (_) {
-      // Catch exceptions and fall back to local default quote
-    }
+    } catch (_) {}
 
     if (mounted) {
       setState(() {
@@ -123,7 +118,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final vm = context.watch<ShalatViewModel>();
-    final langVm = context.watch<LanguageViewModel>();
 
     // Temukan shalat terdekat
     Map<String, String>? upcomingShalat;
@@ -136,7 +130,6 @@ class _HomePageState extends State<HomePage> {
       final now = DateTime.now();
       final todayDate = DateTime(now.year, now.month, now.day);
       final tomorrowDate = todayDate.add(const Duration(days: 1));
-
 
       for (final s in vm.schedules) {
         try {
@@ -265,188 +258,183 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (vm.isLoading || vm.isLoadingLocation) ...[
-              _buildLoadingCard(theme: theme),
-            ] else if (upcomingShalat != null && timeRemaining != null && targetSchedule != null) ...[
-              _buildUpcomingPrayerCard(
-                context: context,
-                theme: theme,
-                cityName: vm.cityName,
-                upcomingShalat: upcomingShalat,
-                timeRemaining: timeRemaining,
-                schedule: targetSchedule,
-              ),
-            ],
-
-            
-            // Catatan Ramadhan Card
-            Card.filled(
-              margin: EdgeInsets.zero,
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RamadhanPage(),
-                    ),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                        ),
-                        child: Icon(
-                          Icons.event_note_rounded,
-                          size: 20,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              langVm.translate('Catatan Ramadhan', 'Ramadan Log'),
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              langVm.translate('Pantau ibadah shalat, ceramah, dan infaq harian Anda.', 'Track your daily prayers, lectures, and infaq records.'),
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            
-            // Section Fitur Tambahan
-            Padding(
-              padding: EdgeInsets.zero,
-              child: Text(
-                langVm.translate('Fitur Tambahan', 'Additional Features'),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Shortcuts Row
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Qibla Direction Shortcut
-                Expanded(
-                  child: _buildShortcutItem(
-                    context: context,
-                    icon: Icons.explore,
-                    label: langVm.translate('Arah Kiblat', 'Qibla'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const KiblatPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Asmaul Husna Shortcut
-                Expanded(
-                  child: _buildShortcutItem(
-                    context: context,
-                    icon: Icons.brightness_5_rounded,
-                    label: 'Asmaul Husna',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AsmaulHusnaPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Tasbih Shortcut
-                Expanded(
-                  child: _buildShortcutItem(
-                    context: context,
-                    icon: Icons.fingerprint_rounded,
-                    label: langVm.translate('Tasbih', 'Tasbih'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const TasbihPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Hadis Shortcut
-                Expanded(
-                  child: _buildShortcutItem(
-                    context: context,
-                    icon: Icons.menu_book_rounded,
-                    label: langVm.translate('Hadis', 'Hadith'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HadisPage(),
-                        ),
-                      );
-                    },
-                  ),
+            children: [
+              if (vm.isLoading || vm.isLoadingLocation) ...[
+                _buildLoadingCard(theme: theme),
+              ] else if (upcomingShalat != null && timeRemaining != null && targetSchedule != null) ...[
+                _buildUpcomingPrayerCard(
+                  context: context,
+                  theme: theme,
+                  cityName: vm.cityName,
+                  upcomingShalat: upcomingShalat,
+                  timeRemaining: timeRemaining,
+                  schedule: targetSchedule,
                 ),
               ],
-            ),
 
+              // Catatan Ramadhan Card
+              Card.filled(
+                margin: EdgeInsets.zero,
+                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RamadhanPage(),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                          ),
+                          child: Icon(
+                            Icons.event_note_rounded,
+                            size: 20,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Catatan Ramadhan',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Pantau ibadah shalat, ceramah, dan infaq harian Anda.',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              
+              // Section Fitur Tambahan
+              Padding(
+                padding: EdgeInsets.zero,
+                child: Text(
+                  'Fitur Tambahan',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Shortcuts Row
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Qibla Direction Shortcut
+                  Expanded(
+                    child: _buildShortcutItem(
+                      context: context,
+                      icon: Icons.explore,
+                      label: 'Arah Kiblat',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const KiblatPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Asmaul Husna Shortcut
+                  Expanded(
+                    child: _buildShortcutItem(
+                      context: context,
+                      icon: Icons.brightness_5_rounded,
+                      label: 'Asmaul Husna',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AsmaulHusnaPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Tasbih Shortcut
+                  Expanded(
+                    child: _buildShortcutItem(
+                      context: context,
+                      icon: Icons.fingerprint_rounded,
+                      label: 'Tasbih',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TasbihPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Hadis Shortcut
+                  Expanded(
+                    child: _buildShortcutItem(
+                      context: context,
+                      icon: Icons.menu_book_rounded,
+                      label: 'Hadis',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HadisPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: 32),
-            _buildQuoteCard(
-              context: context,
-              theme: theme,
-              todaySchedule: todaySchedule,
-              tomorrowSchedule: tomorrowSchedule,
-            ),
-          ],
-
+              const SizedBox(height: 32),
+              _buildQuoteCard(
+                context: context,
+                theme: theme,
+                todaySchedule: todaySchedule,
+                tomorrowSchedule: tomorrowSchedule,
+              ),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
-
-
 
   Widget _buildQuoteCard({
     required BuildContext context,
@@ -522,7 +510,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '"${(ayat == _fallbackAyat) ? Provider.of<LanguageViewModel>(context, listen: false).translate(ayat.teksIndonesia, 'For indeed, with hardship [will be] ease.') : ayat.teksIndonesia}"',
+                  '"${ayat.teksIndonesia}"',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
@@ -546,9 +534,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
   Widget _buildUpcomingPrayerCard({
-
     required BuildContext context,
     required ThemeData theme,
     required String cityName,
@@ -556,12 +542,8 @@ class _HomePageState extends State<HomePage> {
     required Duration timeRemaining,
     required ShalatDaySchedule schedule,
   }) {
-    final langVm = Provider.of<LanguageViewModel>(context, listen: false);
     final name = upcomingShalat['name']!;
-    final isTomorrow = name.contains('(Besok)');
     final cleanName = name.replaceAll(' (Besok)', '');
-    final translatedTomorrowSuffix = isTomorrow ? langVm.translate(' (Besok)', ' (Tomorrow)') : '';
-    final translatedPrayerName = _translatePrayerName(cleanName, langVm) + translatedTomorrowSuffix;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -602,7 +584,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  translatedPrayerName,
+                  name,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -662,7 +644,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 16),
             Text(
-              Provider.of<LanguageViewModel>(context, listen: false).translate('Memuat Jadwal Terdekat', 'Loading Nearest Prayer'),
+              'Memuat Jadwal Terdekat',
               textAlign: TextAlign.center,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
@@ -671,7 +653,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              Provider.of<LanguageViewModel>(context, listen: false).translate('Menyelaraskan koordinat GPS real-time...', 'Synchronizing real-time GPS coordinates...'),
+              'Menyelaraskan koordinat GPS real-time...',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.primary.withValues(alpha: 0.8),
@@ -765,24 +747,4 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
-
-  String _translatePrayerName(String name, LanguageViewModel langVm) {
-    switch (name.toLowerCase()) {
-      case 'subuh':
-        return langVm.translate('Subuh', 'Fajr');
-      case 'dzuhur':
-        return langVm.translate('Dzuhur', 'Dhuhr');
-      case 'ashar':
-        return langVm.translate('Ashar', 'Asr');
-      case 'maghrib':
-        return langVm.translate('Maghrib', 'Maghrib');
-      case 'isya':
-        return langVm.translate('Isya', 'Isha');
-      default:
-        return name;
-    }
-  }
 }
-
-
-

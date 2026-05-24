@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../viewmodel/language_view_model.dart';
 import 'muslim_drawer.dart';
 
 class AboutPage extends StatefulWidget {
@@ -37,45 +35,43 @@ class _AboutPageState extends State<AboutPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final langVm = context.watch<LanguageViewModel>();
-
     final features = [
       {
-        'title': langVm.translate('Jadwal Shalat', 'Prayer Schedule'),
-        'subtitle': langVm.translate('Jadwal shalat bulanan yang akurat sesuai lokasi.', 'Accurate monthly prayer schedule based on your location.'),
+        'title': 'Jadwal Shalat',
+        'subtitle': 'Jadwal shalat bulanan yang akurat sesuai lokasi.',
         'icon': Icons.access_time_rounded,
       },
       {
-        'title': langVm.translate('Al-Quran', 'Al-Quran'),
-        'subtitle': langVm.translate('Daftar surat lengkap dengan teks Arab dan latin.', 'Complete list of surahs with Arabic and Latin text.'),
+        'title': 'Al-Quran',
+        'subtitle': 'Daftar surat lengkap dengan teks Arab dan latin.',
         'icon': Icons.menu_book_rounded,
       },
       {
-        'title': langVm.translate('Doa Harian', 'Daily Prayers'),
-        'subtitle': langVm.translate('Kumpulan doa harian dengan fallback offline otomatis.', 'Collection of daily prayers with automatic offline fallback.'),
+        'title': 'Doa Harian',
+        'subtitle': 'Kumpulan doa harian dengan fallback offline otomatis.',
         'icon': Icons.favorite_border_rounded,
       },
     ];
 
     final additionalFeatures = [
       {
-        'title': langVm.translate('Arah Kiblat', 'Qibla Direction'),
-        'subtitle': langVm.translate('Menemukan arah kiblat secara akurat menggunakan sensor perangkat.', 'Find Qibla direction accurately using device sensors.'),
+        'title': 'Arah Kiblat',
+        'subtitle': 'Menemukan arah kiblat secara akurat menggunakan sensor perangkat.',
         'icon': Icons.explore,
       },
       {
-        'title': langVm.translate('Asmaul Husna', 'Asmaul Husna'),
-        'subtitle': langVm.translate('99 Nama Allah lengkap dengan teks Arab, latin, dan maknanya dari live API.', '99 Beautiful Names of Allah with Arabic, Latin, and meaning from live API.'),
+        'title': 'Asmaul Husna',
+        'subtitle': '99 Nama Allah lengkap dengan teks Arab, latin, dan maknanya dari live API.',
         'icon': Icons.brightness_5_rounded,
       },
       {
-        'title': langVm.translate('Tasbih Digital', 'Digital Tasbih'),
-        'subtitle': langVm.translate('Penghitung tasbih digital dengan antarmuka yang bersih untuk berdzikir.', 'Digital tasbih counter with clean interface for dhikr.'),
+        'title': 'Tasbih Digital',
+        'subtitle': 'Penghitung tasbih digital dengan antarmuka yang bersih untuk berdzikir.',
         'icon': Icons.fingerprint_rounded,
       },
       {
-        'title': langVm.translate('Hadis Nabawi', 'Hadith Nabawi'),
-        'subtitle': langVm.translate('Kumpulan hadis dari 9 kitab hadis utama dengan pencarian dinamis.', 'Collection of hadiths from 9 major hadith books with dynamic search.'),
+        'title': 'Hadis Nabawi',
+        'subtitle': 'Kumpulan hadis dari 9 kitab hadis utama dengan pencarian dinamis.',
         'icon': Icons.menu_book_rounded,
       },
     ];
@@ -93,7 +89,7 @@ class _AboutPageState extends State<AboutPage> {
             );
           },
         ),
-        title: Text(langVm.translate('Tentang Aplikasi', 'About Application')),
+        title: const Text('Tentang Aplikasi'),
         centerTitle: true,
         backgroundColor: _isScrolled
             ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
@@ -149,7 +145,7 @@ class _AboutPageState extends State<AboutPage> {
             // Versi
             Center(
               child: Text(
-                langVm.translate('Versi 1.0.0', 'Version 1.0.0'),
+                'Versi 1.0.0',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -165,17 +161,14 @@ class _AboutPageState extends State<AboutPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      langVm.translate('Tentang Muslim', 'About Muslim'),
+                      'Tentang Muslim',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      langVm.translate(
-                        'Muslim adalah aplikasi penunjang ibadah harian umat Muslim yang dirancang dengan antarmuka yang bersih, responsif, dan mudah digunakan. Aplikasi ini dibangun sepenuhnya menggunakan arsitektur MVVM (Model-View-ViewModel) yang modular dan andal.',
-                        'Muslim is a daily worship support application for Muslims designed with a clean, responsive, and easy-to-use interface. This application is built entirely using the modular and reliable MVVM (Model-View-ViewModel) architecture.',
-                      ),
+                      'Muslim adalah aplikasi penunjang ibadah harian umat Muslim yang dirancang dengan antarmuka yang bersih, responsif, dan mudah digunakan. Aplikasi ini dibangun sepenuhnya menggunakan arsitektur MVVM (Model-View-ViewModel) yang modular dan andal.',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         height: 1.5,
                       ),
@@ -189,7 +182,7 @@ class _AboutPageState extends State<AboutPage> {
             Padding(
               padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
               child: Text(
-                langVm.translate('Fitur Utama', 'Main Features'),
+                'Fitur Utama',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -253,7 +246,7 @@ class _AboutPageState extends State<AboutPage> {
             Padding(
               padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
               child: Text(
-                langVm.translate('Fitur Tambahan', 'Additional Features'),
+                'Fitur Tambahan',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -314,11 +307,12 @@ class _AboutPageState extends State<AboutPage> {
             ),
             const SizedBox(height: 32),
             // Footer
-            Center(
+            const Center(
               child: Text(
-                langVm.translate('© 2026 Tim Muslim', '© 2026 Muslim Team'),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                '© 2026 Tim Muslim',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
                 ),
               ),
             ),

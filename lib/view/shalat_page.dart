@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodel/shalat_view_model.dart';
-import '../viewmodel/language_view_model.dart';
 import '../repository/shalat_repository.dart';
 import 'shalat_detail_page.dart';
 import 'muslim_drawer.dart';
@@ -124,43 +123,9 @@ class _ShalatPageState extends State<ShalatPage> {
     return -1;
   }
 
-  String _translateDayName(String dayName, LanguageViewModel langVm) {
-    if (!langVm.isEnglish) return dayName;
-    switch (dayName.toLowerCase()) {
-      case 'senin': return 'Monday';
-      case 'selasa': return 'Tuesday';
-      case 'rabu': return 'Wednesday';
-      case 'kamis': return 'Thursday';
-      case 'jumat': return 'Friday';
-      case 'sabtu': return 'Saturday';
-      case 'minggu': return 'Sunday';
-      default: return dayName;
-    }
-  }
-
-  String _translateMonthName(String monthName, LanguageViewModel langVm) {
-    if (!langVm.isEnglish) return monthName;
-    switch (monthName.toLowerCase()) {
-      case 'januari': return 'January';
-      case 'februari': return 'February';
-      case 'maret': return 'March';
-      case 'april': return 'April';
-      case 'mei': return 'May';
-      case 'juni': return 'June';
-      case 'juli': return 'July';
-      case 'agustus': return 'August';
-      case 'september': return 'September';
-      case 'oktober': return 'October';
-      case 'november': return 'November';
-      case 'desember': return 'December';
-      default: return monthName;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ShalatViewModel>();
-    final langVm = context.watch<LanguageViewModel>();
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -193,7 +158,7 @@ class _ShalatPageState extends State<ShalatPage> {
             textAlignVertical: TextAlignVertical.center,
             onChanged: _onSearchChanged,
             decoration: InputDecoration(
-              hintText: langVm.translate('Cari kota...', 'Search city...'),
+              hintText: 'Cari kota...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
               ),
@@ -248,7 +213,7 @@ class _ShalatPageState extends State<ShalatPage> {
                   if (snapshot.hasError) {
                     return Center(
                       child: Text(
-                        langVm.translate('Gagal mencari kota: ${snapshot.error}', 'Failed to search city: ${snapshot.error}'),
+                        'Gagal mencari kota: ${snapshot.error}',
                         style: TextStyle(color: theme.colorScheme.error),
                       ),
                     );
@@ -267,7 +232,7 @@ class _ShalatPageState extends State<ShalatPage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            langVm.translate('Kota "$_searchQuery" tidak ditemukan', 'City "$_searchQuery" not found'),
+                            'Kota "$_searchQuery" tidak ditemukan',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -347,7 +312,7 @@ class _ShalatPageState extends State<ShalatPage> {
                     const CircularProgressIndicator(),
                     const SizedBox(height: 16),
                     Text(
-                      langVm.translate('Mendeteksi koordinat GPS...', 'Detecting GPS coordinates...'),
+                      'Mendeteksi koordinat GPS...',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -376,14 +341,14 @@ class _ShalatPageState extends State<ShalatPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              langVm.translate('Gagal memuat data:\n${vm.error}', 'Failed to load data:\n${vm.error}'),
+                              'Gagal memuat data:\n${vm.error}',
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 12),
                             FilledButton(
                               onPressed: () =>
                                   context.read<ShalatViewModel>().updateLocationAndFetchSchedule(forceGPS: true),
-                              child: Text(langVm.translate('Coba Lagi', 'Retry')),
+                              child: const Text('Coba Lagi'),
                             ),
                           ],
                         ),
@@ -405,7 +370,7 @@ class _ShalatPageState extends State<ShalatPage> {
                         minHeight: constraints.maxHeight,
                       ),
                       child: Center(
-                        child: Text(langVm.translate('Data kosong', 'No data available')),
+                        child: const Text('Data kosong'),
                       ),
                     ),
                   );
@@ -543,33 +508,23 @@ class _ShalatPageState extends State<ShalatPage> {
                               'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
                             ];
                             final monthName = months[month - 1];
-                            final translatedMonthName = _translateMonthName(monthName, langVm);
-                            final translatedDayName = _translateDayName(dayName, langVm);
                             
                             final today = DateTime.now();
                             final todayDate = DateTime(today.year, today.month, today.day);
                             final targetDate = DateTime(year, month, day);
                             
                             if (targetDate.isAtSameMomentAs(todayDate)) {
-                              mainTitle = langVm.translate('Hari Ini', 'Today');
-                              subtitle = langVm.isEnglish
-                                  ? "$translatedDayName, $translatedMonthName $day, $year"
-                                  : "$dayName, $day $monthName $year";
+                              mainTitle = 'Hari Ini';
+                              subtitle = "$dayName, $day $monthName $year";
                             } else if (targetDate.isAtSameMomentAs(todayDate.add(const Duration(days: 1)))) {
-                              mainTitle = langVm.translate('Besok', 'Tomorrow');
-                              subtitle = langVm.isEnglish
-                                  ? "$translatedDayName, $translatedMonthName $day, $year"
-                                  : "$dayName, $day $monthName $year";
+                              mainTitle = 'Besok';
+                              subtitle = "$dayName, $day $monthName $year";
                             } else if (targetDate.isAtSameMomentAs(todayDate.subtract(const Duration(days: 1)))) {
-                              mainTitle = langVm.translate('Kemarin', 'Yesterday');
-                              subtitle = langVm.isEnglish
-                                  ? "$translatedDayName, $translatedMonthName $day, $year"
-                                  : "$dayName, $day $monthName $year";
+                              mainTitle = 'Kemarin';
+                              subtitle = "$dayName, $day $monthName $year";
                             } else {
-                              mainTitle = translatedDayName;
-                              subtitle = langVm.isEnglish
-                                  ? "$translatedMonthName $day, $year"
-                                  : "$day $monthName $year";
+                              mainTitle = dayName;
+                              subtitle = "$day $monthName $year";
                             }
                           }
                         }

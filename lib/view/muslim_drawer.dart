@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../viewmodel/language_view_model.dart';
 import 'settings_page.dart';
 
 class MuslimDrawer extends StatelessWidget {
@@ -9,7 +7,6 @@ class MuslimDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final langVm = context.watch<LanguageViewModel>();
 
     return Drawer(
       shape: const RoundedRectangleBorder(
@@ -34,9 +31,9 @@ class MuslimDrawer extends StatelessWidget {
             ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 24.0),
               leading: const Icon(Icons.settings_outlined),
-              title: Text(
-                langVm.translate('Pengaturan', 'Settings'),
-                style: const TextStyle(fontWeight: FontWeight.w500),
+              title: const Text(
+                'Pengaturan',
+                style: TextStyle(fontWeight: FontWeight.w500),
               ),
               onTap: () {
                 Navigator.pop(context); // Close the drawer

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import '../viewmodel/language_view_model.dart';
 
 class ApiListPage extends StatefulWidget {
   const ApiListPage({super.key});
@@ -11,7 +9,7 @@ class ApiListPage extends StatefulWidget {
 }
 
 class _ApiListPageState extends State<ApiListPage> {
-  void _copyToClipboard(String text, String label, LanguageViewModel langVm) {
+  void _copyToClipboard(String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -22,7 +20,7 @@ class _ApiListPageState extends State<ApiListPage> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                langVm.translate('$label disalin ke papan klip!', '$label copied to clipboard!'),
+                '$label disalin ke papan klip!',
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
             ),
@@ -39,89 +37,73 @@ class _ApiListPageState extends State<ApiListPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final langVm = context.watch<LanguageViewModel>();
 
     final List<Map<String, dynamic>> apis = [
       {
         'name': 'MyQuran API',
         'url': 'https://api.myquran.com',
         'icon': Icons.access_time_rounded,
-        'description': langVm.translate(
-          'Layanan API Jadwal Shalat terbaik di Indonesia yang terkalibrasi secara astronomis. Digunakan untuk pencarian koordinat kota/kabupaten serta pengambilan jadwal shalat bulanan presisi sesuai lokasi pengguna.',
-          'The best Prayer Times API service in Indonesia, astronomically calibrated. Used to search for city/district coordinates and retrieve precise monthly prayer schedules according to the user\'s location.',
-        ),
+        'description': 'Layanan API Jadwal Shalat terbaik di Indonesia yang terkalibrasi secara astronomis. Digunakan untuk pencarian koordinat kota/kabupaten serta pengambilan jadwal shalat bulanan presisi sesuai lokasi pengguna.',
         'endpoints': [
-          langVm.translate('GET /v2/sholat/kota/cari/{nama} - Mencari ID kota berdasarkan nama', 'GET /v2/sholat/kota/cari/{nama} - Search city ID by name'),
-          langVm.translate('GET /v2/sholat/jadwal/{cityId}/{tahun}/{bulan} - Mengambil jadwal shalat bulanan', 'GET /v2/sholat/jadwal/{cityId}/{tahun}/{bulan} - Retrieve monthly prayer schedule'),
+          'GET /v2/sholat/kota/cari/{nama} - Mencari ID kota berdasarkan nama',
+          'GET /v2/sholat/jadwal/{cityId}/{tahun}/{bulan} - Mengambil jadwal shalat bulanan',
         ],
-        'status': langVm.translate('Aktif', 'Active'),
+        'status': 'Aktif',
         'isExpanded': false,
       },
       {
         'name': 'equran.id API',
         'url': 'https://equran.id',
         'icon': Icons.menu_book_rounded,
-        'description': langVm.translate(
-          'Digunakan untuk menyuplai seluruh data Al-Quran digital meliputi daftar surat, detail surat (ayat-ayat), audio murottal per ayat, serta terjemahan bahasa Indonesia dan transliterasi latin.',
-          'Used to supply all digital Al-Quran data including list of surahs, surah details (verses), audio recitation per verse, as well as Indonesian translations and Latin transliteration.',
-        ),
+        'description': 'Digunakan untuk menyuplai seluruh data Al-Quran digital meliputi daftar surat, detail surat (ayat-ayat), audio murottal per ayat, serta terjemahan bahasa Indonesia dan transliterasi latin.',
         'endpoints': [
-          langVm.translate('GET /api/v2/surat - Mengambil daftar seluruh surat', 'GET /api/v2/surat - Retrieve list of all surahs'),
-          langVm.translate('GET /api/v2/surat/{nomor} - Mengambil detail surat beserta ayatnya (v2)', 'GET /api/v2/surat/{nomor} - Retrieve surah details and its verses (v2)'),
-          langVm.translate('GET /api/surat/{nomor} - Fallback detail surat (v1)', 'GET /api/surat/{nomor} - Fallback surah details (v1)'),
+          'GET /api/v2/surat - Mengambil daftar seluruh surat',
+          'GET /api/v2/surat/{nomor} - Mengambil detail surat beserta ayatnya (v2)',
+          'GET /api/surat/{nomor} - Fallback detail surat (v1)',
         ],
-        'status': langVm.translate('Aktif', 'Active'),
+        'status': 'Aktif',
         'isExpanded': false,
       },
       {
         'name': 'Ahmad Ramadhan Doa API',
         'url': 'https://doa-doa-api-ahmadramadhan.fly.dev',
         'icon': Icons.favorite_border_rounded,
-        'description': langVm.translate(
-          'Menyediakan kumpulan doa harian islami yang lengkap dengan teks Arab, transliterasi latin, terjemahan Indonesia, serta sumber sanad/riwayat doa.',
-          'Provides a complete collection of daily Islamic prayers with Arabic text, Latin transliteration, Indonesian translation, and the chain of narrations/history of prayers.',
-        ),
+        'description': 'Menyediakan kumpulan doa harian islami yang lengkap dengan teks Arab, transliterasi latin, terjemahan Indonesia, serta sumber sanad/riwayat doa.',
         'endpoints': [
-          langVm.translate('GET /api - Mengambil seluruh daftar doa harian lengkap', 'GET /api - Retrieve full list of daily prayers'),
+          'GET /api - Mengambil seluruh daftar doa harian lengkap',
         ],
-        'status': langVm.translate('Aktif', 'Active'),
+        'status': 'Aktif',
         'isExpanded': false,
       },
       {
         'name': 'Asmaul Husna API',
         'url': 'https://asmaul-husna-api.vercel.app',
         'icon': Icons.brightness_5_rounded,
-        'description': langVm.translate(
-          'Penyedia data 99 Nama Baik Allah (Asmaul Husna) lengkap dengan penulisan Arab yang indah, ejaan latin, dan penjelasan makna mendalam dari setiap nama.',
-          'Provider of 99 Beautiful Names of Allah (Asmaul Husna) complete with beautiful Arabic script, Latin spelling, and in-depth explanation of the meaning of each name.',
-        ),
+        'description': 'Penyedia data 99 Nama Baik Allah (Asmaul Husna) lengkap dengan penulisan Arab yang indah, ejaan latin, dan penjelasan makna mendalam dari setiap nama.',
         'endpoints': [
-          langVm.translate('GET /api/all - Mengambil 99 nama Asmaul Husna lengkap', 'GET /api/all - Retrieve 99 complete names of Asmaul Husna'),
+          'GET /api/all - Mengambil 99 nama Asmaul Husna lengkap',
         ],
-        'status': langVm.translate('Aktif', 'Active'),
+        'status': 'Aktif',
         'isExpanded': false,
       },
       {
         'name': 'Gading Hadith API',
         'url': 'https://api.hadith.gading.dev',
         'icon': Icons.bookmark_border_rounded,
-        'description': langVm.translate(
-          'API hadis terlengkap yang menyediakan kompilasi sanad dan matan hadis dari 9 kitab perawi hadis utama (Kutubut Tis\'ah) seperti Bukhari, Muslim, Abu Daud, dll.',
-          'The most complete hadith API that provides compilations of sanad and matan hadith from 9 major hadith narrator books (Kutubut Tis\'ah) such as Bukhari, Muslim, Abu Daud, etc.',
-        ),
+        'description': 'API hadis terlengkap yang menyediakan kompilasi sanad dan matan hadis dari 9 kitab perawi hadis utama (Kutubut Tis\'ah) seperti Bukhari, Muslim, Abu Daud, dll.',
         'endpoints': [
-          langVm.translate('GET /books - Mengambil daftar kitab hadis beserta jumlah hadis', 'GET /books - Retrieve list of hadith books and hadith counts'),
-          langVm.translate('GET /books/{bookId}?range={start}-{end} - Mengambil hadis dengan batasan range', 'GET /books/{bookId}?range={start}-{end} - Retrieve hadiths with range constraints'),
-          langVm.translate('GET /books/{bookId}/{number} - Mengambil satu detail hadis spesifik', 'GET /books/{bookId}/{number} - Retrieve a specific hadith details'),
+          'GET /books - Mengambil daftar kitab hadis beserta jumlah hadis',
+          'GET /books/{bookId}?range={start}-{end} - Mengambil hadis dengan batasan range',
+          'GET /books/{bookId}/{number} - Mengambil satu detail hadis spesifik',
         ],
-        'status': langVm.translate('Aktif', 'Active'),
+        'status': 'Aktif',
         'isExpanded': false,
       },
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(langVm.translate('Daftar API', 'API Directory')),
+        title: const Text('Daftar API'),
         centerTitle: false,
       ),
       body: ListView(
@@ -159,7 +141,7 @@ class _ApiListPageState extends State<ApiListPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              langVm.translate('Sumber Integrasi API', 'API Integration Sources'),
+                              'Sumber Integrasi API',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.primary,
@@ -167,7 +149,7 @@ class _ApiListPageState extends State<ApiListPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              langVm.translate('API Pihak Ketiga & Data Terbuka', 'Third-Party APIs & Open Data'),
+                              'API Pihak Ketiga & Data Terbuka',
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.w500,
@@ -180,10 +162,7 @@ class _ApiListPageState extends State<ApiListPage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    langVm.translate(
-                      'Aplikasi Muslim beroperasi sepenuhnya secara dinamis dan real-time menggunakan layanan API pihak ketiga berikut untuk menyajikan data keagamaan yang valid dan akurat.',
-                      'The Muslim application operates completely dynamically and in real-time using the following third-party API services to present valid and accurate religious data.',
-                    ),
+                    'Aplikasi Muslim beroperasi sepenuhnya secara dinamis dan real-time menggunakan layanan API pihak ketiga berikut untuk menyajikan data keagamaan yang valid dan akurat.',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       height: 1.4,
@@ -197,7 +176,7 @@ class _ApiListPageState extends State<ApiListPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: Text(
-              langVm.translate('Daftar API yang Digunakan', 'List of APIs Used'),
+              'Daftar API yang Digunakan',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: theme.colorScheme.onSurface,
@@ -268,9 +247,9 @@ class _ApiListPageState extends State<ApiListPage> {
                               color: Colors.green.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Text(
-                              api['status'] as String,
-                              style: const TextStyle(
+                            child: const Text(
+                              'Aktif',
+                              style: TextStyle(
                                 color: Colors.green,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -300,7 +279,7 @@ class _ApiListPageState extends State<ApiListPage> {
                               const Divider(height: 1),
                               const SizedBox(height: 16),
                               Text(
-                                langVm.translate('Deskripsi Layanan:', 'Service Description:'),
+                                'Deskripsi Layanan:',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: theme.colorScheme.onSurface,
@@ -318,7 +297,7 @@ class _ApiListPageState extends State<ApiListPage> {
                               Row(
                                 children: [
                                   Text(
-                                    langVm.translate('Endpoints & Penggunaan:', 'Endpoints & Usage:'),
+                                    'Endpoints & Penggunaan:',
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: theme.colorScheme.onSurface,
@@ -333,12 +312,11 @@ class _ApiListPageState extends State<ApiListPage> {
                                     onPressed: () => _copyToClipboard(
                                       api['url'] as String,
                                       api['name'] as String,
-                                      langVm,
                                     ),
                                     icon: const Icon(Icons.copy_rounded, size: 14),
-                                    label: Text(
-                                      langVm.translate('Salin URL', 'Copy URL'),
-                                      style: const TextStyle(fontSize: 12),
+                                    label: const Text(
+                                      'Salin URL',
+                                      style: TextStyle(fontSize: 12),
                                     ),
                                   ),
                                 ],
