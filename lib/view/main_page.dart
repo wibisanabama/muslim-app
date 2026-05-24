@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../viewmodel/language_view_model.dart';
 import 'home_page.dart';
 import 'shalat_page.dart';
 import 'quran_page.dart';
@@ -34,6 +36,8 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    final langVm = context.watch<LanguageViewModel>();
+
     return Scaffold(
       body: _pages[_currentIndex],
       bottomNavigationBar: NavigationBar(
@@ -43,31 +47,31 @@ class _MainPageState extends State<MainPage> {
             _currentIndex = index;
           });
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Beranda',
+            icon: const Icon(Icons.home_outlined),
+            selectedIcon: const Icon(Icons.home),
+            label: langVm.translate('Beranda', 'Home'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.access_time),
-            selectedIcon: Icon(Icons.access_time_filled),
-            label: 'Jadwal',
+            icon: const Icon(Icons.access_time),
+            selectedIcon: const Icon(Icons.access_time_filled),
+            label: langVm.translate('Jadwal', 'Schedule'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: 'Quran',
+            icon: const Icon(Icons.menu_book_outlined),
+            selectedIcon: const Icon(Icons.menu_book),
+            label: langVm.translate('Quran', 'Quran'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.favorite_border),
-            selectedIcon: Icon(Icons.favorite),
-            label: 'Doa',
+            icon: const Icon(Icons.favorite_border),
+            selectedIcon: const Icon(Icons.favorite),
+            label: langVm.translate('Doa', 'Doa'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.info_outline),
-            selectedIcon: Icon(Icons.info),
-            label: 'Tentang',
+            icon: const Icon(Icons.info_outline),
+            selectedIcon: const Icon(Icons.info),
+            label: langVm.translate('Tentang', 'About'),
           ),
         ],
       ),
