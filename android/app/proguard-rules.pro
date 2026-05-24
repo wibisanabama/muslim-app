@@ -12,3 +12,7 @@
 
 # Flutter Compass Proguard Rules
 -keep class com.hemanthraj.fluttercompass.** { *; }
+
+# Ignore Google Play Core missing classes (deferred components) referenced by Flutter engine
+-dontwarn com.google.android.play.core.**
+
