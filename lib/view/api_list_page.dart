@@ -11,6 +11,18 @@ class ApiListPage extends StatefulWidget {
 class _ApiListPageState extends State<ApiListPage> {
   final List<Map<String, dynamic>> _apis = [
     {
+      'name': 'MyQuran API',
+      'url': 'https://api.myquran.com',
+      'icon': Icons.access_time_rounded,
+      'description': 'Layanan API Jadwal Shalat terbaik di Indonesia yang terkalibrasi secara astronomis. Digunakan untuk pencarian koordinat kota/kabupaten serta pengambilan jadwal shalat bulanan presisi sesuai lokasi pengguna.',
+      'endpoints': [
+        'GET /v2/sholat/kota/cari/{nama} - Mencari ID kota berdasarkan nama',
+        'GET /v2/sholat/jadwal/{cityId}/{tahun}/{bulan} - Mengambil jadwal shalat bulanan',
+      ],
+      'status': 'Aktif',
+      'isExpanded': false,
+    },
+    {
       'name': 'equran.id API',
       'url': 'https://equran.id',
       'icon': Icons.menu_book_rounded,
@@ -19,18 +31,6 @@ class _ApiListPageState extends State<ApiListPage> {
         'GET /api/v2/surat - Mengambil daftar seluruh surat',
         'GET /api/v2/surat/{nomor} - Mengambil detail surat beserta ayatnya (v2)',
         'GET /api/surat/{nomor} - Fallback detail surat (v1)',
-      ],
-      'status': 'Aktif',
-      'isExpanded': false,
-    },
-    {
-      'name': 'MyQuran API',
-      'url': 'https://api.myquran.com',
-      'icon': Icons.access_time_rounded,
-      'description': 'Layanan API Jadwal Shalat terbaik di Indonesia yang terkalibrasi secara astronomis. Digunakan untuk pencarian koordinat kota/kabupaten serta pengambilan jadwal shalat bulanan presisi sesuai lokasi pengguna.',
-      'endpoints': [
-        'GET /v2/sholat/kota/cari/{nama} - Mencari ID kota berdasarkan nama',
-        'GET /v2/sholat/jadwal/{cityId}/{tahun}/{bulan} - Mengambil jadwal shalat bulanan',
       ],
       'status': 'Aktif',
       'isExpanded': false,
