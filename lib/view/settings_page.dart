@@ -124,7 +124,7 @@ class SettingsPage extends StatelessWidget {
                   const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
               leading: const Icon(Icons.description_outlined),
               title: const Text(
-                'Licenses',
+                'Lisensi',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: const Text('Lisensi perangkat lunak sumber terbuka'),

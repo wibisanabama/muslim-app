@@ -40,7 +40,7 @@ class _LicensesPageState extends State<LicensesPage> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Licenses'),
+        title: const Text('Lisensi'),
         centerTitle: false,
       ),
       body: FutureBuilder<List<_PackageLicense>>(
@@ -203,7 +203,7 @@ class _PackageLicenseDetailPageState extends State<PackageLicenseDetailPage> {
       if (widget.entries.length > 1) {
         _items.add(_LicenseItem(
           isHeader: true,
-          text: 'License ${i + 1}',
+          text: 'Lisensi ${i + 1}',
         ));
       }
       for (final paragraph in entry.paragraphs) {
