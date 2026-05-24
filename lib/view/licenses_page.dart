@@ -92,7 +92,7 @@ class _LicensesPageState extends State<LicensesPage> {
                       const Divider(height: 1, indent: 40, endIndent: 40),
                       const SizedBox(height: 12),
                       Text(
-                        'Powered by Flutter & Open Source',
+                        'Ditenagai oleh Flutter & Sumber Terbuka',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w500,
