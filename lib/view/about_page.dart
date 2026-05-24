@@ -53,6 +53,29 @@ class _AboutPageState extends State<AboutPage> {
       },
     ];
 
+    final additionalFeatures = [
+      {
+        'title': 'Arah Kiblat',
+        'subtitle': 'Menemukan arah kiblat secara akurat menggunakan sensor perangkat.',
+        'icon': Icons.explore,
+      },
+      {
+        'title': 'Asmaul Husna',
+        'subtitle': '99 Nama Allah lengkap dengan teks Arab, latin, dan maknanya dari live API.',
+        'icon': Icons.brightness_5_rounded,
+      },
+      {
+        'title': 'Tasbih Digital',
+        'subtitle': 'Penghitung tasbih digital dengan antarmuka yang bersih untuk berdzikir.',
+        'icon': Icons.fingerprint_rounded,
+      },
+      {
+        'title': 'Hadis Nabawi',
+        'subtitle': 'Kumpulan hadis dari 9 kitab hadis utama dengan pencarian dinamis.',
+        'icon': Icons.menu_book_rounded,
+      },
+    ];
+
     return Scaffold(
       drawer: const MuslimDrawer(),
       appBar: AppBar(
@@ -178,6 +201,70 @@ class _AboutPageState extends State<AboutPage> {
                 final feature = features[index];
                 final isFirst = index == 0;
                 final isLast = index == features.length - 1;
+
+                final borderRadius = BorderRadius.only(
+                  topLeft: Radius.circular(isFirst ? 16 : 0),
+                  topRight: Radius.circular(isFirst ? 16 : 0),
+                  bottomLeft: Radius.circular(isLast ? 16 : 0),
+                  bottomRight: Radius.circular(isLast ? 16 : 0),
+                );
+
+                return Material(
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                  borderRadius: borderRadius,
+                  clipBehavior: Clip.antiAlias,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: theme.colorScheme.secondaryContainer,
+                        child: Icon(
+                          feature['icon'] as IconData,
+                          color: theme.colorScheme.secondary,
+                        ),
+                      ),
+                      title: Text(
+                        feature['title'] as String,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Text(
+                        feature['subtitle'] as String,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+            // Fitur Tambahan
+            Padding(
+              padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+              child: Text(
+                'Fitur Tambahan',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: additionalFeatures.length,
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                color: theme.colorScheme.surface,
+                thickness: 1.5,
+              ),
+              itemBuilder: (context, index) {
+                final feature = additionalFeatures[index];
+                final isFirst = index == 0;
+                final isLast = index == additionalFeatures.length - 1;
 
                 final borderRadius = BorderRadius.only(
                   topLeft: Radius.circular(isFirst ? 16 : 0),
