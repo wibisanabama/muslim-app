@@ -76,7 +76,7 @@ class SettingsPage extends StatelessWidget {
                   'Daftar API',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text('API pihak ketiga yang digunakan aplikasi'),
+                subtitle: const Text('API Pihak Ketiga'),
                 trailing: Icon(
                   Icons.chevron_right,
                   color:
