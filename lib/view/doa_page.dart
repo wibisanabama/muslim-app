@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/doa_view_model.dart';
+import '../viewmodel/language_view_model.dart';
 import 'doa_detail_page.dart';
 import 'saved_doa_page.dart';
 import 'muslim_drawer.dart';
-
 
 class DoaPage extends StatefulWidget {
   const DoaPage({super.key});
@@ -46,6 +46,7 @@ class _DoaPageState extends State<DoaPage> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<DoaViewModel>();
+    final langVm = context.watch<LanguageViewModel>();
     final theme = Theme.of(context);
 
     // Filter doas locally
@@ -88,7 +89,7 @@ class _DoaPageState extends State<DoaPage> {
               });
             },
             decoration: InputDecoration(
-              hintText: 'Cari doa...',
+              hintText: langVm.translate('Cari doa...', 'Search prayer...'),
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
               ),
@@ -152,13 +153,13 @@ class _DoaPageState extends State<DoaPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Gagal memuat data doa:\n${vm.error}',
+                                langVm.translate('Gagal memuat data doa:\n${vm.error}', 'Failed to load prayer data:\n${vm.error}'),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 12),
                               FilledButton(
                                 onPressed: () => context.read<DoaViewModel>().fetchDoas(),
-                                child: const Text('Coba Lagi'),
+                                child: Text(langVm.translate('Coba Lagi', 'Retry')),
                               ),
                             ],
                           ),
@@ -180,8 +181,8 @@ class _DoaPageState extends State<DoaPage> {
                       constraints: BoxConstraints(
                         minHeight: constraints.maxHeight,
                       ),
-                      child: const Center(
-                        child: Text('Data kosong'),
+                      child: Center(
+                        child: Text(langVm.translate('Data kosong', 'No data available')),
                       ),
                     ),
                   );
@@ -210,7 +211,7 @@ class _DoaPageState extends State<DoaPage> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Doa "$_searchQuery" tidak ditemukan',
+                              langVm.translate('Doa "$_searchQuery" tidak ditemukan', 'Prayer "$_searchQuery" not found'),
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -336,8 +337,8 @@ class _DoaPageState extends State<DoaPage> {
                           const SizedBox(height: 10),
                           Text(
                             hasSavedDoas
-                                ? '$savedDoasCount Doa Disimpan'
-                                : 'Belum ada doa yang disimpan',
+                                ? langVm.translate('$savedDoasCount Doa Disimpan', '$savedDoasCount Saved Prayers')
+                                : langVm.translate('Belum ada doa yang disimpan', 'No saved prayers yet'),
                             textAlign: TextAlign.center,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,

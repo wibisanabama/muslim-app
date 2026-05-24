@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodel/shalat_view_model.dart';
+import '../viewmodel/language_view_model.dart';
 import '../repository/shalat_repository.dart';
 import 'shalat_detail_page.dart';
 import 'muslim_drawer.dart';
@@ -123,9 +124,43 @@ class _ShalatPageState extends State<ShalatPage> {
     return -1;
   }
 
+  String _translateDayName(String dayName, LanguageViewModel langVm) {
+    if (!langVm.isEnglish) return dayName;
+    switch (dayName.toLowerCase()) {
+      case 'senin': return 'Monday';
+      case 'selasa': return 'Tuesday';
+      case 'rabu': return 'Wednesday';
+      case 'kamis': return 'Thursday';
+      case 'jumat': return 'Friday';
+      case 'sabtu': return 'Saturday';
+      case 'minggu': return 'Sunday';
+      default: return dayName;
+    }
+  }
+
+  String _translateMonthName(String monthName, LanguageViewModel langVm) {
+    if (!langVm.isEnglish) return monthName;
+    switch (monthName.toLowerCase()) {
+      case 'januari': return 'January';
+      case 'februari': return 'February';
+      case 'maret': return 'March';
+      case 'april': return 'April';
+      case 'mei': return 'May';
+      case 'juni': return 'June';
+      case 'juli': return 'July';
+      case 'agustus': return 'August';
+      case 'september': return 'September';
+      case 'oktober': return 'October';
+      case 'november': return 'November';
+      case 'desember': return 'December';
+      default: return monthName;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ShalatViewModel>();
+    final langVm = context.watch<LanguageViewModel>();
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -158,7 +193,7 @@ class _ShalatPageState extends State<ShalatPage> {
             textAlignVertical: TextAlignVertical.center,
             onChanged: _onSearchChanged,
             decoration: InputDecoration(
-              hintText: 'Cari kota...',
+              hintText: langVm.translate('Cari kota...', 'Search city...'),
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
               ),
@@ -198,406 +233,416 @@ class _ShalatPageState extends State<ShalatPage> {
       body: RefreshIndicator(
         onRefresh: () => context.read<ShalatViewModel>().updateLocationAndFetchSchedule(forceGPS: true),
         child: Builder(
-            builder: (context) {
-              if (_searchQuery.isNotEmpty) {
-                if (_searchFuture == null) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                return FutureBuilder<List<Map<String, dynamic>>>(
-                  future: _searchFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Text(
-                          'Gagal mencari kota: ${snapshot.error}',
-                          style: TextStyle(color: theme.colorScheme.error),
-                        ),
-                      );
-                    }
-
-                    final cities = snapshot.data ?? [];
-                    if (cities.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.location_off,
-                              size: 64,
-                              color: theme.colorScheme.error.withValues(alpha: 0.2),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Kota "$_searchQuery" tidak ditemukan',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    return ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      itemCount: cities.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 2),
-                      itemBuilder: (context, index) {
-                        final city = cities[index];
-                        final cityName = city['lokasi'] as String? ?? '';
-                        final cityIdStr = city['id'] as String? ?? '';
-                        final cityId = int.tryParse(cityIdStr);
-
-                        final isFirst = index == 0;
-                        final isLast = index == cities.length - 1;
-                        final borderRadius = BorderRadius.only(
-                          topLeft: Radius.circular(isFirst ? 16 : 0),
-                          topRight: Radius.circular(isFirst ? 16 : 0),
-                          bottomLeft: Radius.circular(isLast ? 16 : 0),
-                          bottomRight: Radius.circular(isLast ? 16 : 0),
-                        );
-
-                        return Card.filled(
-                          margin: EdgeInsets.zero,
-                          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: borderRadius,
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
-                            leading: Icon(
-                              Icons.location_city,
-                              color: theme.colorScheme.primary,
-                            ),
-                            title: Text(
-                              cityName,
-                              style: const TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            trailing: Icon(
-                              Icons.chevron_right,
-                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                              size: 20,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: borderRadius,
-                            ),
-                            onTap: () {
-                              if (cityId != null) {
-                                vm.selectCity(cityId, cityName);
-                                _searchController.clear();
-                                FocusScope.of(context).unfocus();
-                                setState(() {
-                                  _searchQuery = '';
-                                });
-                              }
-                            },
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
-              }
-
-              if (vm.isLoadingLocation) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const CircularProgressIndicator(),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Mendeteksi koordinat GPS...',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              if (vm.isLoading) {
+          builder: (context) {
+            if (_searchQuery.isNotEmpty) {
+              if (_searchFuture == null) {
                 return const Center(child: CircularProgressIndicator());
               }
+              return FutureBuilder<List<Map<String, dynamic>>>(
+                future: _searchFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-              if (vm.error != null) {
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SingleChildScrollView(
-                      controller: _scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight,
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Gagal memuat data:\n${vm.error}',
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 12),
-                              FilledButton(
-                                onPressed: () =>
-                                    context.read<ShalatViewModel>().updateLocationAndFetchSchedule(forceGPS: true),
-                                child: const Text('Coba Lagi'),
-                              ),
-                            ],
-                          ),
-                        ),
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        langVm.translate('Gagal mencari kota: ${snapshot.error}', 'Failed to search city: ${snapshot.error}'),
+                        style: TextStyle(color: theme.colorScheme.error),
                       ),
                     );
-                  },
-                );
-              }
+                  }
 
-              if (vm.schedules.isEmpty) {
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SingleChildScrollView(
-                      controller: _scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight,
-                        ),
-                        child: const Center(
-                          child: Text('Data kosong'),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Card.filled(
-                    margin: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                    color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  final cities = snapshot.data ?? [];
+                  if (cities.isEmpty) {
+                    return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.18),
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: Alignment.center,
-                            child: Icon(
-                              Icons.location_on_rounded,
-                              color: theme.colorScheme.primary,
-                              size: 24,
-                            ),
+                          Icon(
+                            Icons.location_off,
+                            size: 64,
+                            color: theme.colorScheme.error.withValues(alpha: 0.2),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 16),
                           Text(
-                            vm.cityName,
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface,
+                            langVm.translate('Kota "$_searchQuery" tidak ditemukan', 'City "$_searchQuery" not found'),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
                       ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    itemCount: cities.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 2),
+                    itemBuilder: (context, index) {
+                      final city = cities[index];
+                      final cityName = city['lokasi'] as String? ?? '';
+                      final cityIdStr = city['id'] as String? ?? '';
+                      final cityId = int.tryParse(cityIdStr);
+
+                      final isFirst = index == 0;
+                      final isLast = index == cities.length - 1;
+                      final borderRadius = BorderRadius.only(
+                        topLeft: Radius.circular(isFirst ? 16 : 0),
+                        topRight: Radius.circular(isFirst ? 16 : 0),
+                        bottomLeft: Radius.circular(isLast ? 16 : 0),
+                        bottomRight: Radius.circular(isLast ? 16 : 0),
+                      );
+
+                      return Card.filled(
+                        margin: EdgeInsets.zero,
+                        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: borderRadius,
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                          leading: Icon(
+                            Icons.location_city,
+                            color: theme.colorScheme.primary,
+                          ),
+                          title: Text(
+                            cityName,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          trailing: Icon(
+                            Icons.chevron_right,
+                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                            size: 20,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: borderRadius,
+                          ),
+                          onTap: () {
+                            if (cityId != null) {
+                              vm.selectCity(cityId, cityName);
+                              _searchController.clear();
+                              FocusScope.of(context).unfocus();
+                              setState(() {
+                                _searchQuery = '';
+                              });
+                            }
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            }
+
+            if (vm.isLoadingLocation) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(
+                      langVm.translate('Mendeteksi koordinat GPS...', 'Detecting GPS coordinates...'),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (vm.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (vm.error != null) {
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              langVm.translate('Gagal memuat data:\n${vm.error}', 'Failed to load data:\n${vm.error}'),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            FilledButton(
+                              onPressed: () =>
+                                  context.read<ShalatViewModel>().updateLocationAndFetchSchedule(forceGPS: true),
+                              child: Text(langVm.translate('Coba Lagi', 'Retry')),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
+
+            if (vm.schedules.isEmpty) {
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Center(
+                        child: Text(langVm.translate('Data kosong', 'No data available')),
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Card.filled(
+                  margin: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.18),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.location_on_rounded,
+                            color: theme.colorScheme.primary,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          vm.cityName,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Expanded(
-                    child: ListView.separated(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(12),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: vm.schedules.length,
-                      separatorBuilder: (context, index) => Divider(
-                        height: 1,
-                        color: theme.colorScheme.surface,
-                        thickness: 1.5,
-                      ),
-                      itemBuilder: (context, i) {
-                        final d = vm.schedules[i];
-                        final isFirst = i == 0;
-                        final isLast = i == vm.schedules.length - 1;
+                ),
+                Expanded(
+                  child: ListView.separated(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(12),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: vm.schedules.length,
+                    separatorBuilder: (context, index) => Divider(
+                      height: 1,
+                      color: theme.colorScheme.surface,
+                      thickness: 1.5,
+                    ),
+                    itemBuilder: (context, i) {
+                      final d = vm.schedules[i];
+                      final isFirst = i == 0;
+                      final isLast = i == vm.schedules.length - 1;
 
-                        final now = DateTime.now();
-                        final todayDate = DateTime(now.year, now.month, now.day);
+                      final now = DateTime.now();
+                      final todayDate = DateTime(now.year, now.month, now.day);
 
-                        // Parse d.tanggal ("Jumat, 22/05/2026")
-                        DateTime? scheduleDate;
-                        try {
-                          final parts = d.tanggal.split(', ');
-                          if (parts.length >= 2) {
-                            final dateParts = parts[1].split('/');
-                            if (dateParts.length >= 3) {
-                              final day = int.parse(dateParts[0]);
-                              final month = int.parse(dateParts[1]);
-                              final year = int.parse(dateParts[2]);
-                              scheduleDate = DateTime(year, month, day);
+                      // Parse d.tanggal ("Jumat, 22/05/2026")
+                      DateTime? scheduleDate;
+                      try {
+                        final parts = d.tanggal.split(', ');
+                        if (parts.length >= 2) {
+                          final dateParts = parts[1].split('/');
+                          if (dateParts.length >= 3) {
+                            final day = int.parse(dateParts[0]);
+                            final month = int.parse(dateParts[1]);
+                            final year = int.parse(dateParts[2]);
+                            scheduleDate = DateTime(year, month, day);
+                          }
+                        }
+                      } catch (_) {}
+
+                      // Tentukan status: passed (terlewat), current (hari ini / sedang berlangsung), upcoming (akan datang)
+                      String status = 'upcoming';
+                      if (scheduleDate != null) {
+                        if (scheduleDate.isBefore(todayDate)) {
+                          status = 'passed';
+                        } else if (scheduleDate.isAtSameMomentAs(todayDate)) {
+                          status = 'current';
+                        }
+                      }
+
+                      // Styling berdasarkan status
+                      Color bgColor;
+                      Color textColor;
+                      Color chevronColor;
+                      FontWeight textWeight;
+
+                      switch (status) {
+                        case 'passed':
+                          bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.10);
+                          textColor = theme.colorScheme.onSurface.withValues(alpha: 0.4);
+                          chevronColor = theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3);
+                          textWeight = FontWeight.w400;
+                          break;
+                        case 'current':
+                          bgColor = theme.colorScheme.primary.withValues(alpha: 0.15);
+                          textColor = theme.colorScheme.primary;
+                          chevronColor = theme.colorScheme.primary;
+                          textWeight = FontWeight.bold;
+                          break;
+                        default: // upcoming
+                          bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.25);
+                          textColor = theme.colorScheme.onSurface;
+                          chevronColor = theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8);
+                          textWeight = FontWeight.w500;
+                      }
+
+                      String mainTitle = '';
+                      String subtitle = '';
+
+                      try {
+                        final parts = d.tanggal.split(', ');
+                        if (parts.length >= 2) {
+                          final dayName = parts[0];
+                          final dateParts = parts[1].split('/');
+                          if (dateParts.length >= 3) {
+                            final day = int.parse(dateParts[0]);
+                            final month = int.parse(dateParts[1]);
+                            final year = int.parse(dateParts[2]);
+                            
+                            final months = [
+                              'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                              'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                            ];
+                            final monthName = months[month - 1];
+                            final translatedMonthName = _translateMonthName(monthName, langVm);
+                            final translatedDayName = _translateDayName(dayName, langVm);
+                            
+                            final today = DateTime.now();
+                            final todayDate = DateTime(today.year, today.month, today.day);
+                            final targetDate = DateTime(year, month, day);
+                            
+                            if (targetDate.isAtSameMomentAs(todayDate)) {
+                              mainTitle = langVm.translate('Hari Ini', 'Today');
+                              subtitle = langVm.isEnglish
+                                  ? "$translatedDayName, $translatedMonthName $day, $year"
+                                  : "$dayName, $day $monthName $year";
+                            } else if (targetDate.isAtSameMomentAs(todayDate.add(const Duration(days: 1)))) {
+                              mainTitle = langVm.translate('Besok', 'Tomorrow');
+                              subtitle = langVm.isEnglish
+                                  ? "$translatedDayName, $translatedMonthName $day, $year"
+                                  : "$dayName, $day $monthName $year";
+                            } else if (targetDate.isAtSameMomentAs(todayDate.subtract(const Duration(days: 1)))) {
+                              mainTitle = langVm.translate('Kemarin', 'Yesterday');
+                              subtitle = langVm.isEnglish
+                                  ? "$translatedDayName, $translatedMonthName $day, $year"
+                                  : "$dayName, $day $monthName $year";
+                            } else {
+                              mainTitle = translatedDayName;
+                              subtitle = langVm.isEnglish
+                                  ? "$translatedMonthName $day, $year"
+                                  : "$day $monthName $year";
                             }
                           }
-                        } catch (_) {}
-
-                        // Tentukan status: passed (terlewat), current (hari ini / sedang berlangsung), upcoming (akan datang)
-                        String status = 'upcoming';
-                        if (scheduleDate != null) {
-                          if (scheduleDate.isBefore(todayDate)) {
-                            status = 'passed';
-                          } else if (scheduleDate.isAtSameMomentAs(todayDate)) {
-                            status = 'current';
-                          }
                         }
+                      } catch (_) {
+                        mainTitle = d.tanggal;
+                        subtitle = '';
+                      }
 
-                        // Styling berdasarkan status
-                        Color bgColor;
-                        Color textColor;
-                        Color chevronColor;
-                        FontWeight textWeight;
+                      final borderRadius = BorderRadius.only(
+                        topLeft: Radius.circular(isFirst ? 16 : 0),
+                        topRight: Radius.circular(isFirst ? 16 : 0),
+                        bottomLeft: Radius.circular(isLast ? 16 : 0),
+                        bottomRight: Radius.circular(isLast ? 16 : 0),
+                      );
 
-                        switch (status) {
-                          case 'passed':
-                            bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.10);
-                            textColor = theme.colorScheme.onSurface.withValues(alpha: 0.4);
-                            chevronColor = theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3);
-                            textWeight = FontWeight.w400;
-                            break;
-                          case 'current':
-                            bgColor = theme.colorScheme.primary.withValues(alpha: 0.15);
-                            textColor = theme.colorScheme.primary;
-                            chevronColor = theme.colorScheme.primary;
-                            textWeight = FontWeight.bold;
-                            break;
-                          default: // upcoming
-                            bgColor = theme.colorScheme.primaryContainer.withValues(alpha: 0.25);
-                            textColor = theme.colorScheme.onSurface;
-                            chevronColor = theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8);
-                            textWeight = FontWeight.w500;
-                        }
-
-                        String mainTitle = '';
-                        String subtitle = '';
-
-                        try {
-                          final parts = d.tanggal.split(', ');
-                          if (parts.length >= 2) {
-                            final dayName = parts[0];
-                            final dateParts = parts[1].split('/');
-                            if (dateParts.length >= 3) {
-                              final day = int.parse(dateParts[0]);
-                              final month = int.parse(dateParts[1]);
-                              final year = int.parse(dateParts[2]);
-                              
-                              final months = [
-                                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                              ];
-                              final monthName = months[month - 1];
-                              
-                              final today = DateTime.now();
-                              final todayDate = DateTime(today.year, today.month, today.day);
-                              final targetDate = DateTime(year, month, day);
-                              
-                              if (targetDate.isAtSameMomentAs(todayDate)) {
-                                mainTitle = "Hari Ini";
-                                subtitle = "$dayName, $day $monthName $year";
-                              } else if (targetDate.isAtSameMomentAs(todayDate.add(const Duration(days: 1)))) {
-                                mainTitle = "Besok";
-                                subtitle = "$dayName, $day $monthName $year";
-                              } else if (targetDate.isAtSameMomentAs(todayDate.subtract(const Duration(days: 1)))) {
-                                mainTitle = "Kemarin";
-                                subtitle = "$dayName, $day $monthName $year";
-                              } else {
-                                mainTitle = dayName;
-                                subtitle = "$day $monthName $year";
-                              }
-                            }
-                          }
-                        } catch (_) {
-                          mainTitle = d.tanggal;
-                          subtitle = '';
-                        }
-
-                        final borderRadius = BorderRadius.only(
-                          topLeft: Radius.circular(isFirst ? 16 : 0),
-                          topRight: Radius.circular(isFirst ? 16 : 0),
-                          bottomLeft: Radius.circular(isLast ? 16 : 0),
-                          bottomRight: Radius.circular(isLast ? 16 : 0),
-                        );
-
-                        return Material(
-                          color: bgColor,
-                          borderRadius: borderRadius,
-                          clipBehavior: Clip.antiAlias,
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => ShalatDetailPage(schedule: d),
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
+                      return Material(
+                        color: bgColor,
+                        borderRadius: borderRadius,
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ShalatDetailPage(schedule: d),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      mainTitle,
+                                      style: theme.textTheme.titleMedium?.copyWith(
+                                        fontWeight: textWeight,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                    if (subtitle.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
                                       Text(
-                                        mainTitle,
-                                        style: theme.textTheme.titleMedium?.copyWith(
-                                          fontWeight: textWeight,
-                                          color: textColor,
+                                        subtitle,
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: status == 'passed'
+                                              ? theme.colorScheme.onSurface.withValues(alpha: 0.3)
+                                              : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
                                         ),
                                       ),
-                                      if (subtitle.isNotEmpty) ...[
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          subtitle,
-                                          style: theme.textTheme.bodyMedium?.copyWith(
-                                            color: status == 'passed'
-                                                ? theme.colorScheme.onSurface.withValues(alpha: 0.3)
-                                                : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                                          ),
-                                        ),
-                                      ],
                                     ],
-                                  ),
-                                  Icon(
-                                    Icons.chevron_right,
-                                    size: 20,
-                                    color: chevronColor,
-                                  ),
-                                ],
-                              ),
+                                  ],
+                                ),
+                                Icon(
+                                  Icons.chevron_right,
+                                  size: 20,
+                                  color: chevronColor,
+                                ),
+                              ],
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ],
+            );
+          },
         ),
+      ),
     );
   }
 }

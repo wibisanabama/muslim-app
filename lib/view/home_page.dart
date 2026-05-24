@@ -13,6 +13,7 @@ import 'hadis_page.dart';
 
 import 'shalat_detail_page.dart';
 import 'muslim_drawer.dart';
+import '../viewmodel/language_view_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'quran_detail_page.dart';
 import '../repository/quran_repository.dart';
@@ -122,6 +123,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final vm = context.watch<ShalatViewModel>();
+    final langVm = context.watch<LanguageViewModel>();
 
     // Temukan shalat terdekat
     Map<String, String>? upcomingShalat;
@@ -318,7 +320,7 @@ class _HomePageState extends State<HomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Catatan Ramadhan',
+                              langVm.translate('Catatan Ramadhan', 'Ramadan Log'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.onSurface,
@@ -326,7 +328,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Pantau ibadah shalat, ceramah, dan infaq harian Anda.',
+                              langVm.translate('Pantau ibadah shalat, ceramah, dan infaq harian Anda.', 'Track your daily prayers, lectures, and infaq records.'),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -345,7 +347,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: EdgeInsets.zero,
               child: Text(
-                'Fitur Tambahan',
+                langVm.translate('Fitur Tambahan', 'Additional Features'),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: theme.colorScheme.onSurface,
@@ -363,7 +365,7 @@ class _HomePageState extends State<HomePage> {
                   child: _buildShortcutItem(
                     context: context,
                     icon: Icons.explore,
-                    label: 'Arah Kiblat',
+                    label: langVm.translate('Arah Kiblat', 'Qibla'),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -397,7 +399,7 @@ class _HomePageState extends State<HomePage> {
                   child: _buildShortcutItem(
                     context: context,
                     icon: Icons.fingerprint_rounded,
-                    label: 'Tasbih',
+                    label: langVm.translate('Tasbih', 'Tasbih'),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -414,7 +416,7 @@ class _HomePageState extends State<HomePage> {
                   child: _buildShortcutItem(
                     context: context,
                     icon: Icons.menu_book_rounded,
-                    label: 'Hadis',
+                    label: langVm.translate('Hadis', 'Hadith'),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -520,7 +522,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '"${ayat.teksIndonesia}"',
+                  '"${(ayat == _fallbackAyat) ? Provider.of<LanguageViewModel>(context, listen: false).translate(ayat.teksIndonesia, 'For indeed, with hardship [will be] ease.') : ayat.teksIndonesia}"',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
@@ -554,8 +556,12 @@ class _HomePageState extends State<HomePage> {
     required Duration timeRemaining,
     required ShalatDaySchedule schedule,
   }) {
+    final langVm = Provider.of<LanguageViewModel>(context, listen: false);
     final name = upcomingShalat['name']!;
+    final isTomorrow = name.contains('(Besok)');
     final cleanName = name.replaceAll(' (Besok)', '');
+    final translatedTomorrowSuffix = isTomorrow ? langVm.translate(' (Besok)', ' (Tomorrow)') : '';
+    final translatedPrayerName = _translatePrayerName(cleanName, langVm) + translatedTomorrowSuffix;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -596,7 +602,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  cleanName,
+                  translatedPrayerName,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -656,7 +662,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Memuat Jadwal Terdekat',
+              Provider.of<LanguageViewModel>(context, listen: false).translate('Memuat Jadwal Terdekat', 'Loading Nearest Prayer'),
               textAlign: TextAlign.center,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
@@ -665,7 +671,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Menyelaraskan koordinat GPS real-time...',
+              Provider.of<LanguageViewModel>(context, listen: false).translate('Menyelaraskan koordinat GPS real-time...', 'Synchronizing real-time GPS coordinates...'),
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.primary.withValues(alpha: 0.8),
@@ -758,6 +764,23 @@ class _HomePageState extends State<HomePage> {
         ),
       ],
     );
+  }
+
+  String _translatePrayerName(String name, LanguageViewModel langVm) {
+    switch (name.toLowerCase()) {
+      case 'subuh':
+        return langVm.translate('Subuh', 'Fajr');
+      case 'dzuhur':
+        return langVm.translate('Dzuhur', 'Dhuhr');
+      case 'ashar':
+        return langVm.translate('Ashar', 'Asr');
+      case 'maghrib':
+        return langVm.translate('Maghrib', 'Maghrib');
+      case 'isya':
+        return langVm.translate('Isya', 'Isha');
+      default:
+        return name;
+    }
   }
 }
 
