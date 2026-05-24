@@ -278,6 +278,7 @@ class _HadisListPageState extends State<HadisListPage> {
 
   String _searchQuery = '';
   final Map<int, Hadis> _searchedHadiths = {};
+  final Set<int> _fetchingNumbers = {};
   String? _searchError;
 
   int _currentStart = 1;
@@ -429,6 +430,27 @@ class _HadisListPageState extends State<HadisListPage> {
             backgroundColor: theme.colorScheme.error,
           ),
         );
+      }
+    }
+  }
+
+  Future<void> _lazyFetchHadis(int number) async {
+    if (_fetchingNumbers.contains(number)) return;
+    
+    _fetchingNumbers.add(number);
+    try {
+      final singleHadis = await _repository.getSingleHadis(widget.bookId, number);
+      if (mounted && _searchQuery.isNotEmpty) {
+        setState(() {
+          _searchedHadiths[number] = singleHadis;
+          _fetchingNumbers.remove(number);
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _fetchingNumbers.remove(number);
+        });
       }
     }
   }
@@ -690,6 +712,78 @@ class _HadisListPageState extends State<HadisListPage> {
                             borderRadius = BorderRadius.zero;
                           }
 
+                          if (foundHadis == null) {
+                            // Dynamically fetch missing hadith content in the background
+                            _lazyFetchHadis(num);
+
+                            // Return a premium skeleton loader card
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: bottomMargin),
+                              child: Card.filled(
+                                margin: EdgeInsets.zero,
+                                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: borderRadius,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Loading Badge
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(
+                                              theme.colorScheme.primary.withValues(alpha: 0.4),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            // Arabic skeleton block
+                                            Container(
+                                              width: 120,
+                                              height: 16,
+                                              decoration: BoxDecoration(
+                                                color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            // Translation skeleton block
+                                            Container(
+                                              width: double.infinity,
+                                              height: 12,
+                                              decoration: BoxDecoration(
+                                                color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+
                           return Padding(
                             padding: EdgeInsets.only(bottom: bottomMargin),
                             child: Card.filled(
@@ -725,53 +819,32 @@ class _HadisListPageState extends State<HadisListPage> {
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
-                                        child: foundHadis != null
-                                            ? Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    foundHadis.arabic,
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: GoogleFonts.scheherazadeNew(
-                                                      fontSize: 22,
-                                                      fontWeight: FontWeight.bold,
-                                                      height: 1.2,
-                                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 8),
-                                                  Text(
-                                                    foundHadis.translation,
-                                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                                      color: theme.colorScheme.onSurfaceVariant,
-                                                      height: 1.4,
-                                                    ),
-                                                    maxLines: 2,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ],
-                                              )
-                                            : Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    'Hadis ke-$num',
-                                                    style: theme.textTheme.titleMedium?.copyWith(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: theme.colorScheme.onSurface,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    'Ketuk untuk membuka detail hadis...',
-                                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                                      color: theme.colorScheme.onSurfaceVariant,
-                                                      fontStyle: FontStyle.italic,
-                                                    ),
-                                                  ),
-                                                ],
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              foundHadis.arabic,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: GoogleFonts.scheherazadeNew(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.bold,
+                                                height: 1.2,
+                                                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                                               ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              foundHadis.translation,
+                                              style: theme.textTheme.bodyMedium?.copyWith(
+                                                color: theme.colorScheme.onSurfaceVariant,
+                                                height: 1.4,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                       const SizedBox(width: 8),
                                       Icon(
