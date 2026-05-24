@@ -43,6 +43,7 @@ class _HadisPageState extends State<HadisPage> {
   String _searchQuery = '';
   late final ScrollController _scrollController;
   bool _isScrolled = false;
+  int _globalSavedCount = 0;
 
   @override
   void initState() {
@@ -56,6 +57,21 @@ class _HadisPageState extends State<HadisPage> {
           });
         }
       });
+    _loadGlobalSavedCount();
+  }
+
+  Future<void> _loadGlobalSavedCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    int total = 0;
+    for (final book in hadisBooks) {
+      final saved = prefs.getStringList('saved_hadis_${book.id}') ?? [];
+      total += saved.length;
+    }
+    if (mounted) {
+      setState(() {
+        _globalSavedCount = total;
+      });
+    }
   }
 
   @override
@@ -157,96 +173,162 @@ class _HadisPageState extends State<HadisPage> {
             );
           }
 
-          return ListView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(16),
-            itemCount: filteredBooks.length,
-            itemBuilder: (context, index) {
-              final book = filteredBooks[index];
-              final double bottomMargin = (index == filteredBooks.length - 1) ? 0.0 : 2.0;
-              final BorderRadius borderRadius;
-              if (filteredBooks.length == 1) {
-                borderRadius = BorderRadius.circular(24.0);
-              } else if (index == 0) {
-                borderRadius = const BorderRadius.vertical(top: Radius.circular(24.0));
-              } else if (index == filteredBooks.length - 1) {
-                borderRadius = const BorderRadius.vertical(bottom: Radius.circular(24.0));
-              } else {
-                borderRadius = BorderRadius.zero;
-              }
-
-              return Padding(
-                padding: EdgeInsets.only(bottom: bottomMargin),
-                child: Card.filled(
-                  margin: EdgeInsets.zero,
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: borderRadius,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HadisListPage(
-                            bookId: book.id,
-                            bookName: book.name,
-                            totalAvailable: book.available,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Global Saved Hadith Card
+              if (_searchQuery.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: Card.filled(
+                    margin: EdgeInsets.zero,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SavedHadisPage(),
                           ),
+                        );
+                        _loadGlobalSavedCount(); // Refresh total count when returning
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withValues(alpha: 0.18),
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.bookmark_added_rounded,
+                                color: theme.colorScheme.primary,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              _globalSavedCount > 0
+                                  ? '$_globalSavedCount Hadis Disimpan'
+                                  : 'Belum ada hadis yang disimpan',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                      child: Row(
-                        children: [
-                          // Rounded Book Icon Container
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.menu_book_rounded,
-                              color: theme.colorScheme.primary,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  book.name,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Tersedia ${book.available} Hadis',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                          ),
-                        ],
                       ),
                     ),
                   ),
                 ),
-              );
-            },
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: filteredBooks.length,
+                  itemBuilder: (context, index) {
+                    final book = filteredBooks[index];
+                    final double bottomMargin = (index == filteredBooks.length - 1) ? 0.0 : 2.0;
+                    final BorderRadius borderRadius;
+                    if (filteredBooks.length == 1) {
+                      borderRadius = BorderRadius.circular(24.0);
+                    } else if (index == 0) {
+                      borderRadius = const BorderRadius.vertical(top: Radius.circular(24.0));
+                    } else if (index == filteredBooks.length - 1) {
+                      borderRadius = const BorderRadius.vertical(bottom: Radius.circular(24.0));
+                    } else {
+                      borderRadius = BorderRadius.zero;
+                    }
+
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: bottomMargin),
+                      child: Card.filled(
+                        margin: EdgeInsets.zero,
+                        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: borderRadius,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => HadisListPage(
+                                  bookId: book.id,
+                                  bookName: book.name,
+                                  totalAvailable: book.available,
+                                ),
+                              ),
+                            );
+                            _loadGlobalSavedCount(); // Refresh when returning
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                            child: Row(
+                              children: [
+                                // Rounded Book Icon Container
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.menu_book_rounded,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        book.name,
+                                        style: theme.textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.colorScheme.onSurface,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Tersedia ${book.available} Hadis',
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: theme.colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -1157,15 +1239,29 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
   }
 }
 
-class SavedHadisPage extends StatefulWidget {
+class GlobalSavedHadisItem {
+  final Hadis hadis;
   final String bookId;
   final String bookName;
 
-  const SavedHadisPage({
-    super.key,
+  const GlobalSavedHadisItem({
+    required this.hadis,
     required this.bookId,
     required this.bookName,
   });
+}
+
+class SavedHadisPage extends StatefulWidget {
+  final String? bookId;
+  final String? bookName;
+
+  const SavedHadisPage({
+    super.key,
+    this.bookId,
+    this.bookName,
+  });
+
+  bool get isGlobal => bookId == null;
 
   @override
   State<SavedHadisPage> createState() => _SavedHadisPageState();
@@ -1174,7 +1270,7 @@ class SavedHadisPage extends StatefulWidget {
 class _SavedHadisPageState extends State<SavedHadisPage> {
   final ScrollController _scrollController = ScrollController();
   final HadisRepository _repository = HadisRepository();
-  List<Hadis> _savedHadiths = [];
+  List<GlobalSavedHadisItem> _savedItems = [];
   bool _isLoading = true;
   bool _isError = false;
   bool _isScrolled = false;
@@ -1201,29 +1297,78 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
 
   Future<void> _loadSavedHadiths() async {
     final prefs = await SharedPreferences.getInstance();
-    final numbers = prefs.getStringList('saved_hadis_${widget.bookId}') ?? [];
-    if (numbers.isEmpty) {
-      setState(() {
-        _savedHadiths = [];
-        _isLoading = false;
-      });
-      return;
-    }
-
+    
     setState(() {
       _isLoading = true;
       _isError = false;
     });
 
     try {
-      final futures = numbers.map((numStr) {
-        final num = int.parse(numStr);
-        return _repository.getSingleHadis(widget.bookId, num);
-      }).toList();
+      final List<GlobalSavedHadisItem> tempItems = [];
+      
+      if (widget.isGlobal) {
+        // Global mode: Load saved hadiths from all 9 books in parallel
+        final List<Future<List<GlobalSavedHadisItem>>> futures = [];
+        
+        for (final book in hadisBooks) {
+          final numbers = prefs.getStringList('saved_hadis_${book.id}') ?? [];
+          if (numbers.isNotEmpty) {
+            futures.add(() async {
+              final List<GlobalSavedHadisItem> bookItems = [];
+              final bookFutures = numbers.map((numStr) async {
+                final num = int.parse(numStr);
+                try {
+                  final h = await _repository.getSingleHadis(book.id, num);
+                  bookItems.add(GlobalSavedHadisItem(
+                    hadis: h,
+                    bookId: book.id,
+                    bookName: book.name,
+                  ));
+                } catch (_) {
+                  // Ignore failed single hadith fetches to let other loaded ones render successfully
+                }
+              }).toList();
+              
+              await Future.wait(bookFutures);
+              return bookItems;
+            }());
+          }
+        }
+        
+        final results = await Future.wait(futures);
+        for (final list in results) {
+          tempItems.addAll(list);
+        }
+        
+        // Sort globally loaded hadiths by book name alphabetically and then by hadith number
+        tempItems.sort((a, b) {
+          final bookCompare = a.bookName.compareTo(b.bookName);
+          if (bookCompare != 0) return bookCompare;
+          return a.hadis.number.compareTo(b.hadis.number);
+        });
+      } else {
+        // Single book mode: Load saved hadiths for the specific book
+        final numbers = prefs.getStringList('saved_hadis_${widget.bookId}') ?? [];
+        if (numbers.isNotEmpty) {
+          final bookFutures = numbers.map((numStr) async {
+            final num = int.parse(numStr);
+            final h = await _repository.getSingleHadis(widget.bookId!, num);
+            tempItems.add(GlobalSavedHadisItem(
+              hadis: h,
+              bookId: widget.bookId!,
+              bookName: widget.bookName!,
+            ));
+          }).toList();
+          
+          await Future.wait(bookFutures);
+          
+          // Sort numerically by hadith number
+          tempItems.sort((a, b) => a.hadis.number.compareTo(b.hadis.number));
+        }
+      }
 
-      final results = await Future.wait(futures);
       setState(() {
-        _savedHadiths = results;
+        _savedItems = tempItems;
       });
     } catch (e) {
       setState(() {
@@ -1242,7 +1387,9 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hadis ${widget.bookName.replaceAll("HR. ", "")} Disimpan'),
+        title: Text(widget.isGlobal
+            ? 'Semua Hadis Disimpan'
+            : 'Hadis ${widget.bookName!.replaceAll("HR. ", "")} Disimpan'),
         centerTitle: false,
         backgroundColor: _isScrolled
             ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
@@ -1295,7 +1442,7 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
             );
           }
 
-          if (_savedHadiths.isEmpty) {
+          if (_savedItems.isEmpty) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -1326,7 +1473,9 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Buka detail hadis lalu ketuk ikon bookmark di pojok kanan atas untuk menyimpan hadis pilihan Anda.',
+                      widget.isGlobal
+                          ? 'Buka kitab hadis pilihan Anda, buka detail hadis lalu ketuk ikon bookmark di pojok kanan atas untuk menyimpan hadis pilihan Anda.'
+                          : 'Buka detail hadis lalu ketuk ikon bookmark di pojok kanan atas untuk menyimpan hadis pilihan Anda.',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -1341,16 +1490,17 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
           return ListView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.all(16),
-            itemCount: _savedHadiths.length,
+            itemCount: _savedItems.length,
             itemBuilder: (context, index) {
-              final item = _savedHadiths[index];
-              final double bottomMargin = (index == _savedHadiths.length - 1) ? 0.0 : 2.0;
+              final item = _savedItems[index];
+              final hadis = item.hadis;
+              final double bottomMargin = (index == _savedItems.length - 1) ? 0.0 : 2.0;
               final BorderRadius borderRadius;
-              if (_savedHadiths.length == 1) {
+              if (_savedItems.length == 1) {
                 borderRadius = BorderRadius.circular(24.0);
               } else if (index == 0) {
                 borderRadius = const BorderRadius.vertical(top: Radius.circular(24.0));
-              } else if (index == _savedHadiths.length - 1) {
+              } else if (index == _savedItems.length - 1) {
                 borderRadius = const BorderRadius.vertical(bottom: Radius.circular(24.0));
               } else {
                 borderRadius = BorderRadius.zero;
@@ -1371,9 +1521,9 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => HadisDetailPage(
-                            hadis: item,
-                            bookId: widget.bookId,
-                            bookName: widget.bookName,
+                            hadis: hadis,
+                            bookId: item.bookId,
+                            bookName: item.bookName,
                           ),
                         ),
                       );
@@ -1394,7 +1544,7 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                             ),
                             alignment: Alignment.center,
                             child: Text(
-                              item.number.toString(),
+                              hadis.number.toString(),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.primary,
@@ -1406,8 +1556,25 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if (widget.isGlobal) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      item.bookName,
+                                      style: theme.textTheme.labelSmall?.copyWith(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                ],
                                 Text(
-                                  item.arabic,
+                                  hadis.arabic,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.scheherazadeNew(
@@ -1419,7 +1586,7 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  item.translation,
+                                  hadis.translation,
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     color: theme.colorScheme.onSurfaceVariant,
                                     height: 1.4,
