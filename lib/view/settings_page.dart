@@ -1,49 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../viewmodel/theme_view_model.dart';
+import '../viewmodel/language_view_model.dart';
 import 'api_list_page.dart';
 import 'licenses_page.dart';
 
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
-  @override
-  State<SettingsPage> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
-  String _selectedLanguage = 'Indonesia';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLanguage();
-  }
-
-  Future<void> _loadLanguage() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedLanguage = prefs.getString('app_language') ?? 'Indonesia';
-    });
-  }
-
-  Future<void> _saveLanguage(String lang) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('app_language', lang);
-    setState(() {
-      _selectedLanguage = lang;
-    });
+  String _getThemeLabel(ThemeMode mode, LanguageViewModel langVm) {
+    switch (mode) {
+      case ThemeMode.system:
+        return langVm.translate('Bawaan Sistem', 'System Default');
+      case ThemeMode.light:
+        return langVm.translate('Cerah', 'Light');
+      case ThemeMode.dark:
+        return langVm.translate('Gelap', 'Dark');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final themeVm = context.watch<ThemeViewModel>();
+    final langVm = context.watch<LanguageViewModel>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(langVm.translate('Pengaturan', 'Settings')),
         centerTitle: false,
       ),
       body: ListView(
@@ -66,11 +50,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
                 leading: const Icon(Icons.language_outlined),
-                title: const Text(
-                  'Bahasa',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                title: Text(
+                  langVm.translate('Bahasa', 'Language'),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: Text(_selectedLanguage),
+                subtitle: Text(langVm.currentLabel),
                 trailing: Icon(
                   Icons.chevron_right,
                   color:
@@ -82,7 +66,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     topRight: Radius.circular(16),
                   ),
                 ),
-                onTap: () => _showLanguageDialog(context),
+                onTap: () => _showLanguageDialog(context, langVm),
               ),
             ),
           ),
@@ -101,11 +85,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
                 leading: const Icon(Icons.palette_outlined),
-                title: const Text(
-                  'Tema',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                title: Text(
+                  langVm.translate('Tema', 'Theme'),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: Text(themeVm.label),
+                subtitle: Text(_getThemeLabel(themeVm.themeMode, langVm)),
                 trailing: Icon(
                   Icons.chevron_right,
                   color:
@@ -114,7 +98,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.zero,
                 ),
-                onTap: () => _showThemeDialog(context, themeVm),
+                onTap: () => _showThemeDialog(context, themeVm, langVm),
               ),
             ),
           ),
@@ -133,11 +117,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
                 leading: const Icon(Icons.dns_outlined),
-                title: const Text(
-                  'Daftar API',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                title: Text(
+                  langVm.translate('Daftar API', 'API Directory'),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text('API Pihak Ketiga'),
+                subtitle: Text(langVm.translate('API Pihak Ketiga', 'Third-Party APIs')),
                 trailing: Icon(
                   Icons.chevron_right,
                   color:
@@ -177,7 +161,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 'Licenses',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
-              subtitle: const Text('Open-source software licenses'),
+              subtitle: Text(
+                langVm.translate('Lisensi perangkat lunak sumber terbuka', 'Open-source software licenses'),
+              ),
               trailing: Icon(
                 Icons.chevron_right,
                 color:
@@ -204,8 +190,8 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showLanguageDialog(BuildContext context) {
-    String selected = _selectedLanguage;
+  void _showLanguageDialog(BuildContext context, LanguageViewModel langVm) {
+    String selected = langVm.selectedLanguage;
     final theme = Theme.of(context);
 
     showDialog(
@@ -214,7 +200,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Pilih Bahasa'),
+              title: Text(langVm.translate('Pilih Bahasa', 'Select Language')),
               insetPadding: const EdgeInsets.symmetric(horizontal: 16),
               contentPadding:
                   const EdgeInsets.only(left: 0, right: 0, top: 8, bottom: 0),
@@ -233,22 +219,32 @@ class _SettingsPageState extends State<SettingsPage> {
                       RadioListTile<String>(
                         dense: false,
                         title: Text(
-                          'English',
+                          langVm.translate('Bawaan Sistem', 'System Default'),
                           style: theme.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        value: 'English',
+                        value: 'system',
                       ),
                       RadioListTile<String>(
                         dense: false,
                         title: Text(
-                          'Indonesia',
+                          langVm.englishLabel,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        value: 'Indonesia',
+                        value: 'en',
+                      ),
+                      RadioListTile<String>(
+                        dense: false,
+                        title: Text(
+                          langVm.indonesianLabel,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        value: 'id',
                       ),
                     ],
                   ),
@@ -257,14 +253,14 @@ class _SettingsPageState extends State<SettingsPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Batal'),
+                  child: Text(langVm.translate('Batal', 'Cancel')),
                 ),
                 FilledButton(
                   onPressed: () {
-                    _saveLanguage(selected);
+                    langVm.setLanguage(selected);
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Simpan'),
+                  child: Text(langVm.translate('Simpan', 'Save')),
                 ),
               ],
             );
@@ -274,7 +270,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showThemeDialog(BuildContext context, ThemeViewModel themeVm) {
+  void _showThemeDialog(BuildContext context, ThemeViewModel themeVm, LanguageViewModel langVm) {
     ThemeMode selected = themeVm.themeMode;
     final theme = Theme.of(context);
 
@@ -284,7 +280,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Pilih Tema'),
+              title: Text(langVm.translate('Pilih Tema', 'Select Theme')),
               insetPadding: const EdgeInsets.symmetric(horizontal: 16),
               contentPadding:
                   const EdgeInsets.only(left: 0, right: 0, top: 8, bottom: 0),
@@ -303,7 +299,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       RadioListTile<ThemeMode>(
                         dense: false,
                         title: Text(
-                          'Bawaan Sistem',
+                          langVm.translate('Bawaan Sistem', 'System Default'),
                           style: theme.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
@@ -313,7 +309,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       RadioListTile<ThemeMode>(
                         dense: false,
                         title: Text(
-                          'Cerah',
+                          langVm.translate('Cerah', 'Light'),
                           style: theme.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
@@ -323,7 +319,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       RadioListTile<ThemeMode>(
                         dense: false,
                         title: Text(
-                          'Gelap',
+                          langVm.translate('Gelap', 'Dark'),
                           style: theme.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
@@ -337,14 +333,14 @@ class _SettingsPageState extends State<SettingsPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Batal'),
+                  child: Text(langVm.translate('Batal', 'Cancel')),
                 ),
                 FilledButton(
                   onPressed: () {
                     themeVm.setThemeMode(selected);
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Simpan'),
+                  child: Text(langVm.translate('Simpan', 'Save')),
                 ),
               ],
             );
