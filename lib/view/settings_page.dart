@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/theme_view_model.dart';
+import 'api_list_page.dart';
 import 'licenses_page.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -53,6 +54,45 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
                 onTap: () => _showThemeDialog(context, themeVm),
+              ),
+            ),
+          ),
+
+          // ─── Sumber API (middle item) ───
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2.0),
+            child: Card.filled(
+              margin: EdgeInsets.zero,
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
+              elevation: 0,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
+              ),
+              child: ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                leading: const Icon(Icons.dns_outlined),
+                title: const Text(
+                  'Daftar API',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text('API pihak ketiga yang digunakan aplikasi'),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color:
+                      theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                ),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ApiListPage(),
+                    ),
+                  );
+                },
               ),
             ),
           ),
