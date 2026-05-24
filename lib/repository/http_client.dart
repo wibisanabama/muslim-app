@@ -92,22 +92,29 @@ class SafeHttpClient extends http.BaseClient {
           rethrow;
         }
 
-        final isSocket =
-            e is SocketException ||
-            e is TlsException ||
-            e.toString().contains('SocketException') ||
+        final isTls = e is TlsException ||
             e.toString().contains('HandshakeException') ||
-            e.toString().contains('TlsException');
+            e.toString().contains('TlsException') ||
+            e.toString().contains('CERTIFICATE_VERIFY_FAILED');
 
-        if (isSocket && attempt < maxAttempts) {
+        final isSocket = e is SocketException ||
+            e.toString().contains('SocketException') ||
+            e.toString().contains('Failed host lookup');
+
+        if ((isTls || isSocket) && attempt < maxAttempts) {
           await Future.delayed(backoffDelay);
           backoffDelay *= 2;
           continue;
         }
 
-        if (isSocket) {
+        if (isTls) {
           throw const TlsException('Koneksi aman tidak dapat dibuat');
         }
+
+        if (isSocket) {
+          throw const SocketException('Gagal terhubung ke internet. Periksa koneksi Anda.');
+        }
+
         rethrow;
       }
     }
