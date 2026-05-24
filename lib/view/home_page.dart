@@ -281,6 +281,12 @@ class _HomePageState extends State<HomePage> {
                   timeRemaining: timeRemaining,
                   schedule: targetSchedule,
                 ),
+              ] else ...[
+                _buildErrorCard(
+                  context: context,
+                  theme: theme,
+                  message: vm.error ?? 'Gagal menyelaraskan koordinat lokasi.',
+                ),
               ],
 
               Card.filled(
@@ -612,6 +618,83 @@ class _HomePageState extends State<HomePage> {
                     color: theme.colorScheme.primary,
                     fontFamily: 'monospace',
                     letterSpacing: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorCard({
+    required BuildContext context,
+    required ThemeData theme,
+    required String message,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Material(
+        color: theme.colorScheme.primary.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(24),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            unawaited(
+              context
+                  .read<ShalatViewModel>()
+                  .updateLocationAndFetchSchedule(forceGPS: true),
+            );
+          },
+          child: Container(
+            width: double.infinity,
+            height: 240,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.error.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.location_off_rounded,
+                    size: 32,
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Lokasi Tidak Terdeteksi',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  message.replaceAll('Exception: ', '').replaceAll('SocketException: ', ''),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Ketuk untuk mencoba lagi',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
               ],
