@@ -121,12 +121,6 @@ class ProfileDrawer extends StatelessWidget {
                 final success = await viewModel.signInWithGoogle();
                 if (context.mounted) {
                   if (!success && viewModel.error != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(viewModel.error!),
-                        backgroundColor: theme.colorScheme.error,
-                      ),
-                    );
                     viewModel.clearError();
                   } else if (success) {
                     // Stay in drawer, UI will rebuild to profile
