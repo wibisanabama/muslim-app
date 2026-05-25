@@ -6,7 +6,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/logger.dart';
-
 class KiblatPage extends StatefulWidget {
   const KiblatPage({super.key});
 

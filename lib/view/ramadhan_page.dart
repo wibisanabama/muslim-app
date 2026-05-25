@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/ramadhan_view_model.dart';
 import '../model/ramadhan_record.dart';
-
 class RamadhanPage extends StatefulWidget {
   const RamadhanPage({super.key});
 

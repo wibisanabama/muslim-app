@@ -100,10 +100,10 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
             : Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleSpacing: 0,
+        titleSpacing: 8.0,
         title: Container(
           height: 48,
-          margin: const EdgeInsets.only(right: 16.0),
+          margin: const EdgeInsets.only(right: 8.0),
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(24),

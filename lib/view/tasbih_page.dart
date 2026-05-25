@@ -202,7 +202,6 @@ class _TasbihPageState extends State<TasbihPage>
             tooltip: 'Reset Hitungan',
             onPressed: _reset,
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: SingleChildScrollView(
