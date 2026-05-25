@@ -23,11 +23,11 @@ class ProfileDrawer extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
+                  const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const Spacer(),
                 ],
               ),
             ),
