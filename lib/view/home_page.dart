@@ -9,9 +9,9 @@ import 'asmaul_husna_page.dart';
 import 'tasbih_page.dart';
 import 'ramadhan_page.dart';
 import 'hadis_page.dart';
+import 'auth_dialogs.dart';
 
 import 'shalat_detail_page.dart';
-import 'muslim_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'quran_detail_page.dart';
 import '../repository/quran_repository.dart';
@@ -19,7 +19,8 @@ import '../model/surah_detail.dart';
 import 'dart:math';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  const HomePage({super.key, required this.scaffoldKey});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -223,17 +224,10 @@ class _HomePageState extends State<HomePage> {
     }
 
     return Scaffold(
-      drawer: const MuslimDrawer(),
       appBar: AppBar(
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => widget.scaffoldKey.currentState?.openDrawer(),
         ),
         title: const Text('Muslim'),
         centerTitle: true,
@@ -243,18 +237,7 @@ class _HomePageState extends State<HomePage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor: theme.colorScheme.onPrimary,
-              radius: 18,
-              child: const Text(
-                'A',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-            ),
-          ),
+          ProfileMonogram(scaffoldKey: widget.scaffoldKey),
         ],
       ),
       body: RefreshIndicator(

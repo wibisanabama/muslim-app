@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'muslim_drawer.dart';
+import 'auth_dialogs.dart';
 
 class AboutPage extends StatefulWidget {
-  const AboutPage({super.key});
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  const AboutPage({super.key, required this.scaffoldKey});
 
   @override
   State<AboutPage> createState() => _AboutPageState();
@@ -81,17 +82,10 @@ class _AboutPageState extends State<AboutPage> {
     ];
 
     return Scaffold(
-      drawer: const MuslimDrawer(),
       appBar: AppBar(
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => widget.scaffoldKey.currentState?.openDrawer(),
         ),
         title: const Text('Tentang Aplikasi'),
         centerTitle: true,
@@ -101,18 +95,7 @@ class _AboutPageState extends State<AboutPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor: theme.colorScheme.onPrimary,
-              radius: 18,
-              child: const Text(
-                'A',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-            ),
-          ),
+          ProfileMonogram(scaffoldKey: widget.scaffoldKey),
         ],
       ),
       body: SingleChildScrollView(

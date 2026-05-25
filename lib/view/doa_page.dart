@@ -4,10 +4,11 @@ import 'package:provider/provider.dart';
 import '../viewmodel/doa_view_model.dart';
 import 'doa_detail_page.dart';
 import 'saved_doa_page.dart';
-import 'muslim_drawer.dart';
+import 'auth_dialogs.dart';
 
 class DoaPage extends StatefulWidget {
-  const DoaPage({super.key});
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  const DoaPage({super.key, required this.scaffoldKey});
 
   @override
   State<DoaPage> createState() => _DoaPageState();
@@ -54,26 +55,20 @@ class _DoaPageState extends State<DoaPage> {
     }).toList();
 
     return Scaffold(
-      drawer: const MuslimDrawer(),
       appBar: AppBar(
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => widget.scaffoldKey.currentState?.openDrawer(),
         ),
         backgroundColor: _isScrolled
             ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
             : Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleSpacing: 0,
+        titleSpacing: 8.0,
         title: Container(
           height: 48,
+          margin: const EdgeInsets.only(right: 8.0),
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(24),
@@ -117,18 +112,7 @@ class _DoaPageState extends State<DoaPage> {
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(left: 12.0, right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor: theme.colorScheme.onPrimary,
-              radius: 18,
-              child: const Text(
-                'A',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-            ),
-          ),
+          ProfileMonogram(scaffoldKey: widget.scaffoldKey),
         ],
       ),
       body: RefreshIndicator(
