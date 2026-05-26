@@ -38,6 +38,8 @@ class _MainPageState extends State<MainPage> {
       key: _scaffoldKey,
       drawer: const MuslimDrawer(),
       endDrawer: const ProfileDrawer(),
+      drawerEnableOpenDragGesture: false,
+      endDrawerEnableOpenDragGesture: false,
       body: _pages[_currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
