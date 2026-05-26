@@ -310,7 +310,7 @@ class _AboutPageState extends State<AboutPage> {
                           'Informasi Keamanan & Data',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
+                            color: Colors.white,
                           ),
                         ),
                       ],
@@ -333,7 +333,7 @@ class _AboutPageState extends State<AboutPage> {
                       number: '1',
                       title: 'Log Nominal Infaq Terenkripsi',
                       description:
-                          'Disimpan secara terenkripsi penuh menggunakan standar AES-256 pada kompartemen aman sistem (Keychain untuk iOS/macOS & Android KeyStore via FlutterSecureStorage).',
+                          'Disimpan secara terenkripsi penuh menggunakan standar AES-256 pada kompartemen aman sistem (Keychain untuk iOS & Android KeyStore via FlutterSecureStorage).',
                     ),
                     const SizedBox(height: 12),
                     _buildSecurityInfoItem(
@@ -389,13 +389,13 @@ class _AboutPageState extends State<AboutPage> {
       children: [
         CircleAvatar(
           radius: 10,
-          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+          backgroundColor: Colors.white.withValues(alpha: 0.15),
           child: Text(
             number,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
+              color: Colors.white,
             ),
           ),
         ),
