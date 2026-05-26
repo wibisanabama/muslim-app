@@ -306,11 +306,6 @@ class _AboutPageState extends State<AboutPage> {
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.security_rounded,
-                          color: theme.colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
                         Text(
                           'Informasi Keamanan & Data',
                           style: theme.textTheme.titleMedium?.copyWith(
