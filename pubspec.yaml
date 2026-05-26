@@ -1,7 +1,7 @@
 name: muslim_app
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
   sdk: ^3.12.0
@@ -29,6 +29,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -36,4 +37,9 @@ flutter:
     - assets/quran.json
     - assets/asmaul_husna.json
     - assets/doa.json
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/launcher_icon.png"
 
