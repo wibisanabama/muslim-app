@@ -310,7 +310,7 @@ class _AboutPageState extends State<AboutPage> {
                           'Informasi Keamanan & Data',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -389,13 +389,13 @@ class _AboutPageState extends State<AboutPage> {
       children: [
         CircleAvatar(
           radius: 10,
-          backgroundColor: Colors.white.withValues(alpha: 0.15),
+          backgroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.15),
           child: Text(
             number,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: theme.colorScheme.onSurface,
             ),
           ),
         ),
