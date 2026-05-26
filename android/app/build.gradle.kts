@@ -64,15 +64,6 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
-
-    applicationVariants.all {
-        if (buildType.name == "release") {
-            outputs.all {
-                val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
-                output?.outputFileName = "muslim-app.apk"
-            }
-        }
-    }
 }
 
 kotlin {
