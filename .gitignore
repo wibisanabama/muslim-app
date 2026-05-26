@@ -52,3 +52,12 @@ google-services.json
 GoogleService-Info.plist
 
 lib/firebase_options.dart
+
+# Sensitive keys & Keystores
+*.keystore
+*.jks
+*.p12
+*.pem
+key.properties
+.env
+.env.*

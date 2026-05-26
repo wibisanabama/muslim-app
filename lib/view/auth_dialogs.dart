@@ -18,7 +18,7 @@ class ProfileDrawer extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            // Custom Header with Close Button
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
@@ -31,7 +31,7 @@ class ProfileDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             Expanded(
               child: authVm.isLoggedIn
                   ? _buildProfileContent(context, theme, authVm)
@@ -123,7 +123,7 @@ class ProfileDrawer extends StatelessWidget {
                   if (!success && viewModel.error != null) {
                     viewModel.clearError();
                   } else if (success) {
-                    // Stay in drawer, UI will rebuild to profile
+
                   }
                 }
               },
@@ -356,7 +356,7 @@ class _GoogleLogoPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
 
-    // Red (Top path)
+
     paint.color = const Color(0xFFEA4335);
     final Path red = Path()
       ..moveTo(24 * s, 9.5 * s)
@@ -369,7 +369,7 @@ class _GoogleLogoPainter extends CustomPainter {
       ..close();
     canvas.drawPath(red, paint);
 
-    // Blue (Right path with arm)
+
     paint.color = const Color(0xFF4285F4);
     final Path blue = Path()
       ..moveTo(48 * s, 24 * s)
@@ -384,7 +384,7 @@ class _GoogleLogoPainter extends CustomPainter {
       ..close();
     canvas.drawPath(blue, paint);
 
-    // Yellow (Left path)
+
     paint.color = const Color(0xFFFBBC05);
     final Path yellow = Path()
       ..moveTo(10.54 * s, 28.59 * s)
@@ -397,7 +397,7 @@ class _GoogleLogoPainter extends CustomPainter {
       ..close();
     canvas.drawPath(yellow, paint);
 
-    // Green (Bottom path)
+
     paint.color = const Color(0xFF34A853);
     final Path green = Path()
       ..moveTo(24 * s, 48 * s)

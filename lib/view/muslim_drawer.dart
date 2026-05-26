@@ -14,7 +14,7 @@ class MuslimDrawer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Drawer title header
+
             Padding(
               padding: const EdgeInsets.only(
                 left: 24.0,
@@ -29,10 +29,10 @@ class MuslimDrawer extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const Divider(height: 1),
             const SizedBox(height: 12),
-            
+
             ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 24.0),
               leading: const Icon(Icons.settings_outlined),
