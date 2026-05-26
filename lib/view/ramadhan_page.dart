@@ -309,7 +309,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
                   persist: false,
                   action: SnackBarAction(
                     label: 'Undo',
-                    textColor: theme.colorScheme.primaryContainer,
+                    textColor: theme.colorScheme.primary,
                     onPressed: () {
                       viewModel.restoreCeramahLog(log);
                       messenger.hideCurrentSnackBar();
@@ -539,27 +539,6 @@ class _RamadhanPageState extends State<RamadhanPage> {
                                     summary: summaryController.text,
                                   );
                                   Navigator.pop(context);
-                                  messenger.clearSnackBars();
-                                  messenger.showSnackBar(
-                                    SnackBar(
-                                      behavior: SnackBarBehavior.floating,
-                                      backgroundColor: const Color(0xFF2C2C2C),
-                                      elevation: 4.0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          10.0,
-                                        ),
-                                      ),
-                                      content: const Text(
-                                        'Catatan ceramah berhasil ditambahkan!',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      duration: const Duration(seconds: 3),
-                                    ),
-                                  );
                                 } on RamadhanValidationError catch (e) {
                                   messenger.clearSnackBars();
                                   messenger.showSnackBar(
@@ -882,27 +861,6 @@ class _RamadhanPageState extends State<RamadhanPage> {
                                     summary: summaryController.text,
                                   );
                                   Navigator.pop(context);
-                                  messenger.clearSnackBars();
-                                  messenger.showSnackBar(
-                                    SnackBar(
-                                      behavior: SnackBarBehavior.floating,
-                                      backgroundColor: const Color(0xFF2C2C2C),
-                                      elevation: 4.0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          10.0,
-                                        ),
-                                      ),
-                                      content: const Text(
-                                        'Catatan ceramah berhasil diperbarui!',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      duration: const Duration(seconds: 3),
-                                    ),
-                                  );
                                 } on RamadhanValidationError catch (e) {
                                   messenger.clearSnackBars();
                                   messenger.showSnackBar(
@@ -1061,7 +1019,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
                         persist: false,
                         action: SnackBarAction(
                           label: 'Undo',
-                          textColor: theme.colorScheme.primaryContainer,
+                          textColor: theme.colorScheme.primary,
                           onPressed: () {
                             viewModel.restoreInfaqLog(log);
                             messenger.hideCurrentSnackBar();
@@ -1287,27 +1245,6 @@ class _RamadhanPageState extends State<RamadhanPage> {
                                     notes: notesController.text,
                                   );
                                   Navigator.pop(context);
-                                  messenger.clearSnackBars();
-                                  messenger.showSnackBar(
-                                    SnackBar(
-                                      behavior: SnackBarBehavior.floating,
-                                      backgroundColor: const Color(0xFF2C2C2C),
-                                      elevation: 4.0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          10.0,
-                                        ),
-                                      ),
-                                      content: const Text(
-                                        'Catatan sedekah berhasil disimpan!',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      duration: const Duration(seconds: 3),
-                                    ),
-                                  );
                                 } on RamadhanValidationError catch (e) {
                                   messenger.clearSnackBars();
                                   messenger.showSnackBar(
@@ -1627,27 +1564,6 @@ class _RamadhanPageState extends State<RamadhanPage> {
                                     notes: notesController.text,
                                   );
                                   Navigator.pop(context);
-                                  messenger.clearSnackBars();
-                                  messenger.showSnackBar(
-                                    SnackBar(
-                                      behavior: SnackBarBehavior.floating,
-                                      backgroundColor: const Color(0xFF2C2C2C),
-                                      elevation: 4.0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          10.0,
-                                        ),
-                                      ),
-                                      content: const Text(
-                                        'Catatan sedekah berhasil diperbarui!',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      duration: const Duration(seconds: 3),
-                                    ),
-                                  );
                                 } on RamadhanValidationError catch (e) {
                                   messenger.clearSnackBars();
                                   messenger.showSnackBar(
