@@ -10,6 +10,7 @@ import 'tasbih_page.dart';
 import 'ramadhan_page.dart';
 import 'hadis_page.dart';
 import 'auth_dialogs.dart';
+import 'chat_page.dart';
 
 import 'shalat_detail_page.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -423,6 +424,74 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              Card.filled(
+                margin: EdgeInsets.zero,
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.25,
+                ),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ChatPage(),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 16.0,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.15,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.assistant_rounded,
+                            size: 20,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Tanya Muslim AI',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Konsultasikan ajaran Islam dan doa dengan asisten pintar AI.',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
 
               const SizedBox(height: 32),

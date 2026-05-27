@@ -52,6 +52,7 @@ google-services.json
 GoogleService-Info.plist
 
 lib/firebase_options.dart
+lib/gemini_config.dart
 
 # Sensitive keys & Keystores
 *.keystore
