@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import '../gemini_config.dart';
 
 class ChatPage extends StatefulWidget {
@@ -195,17 +196,60 @@ class _ChatPageState extends State<ChatPage> {
                         bottomRight: Radius.circular(isUser ? 4 : 16),
                       ),
                     ),
-                    child: Text(
-                      message['text'] as String,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: isUser
-                            ? theme.colorScheme.onPrimary
-                            : (isError
-                                ? theme.colorScheme.onErrorContainer
-                                : theme.colorScheme.onSurface),
-                        height: 1.4,
-                      ),
-                    ),
+                    child: isUser
+                        ? Text(
+                            message['text'] as String,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onPrimary,
+                              height: 1.4,
+                            ),
+                          )
+                        : MarkdownBody(
+                            data: message['text'] as String,
+                            styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                              p: theme.textTheme.bodyMedium?.copyWith(
+                                color: isError
+                                    ? theme.colorScheme.onErrorContainer
+                                    : theme.colorScheme.onSurface,
+                                height: 1.4,
+                              ),
+                              strong: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: isError
+                                    ? theme.colorScheme.onErrorContainer
+                                    : theme.colorScheme.onSurface,
+                              ),
+                              em: theme.textTheme.bodyMedium?.copyWith(
+                                fontStyle: FontStyle.italic,
+                                color: isError
+                                    ? theme.colorScheme.onErrorContainer
+                                    : theme.colorScheme.onSurface,
+                              ),
+                              h1: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: isError
+                                    ? theme.colorScheme.onErrorContainer
+                                    : theme.colorScheme.onSurface,
+                              ),
+                              h2: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: isError
+                                    ? theme.colorScheme.onErrorContainer
+                                    : theme.colorScheme.onSurface,
+                              ),
+                              h3: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: isError
+                                    ? theme.colorScheme.onErrorContainer
+                                    : theme.colorScheme.onSurface,
+                              ),
+                              listBullet: theme.textTheme.bodyMedium?.copyWith(
+                                color: isError
+                                    ? theme.colorScheme.onErrorContainer
+                                    : theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
                   ),
                 );
               },
