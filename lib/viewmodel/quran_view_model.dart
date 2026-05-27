@@ -121,12 +121,16 @@ class QuranViewModel extends ChangeNotifier {
         if (cloudAyah != null) {
           await prefs.setInt('last_read_ayah', cloudAyah);
         }
-      } else if (_lastReadSurah != null) {
-        await _firestoreSyncRepository!.saveLastRead(userId, {
-          'surah': _lastReadSurah,
-          'surah_name': _lastReadSurahName,
-          'ayah': _lastReadAyah,
-        });
+      } else {
+        _lastReadSurah = null;
+        _lastReadSurahName = null;
+        _lastReadAyah = null;
+        notifyListeners();
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('last_read_surah');
+        await prefs.remove('last_read_surah_name');
+        await prefs.remove('last_read_ayah');
       }
     } catch (_) {}
   }
@@ -142,6 +146,10 @@ class QuranViewModel extends ChangeNotifier {
       await prefs.remove('last_read_surah');
       await prefs.remove('last_read_surah_name');
       await prefs.remove('last_read_ayah');
+
+      if (_currentUserId != null && _firestoreSyncRepository != null) {
+        await _firestoreSyncRepository!.saveLastRead(_currentUserId!, {});
+      }
     } catch (_) {}
   }
 
