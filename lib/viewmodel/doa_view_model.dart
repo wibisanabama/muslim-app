@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../model/doa.dart';
 import '../repository/doa_repository.dart';
 import '../repository/firestore_sync_repository.dart';
+import '../utils/logger.dart';
 
 class DoaViewModel extends ChangeNotifier {
   final DoaRepository _repo;
@@ -57,7 +58,9 @@ class DoaViewModel extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       _savedDoaIds = prefs.getStringList('saved_doa_ids') ?? [];
       notifyListeners();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error loading saved Doa IDs from SharedPreferences: $e');
+    }
   }
 
   Future<void> toggleSavedDoa(String doaId) async {
@@ -74,7 +77,9 @@ class DoaViewModel extends ChangeNotifier {
       if (_currentUserId != null && _firestoreSyncRepository != null) {
         await _firestoreSyncRepository!.saveSavedDoas(_currentUserId!, _savedDoaIds);
       }
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error toggling saved Doa: $e');
+    }
   }
 
   Future<void> syncWithFirestore(String userId) async {
@@ -95,7 +100,9 @@ class DoaViewModel extends ChangeNotifier {
       await prefs.setStringList('saved_doa_ids', _savedDoaIds);
 
       await _firestoreSyncRepository!.saveSavedDoas(userId, _savedDoaIds);
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error syncing saved Doas with Firestore: $e');
+    }
   }
 
   bool isDoaSaved(String doaId) {
@@ -113,6 +120,8 @@ class DoaViewModel extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('saved_doa_ids');
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error clearing saved Doas locally: $e');
+    }
   }
 }

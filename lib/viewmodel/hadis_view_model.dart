@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../repository/firestore_sync_repository.dart';
+import '../utils/logger.dart';
 
 class HadisViewModel extends ChangeNotifier {
   Map<String, List<int>> _savedHadiths = {};
@@ -58,7 +59,8 @@ class HadisViewModel extends ChangeNotifier {
       }
       
       _savedHadiths = loaded;
-    } catch (_) {
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error loading saved Hadiths from SharedPreferences: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -96,7 +98,9 @@ class HadisViewModel extends ChangeNotifier {
       if (_currentUserId != null && _firestoreSyncRepository != null) {
         await _firestoreSyncRepository!.saveSavedHadiths(_currentUserId!, _savedHadiths);
       }
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error saving saved Hadiths: $e');
+    }
   }
 
   Future<void> syncWithFirestore(String userId) async {
@@ -131,7 +135,9 @@ class HadisViewModel extends ChangeNotifier {
       }
 
       await _firestoreSyncRepository!.saveSavedHadiths(userId, _savedHadiths);
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error syncing saved Hadiths with Firestore: $e');
+    }
   }
 
   Future<void> clearAllLocal() async {
@@ -144,6 +150,8 @@ class HadisViewModel extends ChangeNotifier {
       for (final bookId in books) {
         await prefs.remove('saved_hadis_$bookId');
       }
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error clearing saved Hadiths locally: $e');
+    }
   }
 }

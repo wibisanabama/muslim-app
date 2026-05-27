@@ -5,6 +5,7 @@ import '../model/surah.dart';
 import '../model/surah_detail.dart';
 import '../repository/quran_repository.dart';
 import '../repository/firestore_sync_repository.dart';
+import '../utils/logger.dart';
 
 class QuranViewModel extends ChangeNotifier {
   final QuranRepository _repo;
@@ -58,7 +59,9 @@ class QuranViewModel extends ChangeNotifier {
       _lastReadSurahName = prefs.getString('last_read_surah_name');
       _lastReadAyah = prefs.getInt('last_read_ayah');
       notifyListeners();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error loading Quran last read from SharedPreferences: $e');
+    }
   }
 
   Future<void> saveLastRead(
@@ -84,7 +87,9 @@ class QuranViewModel extends ChangeNotifier {
           'ayah': ayahNumber,
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error saving Quran last read: $e');
+    }
   }
 
   Future<void> syncWithFirestore(String userId) async {
@@ -132,7 +137,9 @@ class QuranViewModel extends ChangeNotifier {
         await prefs.remove('last_read_surah_name');
         await prefs.remove('last_read_ayah');
       }
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error syncing Quran last read with Firestore: $e');
+    }
   }
 
   Future<void> clearLastRead() async {
@@ -150,7 +157,9 @@ class QuranViewModel extends ChangeNotifier {
       if (_currentUserId != null && _firestoreSyncRepository != null) {
         await _firestoreSyncRepository!.saveLastRead(_currentUserId!, {});
       }
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error clearing Quran last read locally: $e');
+    }
   }
 
   Future<void> fetchSurahs() async {
