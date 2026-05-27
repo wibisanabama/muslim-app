@@ -54,25 +54,13 @@ class LoginPage extends StatelessWidget {
                       children: [
                         const SizedBox(height: 24),
                         // App Logo
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.25),
-                                blurRadius: 24,
-                                offset: const Offset(0, 12),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(24),
-                            child: Image.asset(
-                              'assets/icons/launcher_icon.png',
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                            ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Image.asset(
+                            'assets/icons/launcher_icon.png',
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
                           ),
                         ),
                         const SizedBox(height: 28),
@@ -139,7 +127,7 @@ class LoginPage extends StatelessWidget {
                             theme,
                             icon: Icons.sync_rounded,
                             title: 'Sinkronisasi Cloud',
-                            desc: 'Progres tadarus Al-Quran & catatan Ramadhan tersimpan aman.',
+                            desc: 'Progres tadarus Al-Quran & catatan tersimpan aman.',
                           ),
                           const Divider(height: 24, thickness: 0.8),
                           _buildBenefitRow(
