@@ -108,10 +108,6 @@ class LoginPage extends StatelessWidget {
                             ? theme.colorScheme.surfaceContainer.withValues(alpha: 0.8)
                             : theme.colorScheme.surfaceContainerLow.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
-                          width: 1.5,
-                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.04),
