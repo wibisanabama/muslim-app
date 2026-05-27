@@ -2,7 +2,13 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Only authenticated users can access their own data
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Write access with document size validation to prevent storage abuse
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 1000000; // Max 1MB per document
     }
   }
 }
