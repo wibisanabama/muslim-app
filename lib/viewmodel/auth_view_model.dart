@@ -35,8 +35,12 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _repository.signInWithGoogle();
+      final credential = await _repository.signInWithGoogle();
       _isLoading = false;
+      if (credential == null) {
+        notifyListeners();
+        return false;
+      }
       notifyListeners();
       return true;
     } catch (e) {

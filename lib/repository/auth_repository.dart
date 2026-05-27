@@ -5,9 +5,9 @@ class AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  Future<UserCredential> signInWithGoogle() async {
+  Future<UserCredential?> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) throw Exception('Login dibatalkan');
+    if (googleUser == null) return null;
 
     final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
