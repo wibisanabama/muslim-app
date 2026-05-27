@@ -4,9 +4,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../model/surah.dart';
 import '../model/surah_detail.dart';
 import '../repository/quran_repository.dart';
+import '../repository/firestore_sync_repository.dart';
 
 class QuranViewModel extends ChangeNotifier {
   final QuranRepository _repo;
+  FirestoreSyncRepository? _firestoreSyncRepository;
+  String? _currentUserId;
+
   QuranViewModel(this._repo) {
     unawaited(loadLastRead());
   }
@@ -35,6 +39,16 @@ class QuranViewModel extends ChangeNotifier {
   String? get lastReadSurahName => _lastReadSurahName;
   int? get lastReadAyah => _lastReadAyah;
 
+  void updateUserId(String? userId, FirestoreSyncRepository? syncRepo) {
+    if (_currentUserId != userId) {
+      _currentUserId = userId;
+      _firestoreSyncRepository = syncRepo;
+      if (userId != null) {
+        unawaited(syncWithFirestore(userId));
+      }
+    }
+  }
+
   Future<void> loadLastRead() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -60,6 +74,58 @@ class QuranViewModel extends ChangeNotifier {
       _lastReadSurahName = surahName;
       _lastReadAyah = ayahNumber;
       notifyListeners();
+
+      if (_currentUserId != null && _firestoreSyncRepository != null) {
+        await _firestoreSyncRepository!.saveLastRead(_currentUserId!, {
+          'surah': surahNumber,
+          'surah_name': surahName,
+          'ayah': ayahNumber,
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> syncWithFirestore(String userId) async {
+    if (_firestoreSyncRepository == null) return;
+
+    try {
+      final cloudLastRead = await _firestoreSyncRepository!.loadLastRead(userId);
+      if (cloudLastRead == null) {
+        if (_lastReadSurah != null) {
+          await _firestoreSyncRepository!.saveLastRead(userId, {
+            'surah': _lastReadSurah,
+            'surah_name': _lastReadSurahName,
+            'ayah': _lastReadAyah,
+          });
+        }
+        return;
+      }
+
+      final cloudSurah = cloudLastRead['surah'] as int?;
+      final cloudSurahName = cloudLastRead['surah_name'] as String?;
+      final cloudAyah = cloudLastRead['ayah'] as int?;
+
+      if (cloudSurah != null) {
+        _lastReadSurah = cloudSurah;
+        _lastReadSurahName = cloudSurahName;
+        _lastReadAyah = cloudAyah;
+        notifyListeners();
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('last_read_surah', cloudSurah);
+        if (cloudSurahName != null) {
+          await prefs.setString('last_read_surah_name', cloudSurahName);
+        }
+        if (cloudAyah != null) {
+          await prefs.setInt('last_read_ayah', cloudAyah);
+        }
+      } else if (_lastReadSurah != null) {
+        await _firestoreSyncRepository!.saveLastRead(userId, {
+          'surah': _lastReadSurah,
+          'surah_name': _lastReadSurahName,
+          'ayah': _lastReadAyah,
+        });
+      }
     } catch (_) {}
   }
 

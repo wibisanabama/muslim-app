@@ -1,1 +1,24 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"muslim-app-4f215","appId":"1:30002246803:android:dc8a4f8b3f772a87640966","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"muslim-app-4f215","configurations":{"android":"1:30002246803:android:dc8a4f8b3f772a87640966"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "muslim-app-4f215",
+          "appId": "1:30002246803:android:dc8a4f8b3f772a87640966",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "muslim-app-4f215",
+          "configurations": {
+            "android": "1:30002246803:android:dc8a4f8b3f772a87640966"
+          }
+        }
+      }
+    }
+  }
+}

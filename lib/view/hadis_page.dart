@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import '../model/hadis_model.dart';
 import '../repository/hadis_repository.dart';
+import '../viewmodel/hadis_view_model.dart';
 
 class HadisBook {
   final String id;
@@ -41,7 +42,6 @@ class _HadisPageState extends State<HadisPage> {
   String _searchQuery = '';
   late final ScrollController _scrollController;
   bool _isScrolled = false;
-  int _globalSavedCount = 0;
 
   @override
   void initState() {
@@ -55,21 +55,6 @@ class _HadisPageState extends State<HadisPage> {
           });
         }
       });
-    unawaited(_loadGlobalSavedCount());
-  }
-
-  Future<void> _loadGlobalSavedCount() async {
-    final prefs = await SharedPreferences.getInstance();
-    int total = 0;
-    for (final book in hadisBooks) {
-      final saved = prefs.getStringList('saved_hadis_${book.id}') ?? [];
-      total += saved.length;
-    }
-    if (mounted) {
-      setState(() {
-        _globalSavedCount = total;
-      });
-    }
   }
 
   @override
@@ -86,6 +71,7 @@ class _HadisPageState extends State<HadisPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final totalSavedCount = context.watch<HadisViewModel>().totalSavedCount;
 
     final filteredBooks = hadisBooks.where((book) {
       final normQuery = _normalizeString(_searchQuery);
@@ -196,7 +182,6 @@ class _HadisPageState extends State<HadisPage> {
                             builder: (context) => const SavedHadisPage(),
                           ),
                         );
-                        await _loadGlobalSavedCount();
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -225,8 +210,8 @@ class _HadisPageState extends State<HadisPage> {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              _globalSavedCount > 0
-                                  ? '$_globalSavedCount Hadis Disimpan'
+                              totalSavedCount > 0
+                                  ? '$totalSavedCount Hadis Disimpan'
                                   : 'Belum ada hadis yang disimpan',
                               textAlign: TextAlign.center,
                               style: theme.textTheme.titleMedium?.copyWith(
@@ -287,7 +272,6 @@ class _HadisPageState extends State<HadisPage> {
                                 ),
                               ),
                             );
-                            await _loadGlobalSavedCount();
                           },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
@@ -393,13 +377,11 @@ class _HadisListPageState extends State<HadisListPage> {
   bool _isLoading = false;
   bool _isError = false;
   bool _isScrolled = false;
-  List<int> _savedHadisNumbers = [];
 
   @override
   void initState() {
     super.initState();
     unawaited(_fetchNextBatch());
-    unawaited(_loadSavedHadis());
     _scrollController.addListener(() {
       final scrolled = _scrollController.offset > 0;
       if (scrolled != _isScrolled) {
@@ -419,17 +401,6 @@ class _HadisListPageState extends State<HadisListPage> {
     _scrollController.dispose();
     _numberController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadSavedHadis() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedList = prefs.getStringList('saved_hadis_${widget.bookId}') ?? [];
-    setState(() {
-      _savedHadisNumbers = savedList
-          .map((e) => int.tryParse(e) ?? 0)
-          .where((e) => e != 0)
-          .toList();
-    });
   }
 
   Future<void> _fetchNextBatch() async {
@@ -499,7 +470,6 @@ class _HadisListPageState extends State<HadisListPage> {
           ),
         ),
       );
-      await _loadSavedHadis();
       return;
     }
 
@@ -533,7 +503,6 @@ class _HadisListPageState extends State<HadisListPage> {
             ),
           ),
         );
-        await _loadSavedHadis();
       }
     } catch (e) {
       if (mounted) {
@@ -577,6 +546,8 @@ class _HadisListPageState extends State<HadisListPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hadisVm = context.watch<HadisViewModel>();
+    final savedCountForBook = hadisVm.getSavedNumbers(widget.bookId).length;
 
     return Scaffold(
       appBar: AppBar(
@@ -661,73 +632,65 @@ class _HadisListPageState extends State<HadisListPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (_searchQuery.isEmpty && !_isLoading && _hadiths.isNotEmpty)
-            Builder(
-              builder: (context) {
-                final savedCount = _savedHadisNumbers.length;
-                final hasSaved = savedCount > 0;
-
-                return Card.filled(
-                  margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(24),
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SavedHadisPage(
-                            bookId: widget.bookId,
-                            bookName: widget.bookName,
-                          ),
-                        ),
-                      );
-                      await _loadSavedHadis();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 20,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(
-                                alpha: 0.18,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: Alignment.center,
-                            child: Icon(
-                              Icons.bookmark_added_rounded,
-                              color: theme.colorScheme.primary,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            hasSaved
-                                ? '$savedCount Hadis Disimpan'
-                                : 'Belum ada hadis yang disimpan',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
+            Card.filled(
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              color: theme.colorScheme.primary.withValues(alpha: 0.12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(24),
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SavedHadisPage(
+                        bookId: widget.bookId,
+                        bookName: widget.bookName,
                       ),
                     ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
                   ),
-                );
-              },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.18,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.bookmark_added_rounded,
+                          color: theme.colorScheme.primary,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        savedCountForBook > 0
+                            ? '$savedCountForBook Hadis Disimpan'
+                            : 'Belum ada hadis yang disimpan',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
 
           Expanded(
@@ -1119,7 +1082,6 @@ class _HadisListPageState extends State<HadisListPage> {
                                   ),
                                 ),
                               );
-                              await _loadSavedHadis();
                             },
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
@@ -1201,7 +1163,7 @@ class _HadisListPageState extends State<HadisListPage> {
   }
 }
 
-class HadisDetailPage extends StatefulWidget {
+class HadisDetailPage extends StatelessWidget {
   final Hadis hadis;
   final String bookId;
   final String bookName;
@@ -1214,54 +1176,13 @@ class HadisDetailPage extends StatefulWidget {
   });
 
   @override
-  State<HadisDetailPage> createState() => _HadisDetailPageState();
-}
-
-class _HadisDetailPageState extends State<HadisDetailPage> {
-  bool _isBookmarked = false;
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_checkBookmarkStatus());
-  }
-
-  Future<void> _checkBookmarkStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedList = prefs.getStringList('saved_hadis_${widget.bookId}') ?? [];
-    setState(() {
-      _isBookmarked = savedList.contains(widget.hadis.number.toString());
-    });
-  }
-
-  Future<void> _toggleBookmark() async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'saved_hadis_${widget.bookId}';
-    final savedList = prefs.getStringList(key) ?? [];
-    final numStr = widget.hadis.number.toString();
-
-    if (_isBookmarked) {
-      savedList.remove(numStr);
-      await prefs.setStringList(key, savedList);
-      setState(() {
-        _isBookmarked = false;
-      });
-    } else {
-      savedList.add(numStr);
-      await prefs.setStringList(key, savedList);
-      setState(() {
-        _isBookmarked = true;
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isBookmarked = context.watch<HadisViewModel>().isSaved(bookId, hadis.number);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hadis Ke-${widget.hadis.number}'),
+        title: Text('Hadis Ke-${hadis.number}'),
         centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -1269,13 +1190,15 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
         actions: [
           IconButton(
             icon: Icon(
-              _isBookmarked
+              isBookmarked
                   ? Icons.bookmark_rounded
                   : Icons.bookmark_border_rounded,
-              color: _isBookmarked ? theme.colorScheme.primary : null,
+              color: isBookmarked ? theme.colorScheme.primary : null,
             ),
             tooltip: 'Simpan Hadis',
-            onPressed: _toggleBookmark,
+            onPressed: () {
+              unawaited(context.read<HadisViewModel>().toggleSaved(bookId, hadis.number));
+            },
           ),
         ],
       ),
@@ -1294,7 +1217,7 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
                 padding: const EdgeInsets.all(24.0),
                 child: Center(
                   child: Text(
-                    widget.bookName,
+                    bookName,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -1307,7 +1230,7 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
             const SizedBox(height: 32),
 
             Text(
-              widget.hadis.arabic,
+              hadis.arabic,
               textAlign: TextAlign.center,
               style: GoogleFonts.scheherazadeNew(
                 fontSize: 30,
@@ -1325,7 +1248,7 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
             const SizedBox(height: 28),
 
             Text(
-              widget.hadis.translation,
+              hadis.translation,
               textAlign: TextAlign.left,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
@@ -1393,7 +1316,7 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
   }
 
   Future<void> _loadSavedHadiths() async {
-    final prefs = await SharedPreferences.getInstance();
+    final hadisViewModel = context.read<HadisViewModel>();
 
     setState(() {
       _isLoading = true;
@@ -1407,14 +1330,13 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
         final List<Future<List<GlobalSavedHadisItem>>> futures = [];
 
         for (final book in hadisBooks) {
-          final numbers = prefs.getStringList('saved_hadis_${book.id}') ?? [];
+          final numbers = hadisViewModel.getSavedNumbers(book.id);
           if (numbers.isNotEmpty) {
             futures.add(() async {
               final List<GlobalSavedHadisItem> bookItems = [];
-              final bookFutures = numbers.map((numStr) async {
-                final num = int.parse(numStr);
+              final bookFutures = numbers.map((hadisNumber) async {
                 try {
-                  final h = await _repository.getSingleHadis(book.id, num);
+                  final h = await _repository.getSingleHadis(book.id, hadisNumber);
                   bookItems.add(
                     GlobalSavedHadisItem(
                       hadis: h,
@@ -1442,12 +1364,10 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
           return a.hadis.number.compareTo(b.hadis.number);
         });
       } else {
-        final numbers =
-            prefs.getStringList('saved_hadis_${widget.bookId}') ?? [];
+        final numbers = hadisViewModel.getSavedNumbers(widget.bookId!);
         if (numbers.isNotEmpty) {
-          final bookFutures = numbers.map((numStr) async {
-            final num = int.parse(numStr);
-            final h = await _repository.getSingleHadis(widget.bookId!, num);
+          final bookFutures = numbers.map((hadisNumber) async {
+            final h = await _repository.getSingleHadis(widget.bookId!, hadisNumber);
             tempItems.add(
               GlobalSavedHadisItem(
                 hadis: h,

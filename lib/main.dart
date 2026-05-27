@@ -14,6 +14,8 @@ import 'viewmodel/ramadhan_view_model.dart';
 import 'viewmodel/theme_view_model.dart';
 import 'repository/auth_repository.dart';
 import 'viewmodel/auth_view_model.dart';
+import 'repository/firestore_sync_repository.dart';
+import 'viewmodel/hadis_view_model.dart';
 import 'view/splash_page.dart';
 import 'theme.dart';
 import 'utils/logger.dart';
@@ -47,29 +49,41 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
+        Provider<FirestoreSyncRepository>(create: (_) => FirestoreSyncRepository()),
         Provider<ShalatRepository>(create: (_) => ShalatRepository()),
         ChangeNotifierProvider<ShalatViewModel>(
           create: (context) =>
               ShalatViewModel(context.read<ShalatRepository>()),
         ),
         Provider<QuranRepository>(create: (_) => QuranRepository()),
-        ChangeNotifierProvider<QuranViewModel>(
-          create: (context) => QuranViewModel(context.read<QuranRepository>()),
-        ),
         Provider<DoaRepository>(create: (_) => DoaRepository()),
-        ChangeNotifierProvider<DoaViewModel>(
-          create: (context) => DoaViewModel(context.read<DoaRepository>()),
-        ),
         Provider<AsmaulHusnaRepository>(create: (_) => AsmaulHusnaRepository()),
-        ChangeNotifierProvider<RamadhanViewModel>(
-          create: (_) => RamadhanViewModel(),
-        ),
-        ChangeNotifierProvider<ThemeViewModel>(create: (_) => ThemeViewModel()),
         Provider<AuthRepository>(create: (_) => AuthRepository()),
+        ChangeNotifierProvider<ThemeViewModel>(create: (_) => ThemeViewModel()),
         ChangeNotifierProvider<AuthViewModel>(
           create: (context) => AuthViewModel(
             repository: context.read<AuthRepository>(),
           ),
+        ),
+        ChangeNotifierProxyProvider<AuthViewModel, QuranViewModel>(
+          create: (context) => QuranViewModel(context.read<QuranRepository>()),
+          update: (context, authVm, quranVm) =>
+              quranVm!..updateUserId(authVm.userId, context.read<FirestoreSyncRepository>()),
+        ),
+        ChangeNotifierProxyProvider<AuthViewModel, DoaViewModel>(
+          create: (context) => DoaViewModel(context.read<DoaRepository>()),
+          update: (context, authVm, doaVm) =>
+              doaVm!..updateUserId(authVm.userId, context.read<FirestoreSyncRepository>()),
+        ),
+        ChangeNotifierProxyProvider<AuthViewModel, HadisViewModel>(
+          create: (_) => HadisViewModel(),
+          update: (context, authVm, hadisVm) =>
+              hadisVm!..updateUserId(authVm.userId, context.read<FirestoreSyncRepository>()),
+        ),
+        ChangeNotifierProxyProvider<AuthViewModel, RamadhanViewModel>(
+          create: (_) => RamadhanViewModel(),
+          update: (context, authVm, ramadhanVm) =>
+              ramadhanVm!..updateUserId(authVm.userId, context.read<FirestoreSyncRepository>()),
         ),
       ],
       child: Consumer<ThemeViewModel>(
