@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:provider/provider.dart';
+import '../viewmodel/auth_view_model.dart';
+import '../utils/logger.dart';
 import '../gemini_config.dart';
 
 class ChatPage extends StatefulWidget {
@@ -21,6 +24,40 @@ class _ChatPageState extends State<ChatPage> {
     }
   ];
   bool _isLoading = false;
+  String? _lastUserId;
+
+  /// Maximum number of messages allowed in a single chat session.
+  /// Prevents unbounded memory growth and API cost abuse.
+  static const int _maxSessionMessages = 50;
+
+  /// Maximum number of history messages sent to the API.
+  /// Limits token usage and prevents exponentially growing payloads.
+  static const int _maxApiHistoryMessages = 20;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authVm = Provider.of<AuthViewModel>(context);
+    if (_lastUserId != authVm.userId) {
+      _lastUserId = authVm.userId;
+      _clearChatHistory();
+    }
+  }
+
+  void _clearChatHistory() {
+    setState(() {
+      _messages.clear();
+      _messages.add({
+        'text': 'Assalamualaikum! Saya Asisten Muslim AI. Ada yang bisa saya bantu hari ini mengenai ajaran Islam, doa, jadwal shalat, atau yang lainnya?',
+        'isUser': false,
+      });
+    });
+  }
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -35,8 +72,30 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _sendMessage() async {
+    if (_isLoading) return;
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
+
+    if (text.length > 2000) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pesan tidak boleh lebih dari 2000 karakter.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Enforce maximum session message count to prevent abuse
+    if (_messages.length >= _maxSessionMessages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Batas sesi tercapai. Silakan mulai percakapan baru.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
     _messageController.clear();
     setState(() {
@@ -46,10 +105,15 @@ class _ChatPageState extends State<ChatPage> {
     _scrollToBottom();
 
     try {
-      final history = _messages.sublist(1, _messages.length - 1);
+      // Only send the last N messages as history to limit API token cost
+      final allHistory = _messages.sublist(1, _messages.length - 1);
+      final history = allHistory.length > _maxApiHistoryMessages
+          ? allHistory.sublist(allHistory.length - _maxApiHistoryMessages)
+          : allHistory;
       final List<Map<String, dynamic>> contents = [];
 
       for (var msg in history) {
+        if (msg['isError'] == true) continue; // Skip error messages
         contents.add({
           'role': msg['isUser'] ? 'user' : 'model',
           'parts': [
@@ -77,10 +141,17 @@ class _ChatPageState extends State<ChatPage> {
         }
       };
 
+      // SECURITY: This API key is loaded from gemini_config.dart which is gitignored.
+      // Ensure this key is restricted in Google Cloud Console:
+      // 1. Application restriction → Android apps → package: id.muslimapp.app
+      // 2. API restriction → Generative Language API only
+      // 3. Set daily quota limit (e.g. 1000 requests/day)
+      // TODO: Migrate to Cloud Function proxy when Blaze plan is available
       final response = await http.post(
-        Uri.parse(
-            'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GeminiConfig.apiKey}'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GeminiConfig.apiKey}'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: jsonEncode(body),
       );
 
@@ -97,6 +168,7 @@ class _ChatPageState extends State<ChatPage> {
         throw Exception('Status code: ${response.statusCode}');
       }
     } catch (e) {
+      AppLogger.warningLazy(() => 'Error in chat AI: $e');
       setState(() {
         _messages.add({
           'text':
@@ -298,7 +370,9 @@ class _ChatPageState extends State<ChatPage> {
                 textCapitalization: TextCapitalization.sentences,
                 style: theme.textTheme.bodyMedium,
                 maxLines: null,
+                maxLength: 2000,
                 decoration: InputDecoration(
+                  counterText: '',
                   hintText: 'Tanyakan sesuatu tentang Islam...',
                   hintStyle: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant.withValues(
@@ -318,12 +392,12 @@ class _ChatPageState extends State<ChatPage> {
                     borderSide: BorderSide.none,
                   ),
                 ),
-                onSubmitted: (_) => _sendMessage(),
+                onSubmitted: (_) => _isLoading ? null : _sendMessage(),
               ),
             ),
             const SizedBox(width: 8),
             IconButton.filled(
-              onPressed: _sendMessage,
+              onPressed: _isLoading ? null : _sendMessage,
               icon: const Icon(Icons.send_rounded),
               style: IconButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
