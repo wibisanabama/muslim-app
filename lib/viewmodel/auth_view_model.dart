@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../repository/auth_repository.dart';
 
 class AuthViewModel extends ChangeNotifier {
@@ -55,6 +57,32 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> signOut() async {
     _isLoading = true;
     notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Quran
+      await prefs.remove('last_read_surah');
+      await prefs.remove('last_read_surah_name');
+      await prefs.remove('last_read_ayah');
+      
+      // Doa
+      await prefs.remove('saved_doa_ids');
+      
+      // Hadis
+      final books = ["bukhari", "muslim", "tirmidzi", "abu-daud", "nasai", "ibnu-majah", "malik", "ahmad", "darimi"];
+      for (final bookId in books) {
+        await prefs.remove('saved_hadis_$bookId');
+      }
+      
+      // Ramadhan Shalat & Ceramah
+      await prefs.remove('ramadhan_shalat_logs');
+      await prefs.remove('ramadhan_ceramah_logs');
+      
+      // Ramadhan Infaq
+      const secureStorage = FlutterSecureStorage();
+      await secureStorage.delete(key: 'ramadhan_infaq_logs');
+    } catch (_) {}
 
     await _repository.signOut();
 

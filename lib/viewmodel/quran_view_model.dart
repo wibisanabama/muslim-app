@@ -132,16 +132,16 @@ class QuranViewModel extends ChangeNotifier {
   }
 
   Future<void> clearLastRead() async {
+    _lastReadSurah = null;
+    _lastReadSurahName = null;
+    _lastReadAyah = null;
+    notifyListeners();
+
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('last_read_surah');
       await prefs.remove('last_read_surah_name');
       await prefs.remove('last_read_ayah');
-
-      _lastReadSurah = null;
-      _lastReadSurahName = null;
-      _lastReadAyah = null;
-      notifyListeners();
     } catch (_) {}
   }
 
