@@ -70,7 +70,10 @@ class RamadhanViewModel extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('ramadhan_start_date', date.toIso8601String());
       if (_currentUserId != null && _firestoreSyncRepository != null) {
-        await _firestoreSyncRepository!.saveRamadhanStartDate(_currentUserId!, date);
+        await _firestoreSyncRepository!.saveRamadhanStartDate(
+          _currentUserId!,
+          date,
+        );
       }
     } catch (e) {
       AppLogger.warningLazy(() => 'Error saving Ramadhan start date: $e');
@@ -196,18 +199,24 @@ class RamadhanViewModel extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Sync Ramadhan Start Date
-      final cloudStartDate = await _firestoreSyncRepository!.loadRamadhanStartDate(userId);
+      final cloudStartDate = await _firestoreSyncRepository!
+          .loadRamadhanStartDate(userId);
       if (cloudStartDate != null) {
         _startDate = cloudStartDate;
-        await prefs.setString('ramadhan_start_date', cloudStartDate.toIso8601String());
+        await prefs.setString(
+          'ramadhan_start_date',
+          cloudStartDate.toIso8601String(),
+        );
         notifyListeners();
       } else if (_startDate != null) {
-        await _firestoreSyncRepository!.saveRamadhanStartDate(userId, _startDate!);
+        await _firestoreSyncRepository!.saveRamadhanStartDate(
+          userId,
+          _startDate!,
+        );
       }
 
-      // 1. Shalat Logs Sync
-      final cloudShalat = await _firestoreSyncRepository!.loadRamadhanShalatLogs(userId);
+      final cloudShalat = await _firestoreSyncRepository!
+          .loadRamadhanShalatLogs(userId);
       if (cloudShalat == null) {
         await _firestoreSyncRepository!.saveRamadhanShalatLogs(
           userId,
@@ -218,10 +227,10 @@ class RamadhanViewModel extends ChangeNotifier {
           30,
           (index) => ShalatDayLog.createDefault(index + 1),
         );
-        
+
         final Map<int, ShalatDayLog> cloudLogsMap = {
           for (var item in cloudShalat.map((e) => ShalatDayLog.fromJson(e)))
-            item.day: item
+            item.day: item,
         };
 
         for (int i = 0; i < 30; i++) {
@@ -244,10 +253,12 @@ class RamadhanViewModel extends ChangeNotifier {
         );
       }
 
-      // 2. Ceramah Logs Sync
-      final cloudCeramah = await _firestoreSyncRepository!.loadCeramahLogs(userId) ?? [];
-      final cloudCeramahIds = cloudCeramah.map((e) => e['id'] as String).toSet();
-      
+      final cloudCeramah =
+          await _firestoreSyncRepository!.loadCeramahLogs(userId) ?? [];
+      final cloudCeramahIds = cloudCeramah
+          .map((e) => e['id'] as String)
+          .toSet();
+
       final Map<String, CeramahLog> mergedCeramah = {};
       for (final log in _ceramahLogs) {
         mergedCeramah[log.id] = log;
@@ -260,7 +271,8 @@ class RamadhanViewModel extends ChangeNotifier {
           AppLogger.warningLazy(() => 'Error parsing cloud Ceramah log: $e');
         }
       }
-      _ceramahLogs = mergedCeramah.values.toList()..sort((a, b) => b.date.compareTo(a.date));
+      _ceramahLogs = mergedCeramah.values.toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
 
       for (final log in _ceramahLogs) {
         if (!cloudCeramahIds.contains(log.id)) {
@@ -268,8 +280,8 @@ class RamadhanViewModel extends ChangeNotifier {
         }
       }
 
-      // 3. Infaq Logs Sync
-      final cloudInfaq = await _firestoreSyncRepository!.loadInfaqLogs(userId) ?? [];
+      final cloudInfaq =
+          await _firestoreSyncRepository!.loadInfaqLogs(userId) ?? [];
       final cloudInfaqIds = cloudInfaq.map((e) => e['id'] as String).toSet();
 
       final Map<String, InfaqLog> mergedInfaq = {};
@@ -284,7 +296,8 @@ class RamadhanViewModel extends ChangeNotifier {
           AppLogger.warningLazy(() => 'Error parsing cloud Infaq log: $e');
         }
       }
-      _infaqLogs = mergedInfaq.values.toList()..sort((a, b) => b.date.compareTo(a.date));
+      _infaqLogs = mergedInfaq.values.toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
 
       for (final log in _infaqLogs) {
         if (!cloudInfaqIds.contains(log.id)) {
@@ -295,7 +308,9 @@ class RamadhanViewModel extends ChangeNotifier {
       notifyListeners();
       await _saveLogs();
     } catch (e) {
-      AppLogger.warningLazy(() => 'Error syncing Ramadhan data with Firestore: $e');
+      AppLogger.warningLazy(
+        () => 'Error syncing Ramadhan data with Firestore: $e',
+      );
     }
   }
 
@@ -309,10 +324,12 @@ class RamadhanViewModel extends ChangeNotifier {
     notifyListeners();
     unawaited(_saveLogs());
     if (_currentUserId != null && _firestoreSyncRepository != null) {
-      unawaited(_firestoreSyncRepository!.saveRamadhanShalatLogs(
-        _currentUserId!,
-        _shalatLogs.map((e) => e.toJson()).toList(),
-      ));
+      unawaited(
+        _firestoreSyncRepository!.saveRamadhanShalatLogs(
+          _currentUserId!,
+          _shalatLogs.map((e) => e.toJson()).toList(),
+        ),
+      );
     }
   }
 
@@ -366,7 +383,12 @@ class RamadhanViewModel extends ChangeNotifier {
     notifyListeners();
     unawaited(_saveLogs());
     if (_currentUserId != null && _firestoreSyncRepository != null) {
-      unawaited(_firestoreSyncRepository!.saveCeramahLog(_currentUserId!, newLog.toJson()));
+      unawaited(
+        _firestoreSyncRepository!.saveCeramahLog(
+          _currentUserId!,
+          newLog.toJson(),
+        ),
+      );
     }
   }
 
@@ -409,7 +431,12 @@ class RamadhanViewModel extends ChangeNotifier {
       notifyListeners();
       unawaited(_saveLogs());
       if (_currentUserId != null && _firestoreSyncRepository != null) {
-        unawaited(_firestoreSyncRepository!.saveCeramahLog(_currentUserId!, updated.toJson()));
+        unawaited(
+          _firestoreSyncRepository!.saveCeramahLog(
+            _currentUserId!,
+            updated.toJson(),
+          ),
+        );
       }
     }
   }
@@ -419,7 +446,9 @@ class RamadhanViewModel extends ChangeNotifier {
     notifyListeners();
     unawaited(_saveLogs());
     if (_currentUserId != null && _firestoreSyncRepository != null) {
-      unawaited(_firestoreSyncRepository!.deleteCeramahLog(_currentUserId!, id));
+      unawaited(
+        _firestoreSyncRepository!.deleteCeramahLog(_currentUserId!, id),
+      );
     }
   }
 
@@ -468,7 +497,12 @@ class RamadhanViewModel extends ChangeNotifier {
     notifyListeners();
     unawaited(_saveLogs());
     if (_currentUserId != null && _firestoreSyncRepository != null) {
-      unawaited(_firestoreSyncRepository!.saveInfaqLog(_currentUserId!, newLog.toJson()));
+      unawaited(
+        _firestoreSyncRepository!.saveInfaqLog(
+          _currentUserId!,
+          newLog.toJson(),
+        ),
+      );
     }
   }
 
@@ -515,7 +549,12 @@ class RamadhanViewModel extends ChangeNotifier {
       notifyListeners();
       unawaited(_saveLogs());
       if (_currentUserId != null && _firestoreSyncRepository != null) {
-        unawaited(_firestoreSyncRepository!.saveInfaqLog(_currentUserId!, updated.toJson()));
+        unawaited(
+          _firestoreSyncRepository!.saveInfaqLog(
+            _currentUserId!,
+            updated.toJson(),
+          ),
+        );
       }
     }
   }
@@ -531,7 +570,9 @@ class RamadhanViewModel extends ChangeNotifier {
     notifyListeners();
     unawaited(_saveLogs());
     if (_currentUserId != null && _firestoreSyncRepository != null) {
-      unawaited(_firestoreSyncRepository!.saveCeramahLog(_currentUserId!, log.toJson()));
+      unawaited(
+        _firestoreSyncRepository!.saveCeramahLog(_currentUserId!, log.toJson()),
+      );
     }
   }
 
@@ -546,7 +587,9 @@ class RamadhanViewModel extends ChangeNotifier {
     notifyListeners();
     unawaited(_saveLogs());
     if (_currentUserId != null && _firestoreSyncRepository != null) {
-      unawaited(_firestoreSyncRepository!.saveInfaqLog(_currentUserId!, log.toJson()));
+      unawaited(
+        _firestoreSyncRepository!.saveInfaqLog(_currentUserId!, log.toJson()),
+      );
     }
   }
 

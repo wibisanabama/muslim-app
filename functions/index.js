@@ -4,24 +4,21 @@ const admin = require("firebase-admin");
 
 admin.initializeApp();
 
-// Rate limit tracking (in-memory, resets on cold start)
 const rateLimitMap = new Map();
-const RATE_LIMIT_MAX = 30; // max requests
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // per 1 minute
+const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
-// Allowed fields in the request body
 const ALLOWED_BODY_FIELDS = new Set(["contents"]);
-const MAX_BODY_SIZE_BYTES = 100 * 1024; // 100KB
+const MAX_BODY_SIZE_BYTES = 100 * 1024;
 
 exports.generateChatResponse = onRequest({ cors: false }, async (req, res) => {
   try {
-    // Only allow POST requests
+
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");
       return;
     }
 
-    // 1. Authenticate using the Firebase ID Token passed in the Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       logger.warn("Unauthorized request: Missing or invalid Authorization header");
@@ -30,8 +27,7 @@ exports.generateChatResponse = onRequest({ cors: false }, async (req, res) => {
     }
 
     const idToken = authHeader.split("Bearer ")[1];
-    
-    // Verify the Firebase ID Token to ensure the caller is an authenticated user of our app
+
     let decodedToken;
     try {
       decodedToken = await admin.auth().verifyIdToken(idToken);
@@ -42,7 +38,6 @@ exports.generateChatResponse = onRequest({ cors: false }, async (req, res) => {
       return;
     }
 
-    // 2. Rate limiting per authenticated user
     const uid = decodedToken.uid;
     const now = Date.now();
     if (!rateLimitMap.has(uid)) {
@@ -57,7 +52,6 @@ exports.generateChatResponse = onRequest({ cors: false }, async (req, res) => {
     timestamps.push(now);
     rateLimitMap.set(uid, timestamps);
 
-    // 3. Validate request body size
     const bodyStr = JSON.stringify(req.body);
     if (bodyStr.length > MAX_BODY_SIZE_BYTES) {
       logger.warn(`Request body too large from user: ${uid} (${bodyStr.length} bytes)`);
@@ -65,7 +59,6 @@ exports.generateChatResponse = onRequest({ cors: false }, async (req, res) => {
       return;
     }
 
-    // 4. Validate and sanitize request body — only allow known fields
     const body = req.body;
     if (!body || typeof body !== "object") {
       res.status(400).send("Bad Request: Invalid body");
@@ -84,7 +77,6 @@ exports.generateChatResponse = onRequest({ cors: false }, async (req, res) => {
       return;
     }
 
-    // 5. Enforce system instruction on server-side (cannot be overridden by client)
     sanitizedBody.systemInstruction = {
       parts: [
         {
@@ -93,7 +85,6 @@ exports.generateChatResponse = onRequest({ cors: false }, async (req, res) => {
       ]
     };
 
-    // 6. Retrieve API key from environment variable ONLY — no hardcoded fallback
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       logger.error("GEMINI_API_KEY environment variable is not set.");
@@ -101,7 +92,7 @@ exports.generateChatResponse = onRequest({ cors: false }, async (req, res) => {
       return;
     }
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`;
+    const geminiUrl = `https:
 
     const response = await fetch(geminiUrl, {
       method: "POST",

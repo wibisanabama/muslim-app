@@ -60,7 +60,9 @@ class QuranViewModel extends ChangeNotifier {
       _lastReadAyah = prefs.getInt('last_read_ayah');
       notifyListeners();
     } catch (e) {
-      AppLogger.warningLazy(() => 'Error loading Quran last read from SharedPreferences: $e');
+      AppLogger.warningLazy(
+        () => 'Error loading Quran last read from SharedPreferences: $e',
+      );
     }
   }
 
@@ -96,7 +98,9 @@ class QuranViewModel extends ChangeNotifier {
     if (_firestoreSyncRepository == null) return;
 
     try {
-      final cloudLastRead = await _firestoreSyncRepository!.loadLastRead(userId);
+      final cloudLastRead = await _firestoreSyncRepository!.loadLastRead(
+        userId,
+      );
       if (cloudLastRead == null) {
         if (_lastReadSurah != null) {
           await _firestoreSyncRepository!.saveLastRead(userId, {
@@ -138,7 +142,9 @@ class QuranViewModel extends ChangeNotifier {
         await prefs.remove('last_read_ayah');
       }
     } catch (e) {
-      AppLogger.warningLazy(() => 'Error syncing Quran last read with Firestore: $e');
+      AppLogger.warningLazy(
+        () => 'Error syncing Quran last read with Firestore: $e',
+      );
     }
   }
 

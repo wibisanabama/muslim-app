@@ -38,10 +38,7 @@ class _LicensesPageState extends State<LicensesPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lisensi'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Lisensi'), centerTitle: false),
       body: FutureBuilder<List<_PackageLicense>>(
         future: _licensesFuture,
         builder: (context, snapshot) {
@@ -237,10 +234,7 @@ class _PackageLicenseDetailPageState extends State<PackageLicenseDetailPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.packageName),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: Text(widget.packageName), centerTitle: false),
       body: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
         itemCount: _items.length,

@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../viewmodel/theme_view_model.dart';
 import 'api_list_page.dart';
 import 'licenses_page.dart';
+
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -228,10 +229,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final themeVm = context.watch<ThemeViewModel>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pengaturan'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Pengaturan'), centerTitle: false),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         children: [

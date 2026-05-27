@@ -57,7 +57,15 @@ class _RamadhanPageState extends State<RamadhanPage> {
   }
 
   String _formatDateLong(DateTime date) {
-    final days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    final days = [
+      'Minggu',
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+    ];
     final dayName = days[date.weekday % 7];
     return '$dayName, ${_formatDate(date)}';
   }
@@ -67,7 +75,13 @@ class _RamadhanPageState extends State<RamadhanPage> {
       final parts = timeStr.trim().split(':');
       final hour = int.parse(parts[0]);
       final minute = int.parse(parts[1]);
-      return DateTime(baseDate.year, baseDate.month, baseDate.day, hour, minute);
+      return DateTime(
+        baseDate.year,
+        baseDate.month,
+        baseDate.day,
+        hour,
+        minute,
+      );
     } catch (_) {
       return null;
     }
@@ -80,7 +94,11 @@ class _RamadhanPageState extends State<RamadhanPage> {
     ShalatDaySchedule todaySchedule,
   ) {
     final todayDate = DateTime(now.year, now.month, now.day);
-    final targetDayOnly = DateTime(targetDate.year, targetDate.month, targetDate.day);
+    final targetDayOnly = DateTime(
+      targetDate.year,
+      targetDate.month,
+      targetDate.day,
+    );
 
     final subuhToday = _parseTime(now, todaySchedule.subuh);
     final terbitToday = _parseTime(now, todaySchedule.terbit);
@@ -95,11 +113,13 @@ class _RamadhanPageState extends State<RamadhanPage> {
         asharToday == null ||
         maghribToday == null ||
         isyaToday == null) {
-      return PrayerStatus.active; // Fallback
+      return PrayerStatus.active;
     }
 
     if (targetDayOnly.isBefore(todayDate)) {
-      final isYesterday = targetDayOnly.isAtSameMomentAs(todayDate.subtract(const Duration(days: 1)));
+      final isYesterday = targetDayOnly.isAtSameMomentAs(
+        todayDate.subtract(const Duration(days: 1)),
+      );
       if (isYesterday && prayerName == 'Isya') {
         if (now.isBefore(subuhToday)) {
           return PrayerStatus.active;
@@ -135,10 +155,13 @@ class _RamadhanPageState extends State<RamadhanPage> {
     }
   }
 
-  int _getActiveRamadhanDay(RamadhanViewModel viewModel, List<ShalatDaySchedule> schedules) {
+  int _getActiveRamadhanDay(
+    RamadhanViewModel viewModel,
+    List<ShalatDaySchedule> schedules,
+  ) {
     final now = DateTime.now();
     final todayDate = DateTime(now.year, now.month, now.day);
-    
+
     ShalatDaySchedule? todaySchedule;
     for (final s in schedules) {
       try {
@@ -166,7 +189,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
         targetDate = todayDate.subtract(const Duration(days: 1));
       }
     }
-    
+
     final activeDay = targetDate.difference(viewModel.startDate).inDays + 1;
     return activeDay.clamp(1, 30);
   }
@@ -243,9 +266,10 @@ class _RamadhanPageState extends State<RamadhanPage> {
     _selectedDay = _getActiveRamadhanDay(viewModel, schedules);
     final log = viewModel.shalatLogs[_selectedDay - 1];
     final fardhuPrayers = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
-    final targetDate = viewModel.startDate.add(Duration(days: _selectedDay - 1));
+    final targetDate = viewModel.startDate.add(
+      Duration(days: _selectedDay - 1),
+    );
 
-    // Find today's schedule from schedules list
     for (final s in schedules) {
       try {
         final parts = s.tanggal.split(', ');
@@ -283,7 +307,10 @@ class _RamadhanPageState extends State<RamadhanPage> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 16.0,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -331,149 +358,174 @@ class _RamadhanPageState extends State<RamadhanPage> {
               physics: const NeverScrollableScrollPhysics(),
               padding: EdgeInsets.zero,
               itemCount: fardhuPrayers.length,
-              separatorBuilder: (context, index) =>
-                  Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
-        itemBuilder: (context, i) {
-          final prayerName = fardhuPrayers[i];
-          final isChecked = log.prayers[prayerName] ?? false;
-          final isFirst = i == 0;
-          final isLast = i == fardhuPrayers.length - 1;
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                color: theme.colorScheme.surface,
+                thickness: 1.5,
+              ),
+              itemBuilder: (context, i) {
+                final prayerName = fardhuPrayers[i];
+                final isChecked = log.prayers[prayerName] ?? false;
+                final isFirst = i == 0;
+                final isLast = i == fardhuPrayers.length - 1;
 
-          final PrayerStatus status = hasSchedule
-              ? _getPrayerStatus(prayerName, targetDate, now, todaySchedule!)
-              : PrayerStatus.active;
+                final PrayerStatus status = hasSchedule
+                    ? _getPrayerStatus(
+                        prayerName,
+                        targetDate,
+                        now,
+                        todaySchedule!,
+                      )
+                    : PrayerStatus.active;
 
-          final isEnabled = status == PrayerStatus.active;
-          final double opacity = isEnabled ? 1.0 : 0.6;
+                final isEnabled = status == PrayerStatus.active;
+                final double opacity = isEnabled ? 1.0 : 0.6;
 
-          String statusLabel = '';
-          Color statusColor = theme.colorScheme.onSurfaceVariant;
-          if (hasSchedule) {
-            if (isChecked) {
-              statusLabel = 'Tercatat';
-              statusColor = Colors.green;
-            } else {
-              switch (status) {
-                case PrayerStatus.active:
-                  statusLabel = 'Sedang berlangsung';
-                  statusColor = theme.colorScheme.primary;
-                  break;
-                case PrayerStatus.passed:
-                  statusLabel = 'Waktu shalat telah lewat';
-                  statusColor = theme.colorScheme.error.withValues(alpha: 0.8);
-                  break;
-                case PrayerStatus.future:
-                  statusLabel = 'Belum masuk waktu';
-                  statusColor = theme.colorScheme.outline;
-                  break;
-              }
-            }
-          } else {
-            statusLabel = isChecked ? 'Tercatat' : 'Buka';
-            statusColor = isChecked ? Colors.green : theme.colorScheme.outline;
-          }
+                String statusLabel = '';
+                Color statusColor = theme.colorScheme.onSurfaceVariant;
+                if (hasSchedule) {
+                  if (isChecked) {
+                    statusLabel = 'Tercatat';
+                    statusColor = Colors.green;
+                  } else {
+                    switch (status) {
+                      case PrayerStatus.active:
+                        statusLabel = 'Sedang berlangsung';
+                        statusColor = theme.colorScheme.primary;
+                        break;
+                      case PrayerStatus.passed:
+                        statusLabel = 'Waktu shalat telah lewat';
+                        statusColor = theme.colorScheme.error.withValues(
+                          alpha: 0.8,
+                        );
+                        break;
+                      case PrayerStatus.future:
+                        statusLabel = 'Belum masuk waktu';
+                        statusColor = theme.colorScheme.outline;
+                        break;
+                    }
+                  }
+                } else {
+                  statusLabel = isChecked ? 'Tercatat' : 'Buka';
+                  statusColor = isChecked
+                      ? Colors.green
+                      : theme.colorScheme.outline;
+                }
 
-          final borderRadius = BorderRadius.only(
-            topLeft: Radius.circular(isFirst ? 16 : 0),
-            topRight: Radius.circular(isFirst ? 16 : 0),
-            bottomLeft: Radius.circular(isLast ? 16 : 0),
-            bottomRight: Radius.circular(isLast ? 16 : 0),
-          );
+                final borderRadius = BorderRadius.only(
+                  topLeft: Radius.circular(isFirst ? 16 : 0),
+                  topRight: Radius.circular(isFirst ? 16 : 0),
+                  bottomLeft: Radius.circular(isLast ? 16 : 0),
+                  bottomRight: Radius.circular(isLast ? 16 : 0),
+                );
 
-          return Opacity(
-            opacity: opacity,
-            child: Material(
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-              borderRadius: borderRadius,
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                onTap: isEnabled
-                    ? () {
-                        viewModel.togglePrayer(_selectedDay, prayerName);
-                      }
-                    : null,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
+                return Opacity(
+                  opacity: opacity,
+                  child: Material(
+                    color: theme.colorScheme.primaryContainer.withValues(
+                      alpha: 0.25,
+                    ),
+                    borderRadius: borderRadius,
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: isEnabled
+                          ? () {
+                              viewModel.togglePrayer(_selectedDay, prayerName);
+                            }
+                          : null,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 16,
                         ),
-                        alignment: Alignment.center,
-                        child: Icon(
-                          _getShalatIcon(prayerName),
-                          size: 20,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              prayerName,
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: theme.colorScheme.onSurface,
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.1,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                _getShalatIcon(prayerName),
+                                size: 20,
+                                color: theme.colorScheme.primary,
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              statusLabel,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: statusColor,
-                                fontWeight: isChecked || status == PrayerStatus.active
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                            const SizedBox(width: 16),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    prayerName,
+                                    style: theme.textTheme.bodyLarge?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    statusLabel,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: statusColor,
+                                      fontWeight:
+                                          isChecked ||
+                                              status == PrayerStatus.active
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
                               ),
+                            ),
+
+                            Checkbox(
+                              value: isChecked,
+                              activeColor: theme.colorScheme.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              onChanged: isEnabled
+                                  ? (bool? value) {
+                                      viewModel.togglePrayer(
+                                        _selectedDay,
+                                        prayerName,
+                                      );
+                                    }
+                                  : null,
                             ),
                           ],
                         ),
                       ),
-
-                      Checkbox(
-                        value: isChecked,
-                        activeColor: theme.colorScheme.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        onChanged: isEnabled
-                            ? (bool? value) {
-                                viewModel.togglePrayer(_selectedDay, prayerName);
-                              }
-                            : null,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
-          );
-        },
+          ],
+        ),
       ),
-    ],
-  ),
-),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showHistoryBottomSheet(context, viewModel),
         label: const Text('Riwayat'),
         icon: const Icon(Icons.history),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(100),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
       ),
     );
   }
 
-  void _showHistoryBottomSheet(BuildContext context, RamadhanViewModel viewModel) {
+  void _showHistoryBottomSheet(
+    BuildContext context,
+    RamadhanViewModel viewModel,
+  ) {
     unawaited(
       showModalBottomSheet(
         context: context,
@@ -487,11 +539,12 @@ class _RamadhanPageState extends State<RamadhanPage> {
           final start = viewModel.startDate;
           final fardhuPrayers = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
 
-          // Filter only days that have at least one checked prayer
           final activeDays = <int>[];
           for (int i = 0; i < 30; i++) {
             final log = viewModel.shalatLogs[i];
-            final hasAnyChecked = log.prayers.values.any((checked) => checked == true);
+            final hasAnyChecked = log.prayers.values.any(
+              (checked) => checked == true,
+            );
             if (hasAnyChecked) {
               activeDays.add(i + 1);
             }
@@ -518,7 +571,10 @@ class _RamadhanPageState extends State<RamadhanPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
                     child: Text(
                       'Riwayat',
                       style: theme.textTheme.titleLarge?.copyWith(
@@ -536,7 +592,9 @@ class _RamadhanPageState extends State<RamadhanPage> {
                                 Icon(
                                   Icons.history_toggle_off_rounded,
                                   size: 48,
-                                  color: theme.colorScheme.outline.withValues(alpha: 0.5),
+                                  color: theme.colorScheme.outline.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
@@ -552,14 +610,19 @@ class _RamadhanPageState extends State<RamadhanPage> {
                             controller: scrollController,
                             padding: const EdgeInsets.all(24),
                             itemCount: activeDays.length,
-                            separatorBuilder: (context, index) => const SizedBox(height: 12),
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 12),
                             itemBuilder: (context, index) {
                               final day = activeDays[index];
                               final log = viewModel.shalatLogs[day - 1];
-                              final dayDate = start.add(Duration(days: day - 1));
+                              final dayDate = start.add(
+                                Duration(days: day - 1),
+                              );
 
                               return Theme(
-                                data: theme.copyWith(dividerColor: Colors.transparent),
+                                data: theme.copyWith(
+                                  dividerColor: Colors.transparent,
+                                ),
                                 child: Card(
                                   margin: EdgeInsets.zero,
                                   clipBehavior: Clip.antiAlias,
@@ -568,58 +631,85 @@ class _RamadhanPageState extends State<RamadhanPage> {
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: ExpansionTile(
-                                    collapsedBackgroundColor: Colors.transparent,
+                                    collapsedBackgroundColor:
+                                        Colors.transparent,
                                     backgroundColor: Colors.transparent,
                                     iconColor: theme.colorScheme.primary,
                                     title: Text(
                                       _formatDateLong(dayDate),
-                                      style: theme.textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
                                     children: [
-                                      const Divider(height: 1, indent: 16, endIndent: 16),
+                                      const Divider(
+                                        height: 1,
+                                        indent: 16,
+                                        endIndent: 16,
+                                      ),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 8),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 8,
+                                        ),
                                         child: Column(
                                           children: fardhuPrayers.map((pr) {
-                                            final isPrChecked = log.prayers[pr] ?? false;
+                                            final isPrChecked =
+                                                log.prayers[pr] ?? false;
                                             return Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 24.0,
-                                                vertical: 8.0,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 24.0,
+                                                    vertical: 8.0,
+                                                  ),
                                               child: Row(
                                                 children: [
                                                   Icon(
                                                     _getShalatIcon(pr),
                                                     size: 18,
                                                     color: isPrChecked
-                                                        ? theme.colorScheme.primary
-                                                        : theme.colorScheme.outline,
+                                                        ? theme
+                                                              .colorScheme
+                                                              .primary
+                                                        : theme
+                                                              .colorScheme
+                                                              .outline,
                                                   ),
                                                   const SizedBox(width: 16),
                                                   Expanded(
                                                     child: Text(
                                                       pr,
-                                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                                        color: isPrChecked
-                                                            ? theme.colorScheme.onSurface
-                                                            : theme.colorScheme.outline,
-                                                        fontWeight: isPrChecked
-                                                            ? FontWeight.bold
-                                                            : FontWeight.normal,
-                                                      ),
+                                                      style: theme
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.copyWith(
+                                                            color: isPrChecked
+                                                                ? theme
+                                                                      .colorScheme
+                                                                      .onSurface
+                                                                : theme
+                                                                      .colorScheme
+                                                                      .outline,
+                                                            fontWeight:
+                                                                isPrChecked
+                                                                ? FontWeight
+                                                                      .bold
+                                                                : FontWeight
+                                                                      .normal,
+                                                          ),
                                                     ),
                                                   ),
                                                   Icon(
                                                     isPrChecked
-                                                        ? Icons.check_circle_rounded
+                                                        ? Icons
+                                                              .check_circle_rounded
                                                         : Icons.cancel_outlined,
                                                     size: 18,
                                                     color: isPrChecked
                                                         ? Colors.green
-                                                        : theme.colorScheme.outlineVariant,
+                                                        : theme
+                                                              .colorScheme
+                                                              .outlineVariant,
                                                   ),
                                                 ],
                                               ),

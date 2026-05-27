@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../model/shalat_schedule_response.dart';
 import '../viewmodel/shalat_view_model.dart';
+
 class ShalatDetailPage extends StatefulWidget {
   final ShalatDaySchedule schedule;
 

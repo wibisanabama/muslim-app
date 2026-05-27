@@ -19,9 +19,10 @@ class _ChatPageState extends State<ChatPage> {
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, dynamic>> _messages = [
     {
-      'text': 'Assalamualaikum! Saya Asisten Muslim AI. Ada yang bisa saya bantu hari ini mengenai ajaran Islam, doa, jadwal shalat, atau yang lainnya?',
+      'text':
+          'Assalamualaikum! Saya Asisten Muslim AI. Ada yang bisa saya bantu hari ini mengenai ajaran Islam, doa, jadwal shalat, atau yang lainnya?',
       'isUser': false,
-    }
+    },
   ];
   bool _isLoading = false;
   String? _lastUserId;
@@ -53,7 +54,8 @@ class _ChatPageState extends State<ChatPage> {
     setState(() {
       _messages.clear();
       _messages.add({
-        'text': 'Assalamualaikum! Saya Asisten Muslim AI. Ada yang bisa saya bantu hari ini mengenai ajaran Islam, doa, jadwal shalat, atau yang lainnya?',
+        'text':
+            'Assalamualaikum! Saya Asisten Muslim AI. Ada yang bisa saya bantu hari ini mengenai ajaran Islam, doa, jadwal shalat, atau yang lainnya?',
         'isUser': false,
       });
     });
@@ -86,7 +88,6 @@ class _ChatPageState extends State<ChatPage> {
       return;
     }
 
-    // Enforce maximum session message count to prevent abuse
     if (_messages.length >= _maxSessionMessages) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -105,7 +106,6 @@ class _ChatPageState extends State<ChatPage> {
     _scrollToBottom();
 
     try {
-      // Only send the last N messages as history to limit API token cost
       final allHistory = _messages.sublist(1, _messages.length - 1);
       final history = allHistory.length > _maxApiHistoryMessages
           ? allHistory.sublist(allHistory.length - _maxApiHistoryMessages)
@@ -113,20 +113,20 @@ class _ChatPageState extends State<ChatPage> {
       final List<Map<String, dynamic>> contents = [];
 
       for (var msg in history) {
-        if (msg['isError'] == true) continue; // Skip error messages
+        if (msg['isError'] == true) continue;
         contents.add({
           'role': msg['isUser'] ? 'user' : 'model',
           'parts': [
-            {'text': msg['text']}
-          ]
+            {'text': msg['text']},
+          ],
         });
       }
 
       contents.add({
         'role': 'user',
         'parts': [
-          {'text': text}
-        ]
+          {'text': text},
+        ],
       });
 
       final body = {
@@ -135,23 +135,17 @@ class _ChatPageState extends State<ChatPage> {
           'parts': [
             {
               'text':
-                  'Anda adalah asisten Muslim AI yang sopan, ramah, dan berpengetahuan luas tentang ajaran Islam. PENTING: Anda HANYA diperbolehkan menjawab pertanyaan yang berkaitan dengan ajaran Islam, ibadah, doa, Al-Quran, Hadis, sejarah Islam, hukum fiqih, akhlak, dan topik keislaman lainnya. Jika pengguna mengajukan pertanyaan di luar topik keislaman (seperti sains umum, matematika, pemrograman komputer, berita politik umum, hiburan umum, dll.), Anda HARUS menolaknya secara sopan dengan menyatakan bahwa Anda hanya didesain untuk menjawab pertanyaan seputar ajaran Islam. Berikan jawaban keislaman yang sejalan dengan ajaran Ahlussunnah wal Jama\'ah, menggunakan referensi Al-Quran, Hadis, serta penjelasan yang sejuk, moderat (wasathiyah), dan mudah dipahami. Hindari berdebat mengenai masalah khilafiyah secara keras, jelaskan perbedaan pendapat ulama secara bijaksana jika diperlukan.'
-            }
-          ]
-        }
+                  'Anda adalah asisten Muslim AI yang sopan, ramah, dan berpengetahuan luas tentang ajaran Islam. PENTING: Anda HANYA diperbolehkan menjawab pertanyaan yang berkaitan dengan ajaran Islam, ibadah, doa, Al-Quran, Hadis, sejarah Islam, hukum fiqih, akhlak, dan topik keislaman lainnya. Jika pengguna mengajukan pertanyaan di luar topik keislaman (seperti sains umum, matematika, pemrograman komputer, berita politik umum, hiburan umum, dll.), Anda HARUS menolaknya secara sopan dengan menyatakan bahwa Anda hanya didesain untuk menjawab pertanyaan seputar ajaran Islam. Berikan jawaban keislaman yang sejalan dengan ajaran Ahlussunnah wal Jama\'ah, menggunakan referensi Al-Quran, Hadis, serta penjelasan yang sejuk, moderat (wasathiyah), dan mudah dipahami. Hindari berdebat mengenai masalah khilafiyah secara keras, jelaskan perbedaan pendapat ulama secara bijaksana jika diperlukan.',
+            },
+          ],
+        },
       };
 
-      // SECURITY: This API key is loaded from gemini_config.dart which is gitignored.
-      // Ensure this key is restricted in Google Cloud Console:
-      // 1. Application restriction → Android apps → package: id.muslimapp.app
-      // 2. API restriction → Generative Language API only
-      // 3. Set daily quota limit (e.g. 1000 requests/day)
-      // TODO: Migrate to Cloud Function proxy when Blaze plan is available
       final response = await http.post(
-        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GeminiConfig.apiKey}'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        Uri.parse(
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GeminiConfig.apiKey}',
+        ),
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );
 
@@ -217,8 +211,9 @@ class _ChatPageState extends State<ChatPage> {
                 final isError = message['isError'] == true;
 
                 return Align(
-                  alignment:
-                      isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isUser
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     padding: const EdgeInsets.symmetric(
@@ -232,9 +227,10 @@ class _ChatPageState extends State<ChatPage> {
                       color: isUser
                           ? theme.colorScheme.primary
                           : (isError
-                              ? theme.colorScheme.errorContainer
-                              : theme.colorScheme.primaryContainer
-                                  .withValues(alpha: 0.25)),
+                                ? theme.colorScheme.errorContainer
+                                : theme.colorScheme.primaryContainer.withValues(
+                                    alpha: 0.25,
+                                  )),
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(16),
                         topRight: const Radius.circular(16),
@@ -252,49 +248,51 @@ class _ChatPageState extends State<ChatPage> {
                           )
                         : MarkdownBody(
                             data: message['text'] as String,
-                            styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
-                              p: theme.textTheme.bodyMedium?.copyWith(
-                                color: isError
-                                    ? theme.colorScheme.onErrorContainer
-                                    : theme.colorScheme.onSurface,
-                                height: 1.4,
-                              ),
-                              strong: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isError
-                                    ? theme.colorScheme.onErrorContainer
-                                    : theme.colorScheme.onSurface,
-                              ),
-                              em: theme.textTheme.bodyMedium?.copyWith(
-                                fontStyle: FontStyle.italic,
-                                color: isError
-                                    ? theme.colorScheme.onErrorContainer
-                                    : theme.colorScheme.onSurface,
-                              ),
-                              h1: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isError
-                                    ? theme.colorScheme.onErrorContainer
-                                    : theme.colorScheme.onSurface,
-                              ),
-                              h2: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isError
-                                    ? theme.colorScheme.onErrorContainer
-                                    : theme.colorScheme.onSurface,
-                              ),
-                              h3: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isError
-                                    ? theme.colorScheme.onErrorContainer
-                                    : theme.colorScheme.onSurface,
-                              ),
-                              listBullet: theme.textTheme.bodyMedium?.copyWith(
-                                color: isError
-                                    ? theme.colorScheme.onErrorContainer
-                                    : theme.colorScheme.onSurface,
-                              ),
-                            ),
+                            styleSheet: MarkdownStyleSheet.fromTheme(theme)
+                                .copyWith(
+                                  p: theme.textTheme.bodyMedium?.copyWith(
+                                    color: isError
+                                        ? theme.colorScheme.onErrorContainer
+                                        : theme.colorScheme.onSurface,
+                                    height: 1.4,
+                                  ),
+                                  strong: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: isError
+                                        ? theme.colorScheme.onErrorContainer
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                  em: theme.textTheme.bodyMedium?.copyWith(
+                                    fontStyle: FontStyle.italic,
+                                    color: isError
+                                        ? theme.colorScheme.onErrorContainer
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                  h1: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: isError
+                                        ? theme.colorScheme.onErrorContainer
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                  h2: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: isError
+                                        ? theme.colorScheme.onErrorContainer
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                  h3: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: isError
+                                        ? theme.colorScheme.onErrorContainer
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                  listBullet: theme.textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: isError
+                                            ? theme.colorScheme.onErrorContainer
+                                            : theme.colorScheme.onSurface,
+                                      ),
+                                ),
                           ),
                   ),
                 );

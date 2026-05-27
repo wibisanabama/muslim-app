@@ -237,9 +237,7 @@ class _HomePageState extends State<HomePage> {
             : Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        actions: [
-          ProfileMonogram(scaffoldKey: widget.scaffoldKey),
-        ],
+        actions: [ProfileMonogram(scaffoldKey: widget.scaffoldKey)],
       ),
       body: RefreshIndicator(
         onRefresh: () => context
@@ -356,9 +354,7 @@ class _HomePageState extends State<HomePage> {
                   onTap: () async {
                     await Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const ChatPage(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const ChatPage()),
                     );
                   },
                   child: Padding(
@@ -694,9 +690,9 @@ class _HomePageState extends State<HomePage> {
         child: InkWell(
           onTap: () {
             unawaited(
-              context
-                  .read<ShalatViewModel>()
-                  .updateLocationAndFetchSchedule(forceGPS: true),
+              context.read<ShalatViewModel>().updateLocationAndFetchSchedule(
+                forceGPS: true,
+              ),
             );
           },
           child: Container(
@@ -732,7 +728,9 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  message.replaceAll('Exception: ', '').replaceAll('SocketException: ', ''),
+                  message
+                      .replaceAll('Exception: ', '')
+                      .replaceAll('SocketException: ', ''),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

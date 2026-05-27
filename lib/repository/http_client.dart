@@ -92,12 +92,14 @@ class SafeHttpClient extends http.BaseClient {
           rethrow;
         }
 
-        final isTls = e is TlsException ||
+        final isTls =
+            e is TlsException ||
             e.toString().contains('HandshakeException') ||
             e.toString().contains('TlsException') ||
             e.toString().contains('CERTIFICATE_VERIFY_FAILED');
 
-        final isSocket = e is SocketException ||
+        final isSocket =
+            e is SocketException ||
             e.toString().contains('SocketException') ||
             e.toString().contains('Failed host lookup');
 
@@ -112,7 +114,9 @@ class SafeHttpClient extends http.BaseClient {
         }
 
         if (isSocket) {
-          throw const SocketException('Gagal terhubung ke internet. Periksa koneksi Anda.');
+          throw const SocketException(
+            'Gagal terhubung ke internet. Periksa koneksi Anda.',
+          );
         }
 
         rethrow;

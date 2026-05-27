@@ -18,7 +18,6 @@ class ProfileDrawer extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
@@ -43,7 +42,11 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginContent(BuildContext context, ThemeData theme, AuthViewModel viewModel) {
+  Widget _buildLoginContent(
+    BuildContext context,
+    ThemeData theme,
+    AuthViewModel viewModel,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
       child: Column(
@@ -55,7 +58,9 @@ class ProfileDrawer extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.15,
+                ),
               ),
               child: Icon(
                 Icons.cloud_sync_outlined,
@@ -88,21 +93,24 @@ class ProfileDrawer extends StatelessWidget {
             theme,
             icon: Icons.menu_book_outlined,
             title: 'Riwayat Baca Quran',
-            description: 'Menyimpan tanda ayat terakhir agar Anda dapat melanjutkan bacaan kapan saja.',
+            description:
+                'Menyimpan tanda ayat terakhir agar Anda dapat melanjutkan bacaan kapan saja.',
           ),
           const SizedBox(height: 24),
           _buildBenefitItem(
             theme,
             icon: Icons.bookmark_border_outlined,
             title: 'Daftar Favorit & Bookmark',
-            description: 'Akses cepat ke doa pilihan dan hadis penting yang sering Anda amalkan.',
+            description:
+                'Akses cepat ke doa pilihan dan hadis penting yang sering Anda amalkan.',
           ),
           const SizedBox(height: 24),
           _buildBenefitItem(
             theme,
             icon: Icons.tune_outlined,
             title: 'Setelan Personal',
-            description: 'Penyesuaian jadwal shalat, dan tema aplikasi selalu terjaga.',
+            description:
+                'Penyesuaian jadwal shalat, dan tema aplikasi selalu terjaga.',
           ),
           const SizedBox(height: 48),
           if (viewModel.isLoading)
@@ -122,9 +130,7 @@ class ProfileDrawer extends StatelessWidget {
                 if (context.mounted) {
                   if (!success && viewModel.error != null) {
                     viewModel.clearError();
-                  } else if (success) {
-
-                  }
+                  } else if (success) {}
                 }
               },
               child: Row(
@@ -150,7 +156,11 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileContent(BuildContext context, ThemeData theme, AuthViewModel viewModel) {
+  Widget _buildProfileContent(
+    BuildContext context,
+    ThemeData theme,
+    AuthViewModel viewModel,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
       child: Column(
@@ -356,7 +366,6 @@ class _GoogleLogoPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
 
-
     paint.color = const Color(0xFFEA4335);
     final Path red = Path()
       ..moveTo(24 * s, 9.5 * s)
@@ -369,7 +378,6 @@ class _GoogleLogoPainter extends CustomPainter {
       ..close();
     canvas.drawPath(red, paint);
 
-
     paint.color = const Color(0xFF4285F4);
     final Path blue = Path()
       ..moveTo(48 * s, 24 * s)
@@ -377,13 +385,19 @@ class _GoogleLogoPainter extends CustomPainter {
       ..lineTo(24 * s, 19.01 * s)
       ..lineTo(24 * s, 28.52 * s)
       ..lineTo(37.51 * s, 28.52 * s)
-      ..cubicTo(36.93 * s, 31.67 * s, 35.14 * s, 34.34 * s, 32.47 * s, 36.13 * s)
+      ..cubicTo(
+        36.93 * s,
+        31.67 * s,
+        35.14 * s,
+        34.34 * s,
+        32.47 * s,
+        36.13 * s,
+      )
       ..lineTo(32.47 * s, 42.46 * s)
       ..lineTo(40.63 * s, 42.46 * s)
       ..cubicTo(45.39 * s, 37.58 * s, 48 * s, 31.33 * s, 48 * s, 24 * s)
       ..close();
     canvas.drawPath(blue, paint);
-
 
     paint.color = const Color(0xFFFBBC05);
     final Path yellow = Path()
@@ -397,14 +411,20 @@ class _GoogleLogoPainter extends CustomPainter {
       ..close();
     canvas.drawPath(yellow, paint);
 
-
     paint.color = const Color(0xFF34A853);
     final Path green = Path()
       ..moveTo(24 * s, 48 * s)
       ..cubicTo(30.48 * s, 48 * s, 35.93 * s, 45.87 * s, 39.89 * s, 42.19 * s)
       ..lineTo(31.73 * s, 35.86 * s)
       ..cubicTo(29.47 * s, 37.37 * s, 26.58 * s, 38.28 * s, 24 * s, 38.28 * s)
-      ..cubicTo(17.74 * s, 38.28 * s, 12.43 * s, 34.06 * s, 10.54 * s, 28.37 * s)
+      ..cubicTo(
+        17.74 * s,
+        38.28 * s,
+        12.43 * s,
+        34.06 * s,
+        10.54 * s,
+        28.37 * s,
+      )
       ..lineTo(2.56 * s, 34.56 * s)
       ..cubicTo(6.51 * s, 42.62 * s, 14.62 * s, 48 * s, 24 * s, 48 * s)
       ..close();

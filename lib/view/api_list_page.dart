@@ -108,10 +108,7 @@ class _ApiListPageState extends State<ApiListPage> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Daftar API'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Daftar API'), centerTitle: false),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         children: [

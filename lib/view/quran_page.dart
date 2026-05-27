@@ -122,9 +122,7 @@ class _QuranPageState extends State<QuranPage> {
             ),
           ),
         ),
-        actions: [
-          ProfileMonogram(scaffoldKey: widget.scaffoldKey),
-        ],
+        actions: [ProfileMonogram(scaffoldKey: widget.scaffoldKey)],
       ),
       body: RefreshIndicator(
         onRefresh: () => context.read<QuranViewModel>().fetchSurahs(),

@@ -111,9 +111,7 @@ class _DoaPageState extends State<DoaPage> {
             ),
           ),
         ),
-        actions: [
-          ProfileMonogram(scaffoldKey: widget.scaffoldKey),
-        ],
+        actions: [ProfileMonogram(scaffoldKey: widget.scaffoldKey)],
       ),
       body: RefreshIndicator(
         onRefresh: () => context.read<DoaViewModel>().fetchDoas(),

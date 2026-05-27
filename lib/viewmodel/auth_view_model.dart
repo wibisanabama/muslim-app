@@ -25,7 +25,8 @@ class AuthViewModel extends ChangeNotifier {
   String get displayName => _user?.displayName ?? 'Akun';
   String get email => _user?.email ?? '';
   String? get photoUrl => _user?.photoURL;
-  String get monogramLetter => displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A';
+  String get monogramLetter =>
+      displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A';
 
   void clearError() {
     _error = null;
@@ -60,26 +61,31 @@ class AuthViewModel extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      
-      // Quran
+
       await prefs.remove('last_read_surah');
       await prefs.remove('last_read_surah_name');
       await prefs.remove('last_read_ayah');
-      
-      // Doa
+
       await prefs.remove('saved_doa_ids');
-      
-      // Hadis
-      final books = ["bukhari", "muslim", "tirmidzi", "abu-daud", "nasai", "ibnu-majah", "malik", "ahmad", "darimi"];
+
+      final books = [
+        "bukhari",
+        "muslim",
+        "tirmidzi",
+        "abu-daud",
+        "nasai",
+        "ibnu-majah",
+        "malik",
+        "ahmad",
+        "darimi",
+      ];
       for (final bookId in books) {
         await prefs.remove('saved_hadis_$bookId');
       }
-      
-      // Ramadhan Shalat & Ceramah
+
       await prefs.remove('ramadhan_shalat_logs');
       await prefs.remove('ramadhan_ceramah_logs');
-      
-      // Ramadhan Infaq
+
       const secureStorage = FlutterSecureStorage();
       await secureStorage.delete(key: 'ramadhan_infaq_logs');
     } catch (_) {}

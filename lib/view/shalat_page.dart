@@ -177,9 +177,7 @@ class _ShalatPageState extends State<ShalatPage> {
             ),
           ),
         ),
-        actions: [
-          ProfileMonogram(scaffoldKey: widget.scaffoldKey),
-        ],
+        actions: [ProfileMonogram(scaffoldKey: widget.scaffoldKey)],
       ),
       body: RefreshIndicator(
         onRefresh: () => context

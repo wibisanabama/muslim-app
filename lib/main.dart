@@ -49,7 +49,9 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        Provider<FirestoreSyncRepository>(create: (_) => FirestoreSyncRepository()),
+        Provider<FirestoreSyncRepository>(
+          create: (_) => FirestoreSyncRepository(),
+        ),
         Provider<ShalatRepository>(create: (_) => ShalatRepository()),
         ChangeNotifierProvider<ShalatViewModel>(
           create: (context) =>
@@ -61,29 +63,40 @@ class MyApp extends StatelessWidget {
         Provider<AuthRepository>(create: (_) => AuthRepository()),
         ChangeNotifierProvider<ThemeViewModel>(create: (_) => ThemeViewModel()),
         ChangeNotifierProvider<AuthViewModel>(
-          create: (context) => AuthViewModel(
-            repository: context.read<AuthRepository>(),
-          ),
+          create: (context) =>
+              AuthViewModel(repository: context.read<AuthRepository>()),
         ),
         ChangeNotifierProxyProvider<AuthViewModel, QuranViewModel>(
           create: (context) => QuranViewModel(context.read<QuranRepository>()),
-          update: (context, authVm, quranVm) =>
-              quranVm!..updateUserId(authVm.userId, context.read<FirestoreSyncRepository>()),
+          update: (context, authVm, quranVm) => quranVm!
+            ..updateUserId(
+              authVm.userId,
+              context.read<FirestoreSyncRepository>(),
+            ),
         ),
         ChangeNotifierProxyProvider<AuthViewModel, DoaViewModel>(
           create: (context) => DoaViewModel(context.read<DoaRepository>()),
-          update: (context, authVm, doaVm) =>
-              doaVm!..updateUserId(authVm.userId, context.read<FirestoreSyncRepository>()),
+          update: (context, authVm, doaVm) => doaVm!
+            ..updateUserId(
+              authVm.userId,
+              context.read<FirestoreSyncRepository>(),
+            ),
         ),
         ChangeNotifierProxyProvider<AuthViewModel, HadisViewModel>(
           create: (_) => HadisViewModel(),
-          update: (context, authVm, hadisVm) =>
-              hadisVm!..updateUserId(authVm.userId, context.read<FirestoreSyncRepository>()),
+          update: (context, authVm, hadisVm) => hadisVm!
+            ..updateUserId(
+              authVm.userId,
+              context.read<FirestoreSyncRepository>(),
+            ),
         ),
         ChangeNotifierProxyProvider<AuthViewModel, RamadhanViewModel>(
           create: (_) => RamadhanViewModel(),
-          update: (context, authVm, ramadhanVm) =>
-              ramadhanVm!..updateUserId(authVm.userId, context.read<FirestoreSyncRepository>()),
+          update: (context, authVm, ramadhanVm) => ramadhanVm!
+            ..updateUserId(
+              authVm.userId,
+              context.read<FirestoreSyncRepository>(),
+            ),
         ),
       ],
       child: Consumer<ThemeViewModel>(

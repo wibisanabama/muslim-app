@@ -30,7 +30,6 @@ class HadisViewModel extends ChangeNotifier {
       _currentUserId = userId;
       _firestoreSyncRepository = syncRepo;
       if (userId != null) {
-        // Sync when user logs in
         unawaited(syncWithFirestore(userId));
       } else {
         unawaited(clearAllLocal());
@@ -45,8 +44,18 @@ class HadisViewModel extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final Map<String, List<int>> loaded = {};
-      
-      final books = ["bukhari", "muslim", "tirmidzi", "abu-daud", "nasai", "ibnu-majah", "malik", "ahmad", "darimi"];
+
+      final books = [
+        "bukhari",
+        "muslim",
+        "tirmidzi",
+        "abu-daud",
+        "nasai",
+        "ibnu-majah",
+        "malik",
+        "ahmad",
+        "darimi",
+      ];
       for (final bookId in books) {
         final savedList = prefs.getStringList('saved_hadis_$bookId') ?? [];
         final parsed = savedList
@@ -57,10 +66,12 @@ class HadisViewModel extends ChangeNotifier {
           loaded[bookId] = parsed;
         }
       }
-      
+
       _savedHadiths = loaded;
     } catch (e) {
-      AppLogger.warningLazy(() => 'Error loading saved Hadiths from SharedPreferences: $e');
+      AppLogger.warningLazy(
+        () => 'Error loading saved Hadiths from SharedPreferences: $e',
+      );
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -96,7 +107,10 @@ class HadisViewModel extends ChangeNotifier {
       await prefs.setStringList('saved_hadis_$bookId', stringList);
 
       if (_currentUserId != null && _firestoreSyncRepository != null) {
-        await _firestoreSyncRepository!.saveSavedHadiths(_currentUserId!, _savedHadiths);
+        await _firestoreSyncRepository!.saveSavedHadiths(
+          _currentUserId!,
+          _savedHadiths,
+        );
       }
     } catch (e) {
       AppLogger.warningLazy(() => 'Error saving saved Hadiths: $e');
@@ -107,14 +121,14 @@ class HadisViewModel extends ChangeNotifier {
     if (_firestoreSyncRepository == null) return;
 
     try {
-      final cloudSaved = await _firestoreSyncRepository!.loadSavedHadiths(userId);
+      final cloudSaved = await _firestoreSyncRepository!.loadSavedHadiths(
+        userId,
+      );
       if (cloudSaved == null) {
-        // Upload local data to cloud
         await _firestoreSyncRepository!.saveSavedHadiths(userId, _savedHadiths);
         return;
       }
 
-      // Merge: Union of local and cloud
       final merged = Map<String, List<int>>.from(_savedHadiths);
       cloudSaved.forEach((bookId, cloudList) {
         final localList = merged[bookId] ?? [];
@@ -127,7 +141,6 @@ class HadisViewModel extends ChangeNotifier {
       _savedHadiths = merged;
       notifyListeners();
 
-      // Save back locally and to cloud
       final prefs = await SharedPreferences.getInstance();
       for (final entry in _savedHadiths.entries) {
         final stringList = entry.value.map((e) => e.toString()).toList();
@@ -136,7 +149,9 @@ class HadisViewModel extends ChangeNotifier {
 
       await _firestoreSyncRepository!.saveSavedHadiths(userId, _savedHadiths);
     } catch (e) {
-      AppLogger.warningLazy(() => 'Error syncing saved Hadiths with Firestore: $e');
+      AppLogger.warningLazy(
+        () => 'Error syncing saved Hadiths with Firestore: $e',
+      );
     }
   }
 
@@ -146,7 +161,17 @@ class HadisViewModel extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final books = ["bukhari", "muslim", "tirmidzi", "abu-daud", "nasai", "ibnu-majah", "malik", "ahmad", "darimi"];
+      final books = [
+        "bukhari",
+        "muslim",
+        "tirmidzi",
+        "abu-daud",
+        "nasai",
+        "ibnu-majah",
+        "malik",
+        "ahmad",
+        "darimi",
+      ];
       for (final bookId in books) {
         await prefs.remove('saved_hadis_$bookId');
       }

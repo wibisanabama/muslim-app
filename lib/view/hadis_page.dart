@@ -1178,7 +1178,10 @@ class HadisDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isBookmarked = context.watch<HadisViewModel>().isSaved(bookId, hadis.number);
+    final isBookmarked = context.watch<HadisViewModel>().isSaved(
+      bookId,
+      hadis.number,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -1197,7 +1200,12 @@ class HadisDetailPage extends StatelessWidget {
             ),
             tooltip: 'Simpan Hadis',
             onPressed: () {
-              unawaited(context.read<HadisViewModel>().toggleSaved(bookId, hadis.number));
+              unawaited(
+                context.read<HadisViewModel>().toggleSaved(
+                  bookId,
+                  hadis.number,
+                ),
+              );
             },
           ),
         ],
@@ -1336,7 +1344,10 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
               final List<GlobalSavedHadisItem> bookItems = [];
               final bookFutures = numbers.map((hadisNumber) async {
                 try {
-                  final h = await _repository.getSingleHadis(book.id, hadisNumber);
+                  final h = await _repository.getSingleHadis(
+                    book.id,
+                    hadisNumber,
+                  );
                   bookItems.add(
                     GlobalSavedHadisItem(
                       hadis: h,
@@ -1367,7 +1378,10 @@ class _SavedHadisPageState extends State<SavedHadisPage> {
         final numbers = hadisViewModel.getSavedNumbers(widget.bookId!);
         if (numbers.isNotEmpty) {
           final bookFutures = numbers.map((hadisNumber) async {
-            final h = await _repository.getSingleHadis(widget.bookId!, hadisNumber);
+            final h = await _repository.getSingleHadis(
+              widget.bookId!,
+              hadisNumber,
+            );
             tempItems.add(
               GlobalSavedHadisItem(
                 hadis: h,

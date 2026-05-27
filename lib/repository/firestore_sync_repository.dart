@@ -3,8 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class FirestoreSyncRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // --- Quran Last Read ---
-  Future<void> saveLastRead(String userId, Map<String, dynamic> lastRead) async {
+  Future<void> saveLastRead(
+    String userId,
+    Map<String, dynamic> lastRead,
+  ) async {
     await _firestore.collection('users').doc(userId).set({
       'lastReadQuran': lastRead,
     }, SetOptions(merge: true));
@@ -21,7 +23,6 @@ class FirestoreSyncRepository {
     return null;
   }
 
-  // --- Saved Doas ---
   Future<void> saveSavedDoas(String userId, List<String> savedDoaIds) async {
     await _firestore.collection('users').doc(userId).set({
       'savedDoas': savedDoaIds,
@@ -40,9 +41,10 @@ class FirestoreSyncRepository {
     return null;
   }
 
-  // --- Saved Hadiths ---
-  Future<void> saveSavedHadiths(String userId, Map<String, List<int>> savedHadiths) async {
-    // Convert to a firestore-friendly format (nested map string to array of numbers)
+  Future<void> saveSavedHadiths(
+    String userId,
+    Map<String, List<int>> savedHadiths,
+  ) async {
     final Map<String, List<int>> firestoreFriendly = {};
     savedHadiths.forEach((key, value) {
       if (value.isNotEmpty) {
@@ -60,14 +62,18 @@ class FirestoreSyncRepository {
     if (doc.exists) {
       final data = doc.data();
       if (data != null && data.containsKey('savedHadiths')) {
-        final Map<String, dynamic>? map = data['savedHadiths'] as Map<String, dynamic>?;
+        final Map<String, dynamic>? map =
+            data['savedHadiths'] as Map<String, dynamic>?;
         if (map == null) return null;
 
         final Map<String, List<int>> result = {};
         map.forEach((key, value) {
           final List<dynamic>? list = value as List<dynamic>?;
           if (list != null) {
-            result[key] = list.map((e) => int.tryParse(e.toString()) ?? 0).where((e) => e != 0).toList();
+            result[key] = list
+                .map((e) => int.tryParse(e.toString()) ?? 0)
+                .where((e) => e != 0)
+                .toList();
           }
         });
         return result;
@@ -76,15 +82,27 @@ class FirestoreSyncRepository {
     return null;
   }
 
-  // --- Ramadhan Shalat Logs ---
-  Future<void> saveRamadhanShalatLogs(String userId, List<Map<String, dynamic>> logs) async {
-    await _firestore.collection('users').doc(userId).collection('ramadhan').doc('shalat_logs').set({
-      'logs': logs,
-    });
+  Future<void> saveRamadhanShalatLogs(
+    String userId,
+    List<Map<String, dynamic>> logs,
+  ) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('ramadhan')
+        .doc('shalat_logs')
+        .set({'logs': logs});
   }
 
-  Future<List<Map<String, dynamic>>?> loadRamadhanShalatLogs(String userId) async {
-    final doc = await _firestore.collection('users').doc(userId).collection('ramadhan').doc('shalat_logs').get();
+  Future<List<Map<String, dynamic>>?> loadRamadhanShalatLogs(
+    String userId,
+  ) async {
+    final doc = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('ramadhan')
+        .doc('shalat_logs')
+        .get();
     if (doc.exists) {
       final data = doc.data();
       if (data != null && data.containsKey('logs')) {
@@ -96,13 +114,21 @@ class FirestoreSyncRepository {
   }
 
   Future<void> saveRamadhanStartDate(String userId, DateTime date) async {
-    await _firestore.collection('users').doc(userId).collection('ramadhan').doc('config').set({
-      'startDate': date.toIso8601String(),
-    });
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('ramadhan')
+        .doc('config')
+        .set({'startDate': date.toIso8601String()});
   }
 
   Future<DateTime?> loadRamadhanStartDate(String userId) async {
-    final doc = await _firestore.collection('users').doc(userId).collection('ramadhan').doc('config').get();
+    final doc = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('ramadhan')
+        .doc('config')
+        .get();
     if (doc.exists) {
       final data = doc.data();
       if (data != null && data.containsKey('startDate')) {
@@ -112,8 +138,10 @@ class FirestoreSyncRepository {
     return null;
   }
 
-  // --- Ramadhan Ceramah Logs ---
-  Future<void> saveCeramahLog(String userId, Map<String, dynamic> logData) async {
+  Future<void> saveCeramahLog(
+    String userId,
+    Map<String, dynamic> logData,
+  ) async {
     final String id = logData['id'] as String;
     await _firestore
         .collection('users')
@@ -138,12 +166,11 @@ class FirestoreSyncRepository {
         .doc(userId)
         .collection('ceramah_logs')
         .get();
-    
+
     if (snapshot.docs.isEmpty) return null;
     return snapshot.docs.map((doc) => doc.data()).toList();
   }
 
-  // --- Ramadhan Infaq Logs ---
   Future<void> saveInfaqLog(String userId, Map<String, dynamic> logData) async {
     final String id = logData['id'] as String;
     await _firestore
@@ -169,7 +196,7 @@ class FirestoreSyncRepository {
         .doc(userId)
         .collection('infaq_logs')
         .get();
-    
+
     if (snapshot.docs.isEmpty) return null;
     return snapshot.docs.map((doc) => doc.data()).toList();
   }

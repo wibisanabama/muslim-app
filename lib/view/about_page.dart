@@ -94,9 +94,7 @@ class _AboutPageState extends State<AboutPage> {
             : Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        actions: [
-          ProfileMonogram(scaffoldKey: widget.scaffoldKey),
-        ],
+        actions: [ProfileMonogram(scaffoldKey: widget.scaffoldKey)],
       ),
       body: SingleChildScrollView(
         controller: _scrollController,

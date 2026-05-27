@@ -59,7 +59,9 @@ class DoaViewModel extends ChangeNotifier {
       _savedDoaIds = prefs.getStringList('saved_doa_ids') ?? [];
       notifyListeners();
     } catch (e) {
-      AppLogger.warningLazy(() => 'Error loading saved Doa IDs from SharedPreferences: $e');
+      AppLogger.warningLazy(
+        () => 'Error loading saved Doa IDs from SharedPreferences: $e',
+      );
     }
   }
 
@@ -75,7 +77,10 @@ class DoaViewModel extends ChangeNotifier {
       notifyListeners();
 
       if (_currentUserId != null && _firestoreSyncRepository != null) {
-        await _firestoreSyncRepository!.saveSavedDoas(_currentUserId!, _savedDoaIds);
+        await _firestoreSyncRepository!.saveSavedDoas(
+          _currentUserId!,
+          _savedDoaIds,
+        );
       }
     } catch (e) {
       AppLogger.warningLazy(() => 'Error toggling saved Doa: $e');
@@ -92,7 +97,9 @@ class DoaViewModel extends ChangeNotifier {
         return;
       }
 
-      final merged = (List<String>.from(_savedDoaIds).toSet()..addAll(cloudSaved)).toList();
+      final merged = (List<String>.from(
+        _savedDoaIds,
+      ).toSet()..addAll(cloudSaved)).toList();
       _savedDoaIds = merged;
       notifyListeners();
 
@@ -101,7 +108,9 @@ class DoaViewModel extends ChangeNotifier {
 
       await _firestoreSyncRepository!.saveSavedDoas(userId, _savedDoaIds);
     } catch (e) {
-      AppLogger.warningLazy(() => 'Error syncing saved Doas with Firestore: $e');
+      AppLogger.warningLazy(
+        () => 'Error syncing saved Doas with Firestore: $e',
+      );
     }
   }
 
