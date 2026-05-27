@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'main_page.dart';
+import 'auth_wrapper.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -18,7 +18,7 @@ class _SplashPageState extends State<SplashPage> {
       if (mounted) {
         unawaited(
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const MainPage()),
+            MaterialPageRoute(builder: (context) => const AuthWrapper()),
           ),
         );
       }

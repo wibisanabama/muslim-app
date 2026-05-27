@@ -38,6 +38,7 @@ flutter:
     - assets/quran.json
     - assets/asmaul_husna.json
     - assets/doa.json
+    - assets/icons/launcher_icon.png
 
 flutter_launcher_icons:
   android: true
