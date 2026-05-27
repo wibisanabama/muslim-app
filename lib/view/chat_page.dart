@@ -78,7 +78,7 @@ class _ChatPageState extends State<ChatPage> {
 
       final response = await http.post(
         Uri.parse(
-            'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GeminiConfig.apiKey}'),
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GeminiConfig.apiKey}'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );
