@@ -27,15 +27,30 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: Text(
-          'Muslim',
-          style: TextStyle(
-            fontSize: 36,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 1.2,
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Image.asset(
+                'assets/icons/launcher_icon.png',
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Muslim',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
         ),
       ),
     );
