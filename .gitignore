@@ -61,4 +61,7 @@ lib/gemini_config.dart
 *.pem
 key.properties
 .env
-.env.*
+.env.*
+
+# Release notes
+RELEASE_NOTES.md
