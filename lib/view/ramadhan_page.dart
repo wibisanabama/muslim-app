@@ -5,6 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/ramadhan_view_model.dart';
 import '../model/ramadhan_record.dart';
+import '../viewmodel/shalat_view_model.dart';
+import '../model/shalat_schedule_response.dart';
+
+enum PrayerStatus { active, passed, future }
+
 class RamadhanPage extends StatefulWidget {
   const RamadhanPage({super.key});
 
@@ -13,7 +18,7 @@ class RamadhanPage extends StatefulWidget {
 }
 
 class _RamadhanPageState extends State<RamadhanPage> {
-  final int _selectedDay = 1;
+  int _selectedDay = 1;
 
   String _formatRupiah(double amount) {
     final int val = amount.toInt();
@@ -51,6 +56,121 @@ class _RamadhanPageState extends State<RamadhanPage> {
     return '$day $month $year';
   }
 
+  String _formatDateLong(DateTime date) {
+    final days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    final dayName = days[date.weekday % 7];
+    return '$dayName, ${_formatDate(date)}';
+  }
+
+  DateTime? _parseTime(DateTime baseDate, String timeStr) {
+    try {
+      final parts = timeStr.trim().split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      return DateTime(baseDate.year, baseDate.month, baseDate.day, hour, minute);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  PrayerStatus _getPrayerStatus(
+    String prayerName,
+    DateTime targetDate,
+    DateTime now,
+    ShalatDaySchedule todaySchedule,
+  ) {
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final targetDayOnly = DateTime(targetDate.year, targetDate.month, targetDate.day);
+
+    final subuhToday = _parseTime(now, todaySchedule.subuh);
+    final terbitToday = _parseTime(now, todaySchedule.terbit);
+    final dzuhurToday = _parseTime(now, todaySchedule.dzuhur);
+    final asharToday = _parseTime(now, todaySchedule.ashar);
+    final maghribToday = _parseTime(now, todaySchedule.maghrib);
+    final isyaToday = _parseTime(now, todaySchedule.isya);
+
+    if (subuhToday == null ||
+        terbitToday == null ||
+        dzuhurToday == null ||
+        asharToday == null ||
+        maghribToday == null ||
+        isyaToday == null) {
+      return PrayerStatus.active; // Fallback
+    }
+
+    if (targetDayOnly.isBefore(todayDate)) {
+      final isYesterday = targetDayOnly.isAtSameMomentAs(todayDate.subtract(const Duration(days: 1)));
+      if (isYesterday && prayerName == 'Isya') {
+        if (now.isBefore(subuhToday)) {
+          return PrayerStatus.active;
+        }
+      }
+      return PrayerStatus.passed;
+    } else if (targetDayOnly.isAfter(todayDate)) {
+      return PrayerStatus.future;
+    } else {
+      switch (prayerName) {
+        case 'Subuh':
+          if (now.isBefore(subuhToday)) return PrayerStatus.future;
+          if (now.isBefore(terbitToday)) return PrayerStatus.active;
+          return PrayerStatus.passed;
+        case 'Dzuhur':
+          if (now.isBefore(dzuhurToday)) return PrayerStatus.future;
+          if (now.isBefore(asharToday)) return PrayerStatus.active;
+          return PrayerStatus.passed;
+        case 'Ashar':
+          if (now.isBefore(asharToday)) return PrayerStatus.future;
+          if (now.isBefore(maghribToday)) return PrayerStatus.active;
+          return PrayerStatus.passed;
+        case 'Maghrib':
+          if (now.isBefore(maghribToday)) return PrayerStatus.future;
+          if (now.isBefore(isyaToday)) return PrayerStatus.active;
+          return PrayerStatus.passed;
+        case 'Isya':
+          if (now.isBefore(isyaToday)) return PrayerStatus.future;
+          return PrayerStatus.active;
+        default:
+          return PrayerStatus.active;
+      }
+    }
+  }
+
+  int _getActiveRamadhanDay(RamadhanViewModel viewModel, List<ShalatDaySchedule> schedules) {
+    final now = DateTime.now();
+    final todayDate = DateTime(now.year, now.month, now.day);
+    
+    ShalatDaySchedule? todaySchedule;
+    for (final s in schedules) {
+      try {
+        final parts = s.tanggal.split(', ');
+        if (parts.length >= 2) {
+          final dateParts = parts[1].split('/');
+          if (dateParts.length >= 3) {
+            final day = int.parse(dateParts[0]);
+            final month = int.parse(dateParts[1]);
+            final year = int.parse(dateParts[2]);
+            final sDate = DateTime(year, month, day);
+            if (sDate.isAtSameMomentAs(todayDate)) {
+              todaySchedule = s;
+              break;
+            }
+          }
+        }
+      } catch (_) {}
+    }
+
+    DateTime targetDate = todayDate;
+    if (todaySchedule != null) {
+      final subuhToday = _parseTime(now, todaySchedule.subuh);
+      if (subuhToday != null && now.isBefore(subuhToday)) {
+        targetDate = todayDate.subtract(const Duration(days: 1));
+      }
+    }
+    
+    final activeDay = targetDate.difference(viewModel.startDate).inDays + 1;
+    return activeDay.clamp(1, 30);
+  }
+
   IconData _getShalatIcon(String name) {
     switch (name.toLowerCase()) {
       case 'subuh':
@@ -76,7 +196,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Catatan Ramadhan'),
+          title: const Text('Catatan'),
           centerTitle: false,
           elevation: 0,
           scrolledUnderElevation: 0,
@@ -113,81 +233,413 @@ class _RamadhanPageState extends State<RamadhanPage> {
 
   Widget _buildShalatTab(BuildContext context, RamadhanViewModel viewModel) {
     final theme = Theme.of(context);
+
+    final shalatVm = Provider.of<ShalatViewModel>(context);
+    final schedules = shalatVm.schedules;
+    ShalatDaySchedule? todaySchedule;
+    final now = DateTime.now();
+    final todayDate = DateTime(now.year, now.month, now.day);
+
+    _selectedDay = _getActiveRamadhanDay(viewModel, schedules);
     final log = viewModel.shalatLogs[_selectedDay - 1];
     final fardhuPrayers = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
+    final targetDate = viewModel.startDate.add(Duration(days: _selectedDay - 1));
 
-    return ListView.separated(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: fardhuPrayers.length,
-      separatorBuilder: (context, index) =>
-          Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
-      itemBuilder: (context, i) {
-        final prayerName = fardhuPrayers[i];
-        final isChecked = log.prayers[prayerName] ?? false;
-        final isFirst = i == 0;
-        final isLast = i == fardhuPrayers.length - 1;
+    // Find today's schedule from schedules list
+    for (final s in schedules) {
+      try {
+        final parts = s.tanggal.split(', ');
+        if (parts.length >= 2) {
+          final dateParts = parts[1].split('/');
+          if (dateParts.length >= 3) {
+            final day = int.parse(dateParts[0]);
+            final month = int.parse(dateParts[1]);
+            final year = int.parse(dateParts[2]);
+            final sDate = DateTime(year, month, day);
+            if (sDate.isAtSameMomentAs(todayDate)) {
+              todaySchedule = s;
+              break;
+            }
+          }
+        }
+      } catch (_) {}
+    }
 
-        final borderRadius = BorderRadius.only(
-          topLeft: Radius.circular(isFirst ? 16 : 0),
-          topRight: Radius.circular(isFirst ? 16 : 0),
-          bottomLeft: Radius.circular(isLast ? 16 : 0),
-          bottomRight: Radius.circular(isLast ? 16 : 0),
-        );
+    final hasSchedule = todaySchedule != null;
+    final todayStr = _formatDateLong(DateTime.now());
 
-        return Material(
-          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
-          borderRadius: borderRadius,
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () {
-              viewModel.togglePrayer(_selectedDay, prayerName);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
+    return Scaffold(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 88.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Card(
+              margin: const EdgeInsets.only(bottom: 16.0),
+              clipBehavior: Clip.antiAlias,
+              elevation: 0,
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.calendar_today_rounded,
+                        color: theme.colorScheme.primary,
+                        size: 24,
+                      ),
                     ),
-                    alignment: Alignment.center,
-                    child: Icon(
-                      _getShalatIcon(prayerName),
-                      size: 20,
-                      color: theme.colorScheme.primary,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Hari Ini',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            todayStr,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: fardhuPrayers.length,
+              separatorBuilder: (context, index) =>
+                  Divider(height: 1, color: theme.colorScheme.surface, thickness: 1.5),
+        itemBuilder: (context, i) {
+          final prayerName = fardhuPrayers[i];
+          final isChecked = log.prayers[prayerName] ?? false;
+          final isFirst = i == 0;
+          final isLast = i == fardhuPrayers.length - 1;
+
+          final PrayerStatus status = hasSchedule
+              ? _getPrayerStatus(prayerName, targetDate, now, todaySchedule!)
+              : PrayerStatus.active;
+
+          final isEnabled = status == PrayerStatus.active;
+          final double opacity = isEnabled ? 1.0 : 0.6;
+
+          String statusLabel = '';
+          Color statusColor = theme.colorScheme.onSurfaceVariant;
+          if (hasSchedule) {
+            if (isChecked) {
+              statusLabel = 'Tercatat';
+              statusColor = Colors.green;
+            } else {
+              switch (status) {
+                case PrayerStatus.active:
+                  statusLabel = 'Sedang berlangsung';
+                  statusColor = theme.colorScheme.primary;
+                  break;
+                case PrayerStatus.passed:
+                  statusLabel = 'Waktu shalat telah lewat';
+                  statusColor = theme.colorScheme.error.withValues(alpha: 0.8);
+                  break;
+                case PrayerStatus.future:
+                  statusLabel = 'Belum masuk waktu';
+                  statusColor = theme.colorScheme.outline;
+                  break;
+              }
+            }
+          } else {
+            statusLabel = isChecked ? 'Tercatat' : 'Buka';
+            statusColor = isChecked ? Colors.green : theme.colorScheme.outline;
+          }
+
+          final borderRadius = BorderRadius.only(
+            topLeft: Radius.circular(isFirst ? 16 : 0),
+            topRight: Radius.circular(isFirst ? 16 : 0),
+            bottomLeft: Radius.circular(isLast ? 16 : 0),
+            bottomRight: Radius.circular(isLast ? 16 : 0),
+          );
+
+          return Opacity(
+            opacity: opacity,
+            child: Material(
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+              borderRadius: borderRadius,
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: isEnabled
+                    ? () {
+                        viewModel.togglePrayer(_selectedDay, prayerName);
+                      }
+                    : null,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          _getShalatIcon(prayerName),
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              prayerName,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              statusLabel,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: statusColor,
+                                fontWeight: isChecked || status == PrayerStatus.active
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Checkbox(
+                        value: isChecked,
+                        activeColor: theme.colorScheme.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        onChanged: isEnabled
+                            ? (bool? value) {
+                                viewModel.togglePrayer(_selectedDay, prayerName);
+                              }
+                            : null,
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 16),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    ],
+  ),
+),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showHistoryBottomSheet(context, viewModel),
+        label: const Text('Riwayat'),
+        icon: const Icon(Icons.history),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(100),
+        ),
+      ),
+    );
+  }
 
-                  Expanded(
-                    child: Text(
-                      prayerName,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface,
+  void _showHistoryBottomSheet(BuildContext context, RamadhanViewModel viewModel) {
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) {
+          final theme = Theme.of(context);
+          final start = viewModel.startDate;
+          final fardhuPrayers = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
+
+          // Filter only days that have at least one checked prayer
+          final activeDays = <int>[];
+          for (int i = 0; i < 30; i++) {
+            final log = viewModel.shalatLogs[i];
+            final hasAnyChecked = log.prayers.values.any((checked) => checked == true);
+            if (hasAnyChecked) {
+              activeDays.add(i + 1);
+            }
+          }
+
+          return DraggableScrollableSheet(
+            initialChildSize: 0.75,
+            maxChildSize: 0.95,
+            minChildSize: 0.5,
+            expand: false,
+            builder: (context, scrollController) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                   ),
-
-                  Checkbox(
-                    value: isChecked,
-                    activeColor: theme.colorScheme.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Text(
+                      'Riwayat',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    onChanged: (bool? value) {
-                      viewModel.togglePrayer(_selectedDay, prayerName);
-                    },
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: activeDays.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.history_toggle_off_rounded,
+                                  size: 48,
+                                  color: theme.colorScheme.outline.withValues(alpha: 0.5),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Belum ada riwayat shalat yang tercatat.',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.separated(
+                            controller: scrollController,
+                            padding: const EdgeInsets.all(24),
+                            itemCount: activeDays.length,
+                            separatorBuilder: (context, index) => const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              final day = activeDays[index];
+                              final log = viewModel.shalatLogs[day - 1];
+                              final dayDate = start.add(Duration(days: day - 1));
+
+                              return Theme(
+                                data: theme.copyWith(dividerColor: Colors.transparent),
+                                child: Card(
+                                  margin: EdgeInsets.zero,
+                                  clipBehavior: Clip.antiAlias,
+                                  color: theme.colorScheme.surfaceContainerLow,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: ExpansionTile(
+                                    collapsedBackgroundColor: Colors.transparent,
+                                    backgroundColor: Colors.transparent,
+                                    iconColor: theme.colorScheme.primary,
+                                    title: Text(
+                                      _formatDateLong(dayDate),
+                                      style: theme.textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    children: [
+                                      const Divider(height: 1, indent: 16, endIndent: 16),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 8),
+                                        child: Column(
+                                          children: fardhuPrayers.map((pr) {
+                                            final isPrChecked = log.prayers[pr] ?? false;
+                                            return Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 24.0,
+                                                vertical: 8.0,
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    _getShalatIcon(pr),
+                                                    size: 18,
+                                                    color: isPrChecked
+                                                        ? theme.colorScheme.primary
+                                                        : theme.colorScheme.outline,
+                                                  ),
+                                                  const SizedBox(width: 16),
+                                                  Expanded(
+                                                    child: Text(
+                                                      pr,
+                                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                                        color: isPrChecked
+                                                            ? theme.colorScheme.onSurface
+                                                            : theme.colorScheme.outline,
+                                                        fontWeight: isPrChecked
+                                                            ? FontWeight.bold
+                                                            : FontWeight.normal,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Icon(
+                                                    isPrChecked
+                                                        ? Icons.check_circle_rounded
+                                                        : Icons.cancel_outlined,
+                                                    size: 18,
+                                                    color: isPrChecked
+                                                        ? Colors.green
+                                                        : theme.colorScheme.outlineVariant,
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                   ),
                 ],
-              ),
-            ),
-          ),
-        );
-      },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -214,7 +666,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Catat ceramah tarawih atau kultum Anda di sini.',
+                'Catat ceramah Anda di sini.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant.withValues(
                     alpha: 0.7,

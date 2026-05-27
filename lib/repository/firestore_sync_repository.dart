@@ -95,6 +95,23 @@ class FirestoreSyncRepository {
     return null;
   }
 
+  Future<void> saveRamadhanStartDate(String userId, DateTime date) async {
+    await _firestore.collection('users').doc(userId).collection('ramadhan').doc('config').set({
+      'startDate': date.toIso8601String(),
+    });
+  }
+
+  Future<DateTime?> loadRamadhanStartDate(String userId) async {
+    final doc = await _firestore.collection('users').doc(userId).collection('ramadhan').doc('config').get();
+    if (doc.exists) {
+      final data = doc.data();
+      if (data != null && data.containsKey('startDate')) {
+        return DateTime.tryParse(data['startDate'] as String);
+      }
+    }
+    return null;
+  }
+
   // --- Ramadhan Ceramah Logs ---
   Future<void> saveCeramahLog(String userId, Map<String, dynamic> logData) async {
     final String id = logData['id'] as String;

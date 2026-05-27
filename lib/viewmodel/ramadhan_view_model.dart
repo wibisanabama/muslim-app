@@ -29,6 +29,17 @@ class RamadhanViewModel extends ChangeNotifier {
   List<InfaqLog> get infaqLogs => _infaqLogs;
   bool get isLoading => _isLoading;
 
+  DateTime? _startDate;
+
+  DateTime get startDate {
+    if (_startDate == null) {
+      final now = DateTime.now();
+      _startDate = DateTime(now.year, now.month, now.day);
+      unawaited(_saveStartDate(_startDate!, notify: false));
+    }
+    return _startDate!;
+  }
+
   double get totalInfaq {
     return _infaqLogs.fold(0.0, (sum, log) => sum + log.amount);
   }
@@ -50,6 +61,27 @@ class RamadhanViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> _saveStartDate(DateTime date, {bool notify = true}) async {
+    _startDate = date;
+    if (notify) {
+      notifyListeners();
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('ramadhan_start_date', date.toIso8601String());
+      if (_currentUserId != null && _firestoreSyncRepository != null) {
+        await _firestoreSyncRepository!.saveRamadhanStartDate(_currentUserId!, date);
+      }
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error saving Ramadhan start date: $e');
+    }
+  }
+
+  Future<void> updateStartDate(DateTime date) async {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    await _saveStartDate(startOfDay, notify: true);
+  }
+
   void _initializeDefaultShalatLogs() {
     _shalatLogs = List.generate(
       30,
@@ -69,6 +101,11 @@ class RamadhanViewModel extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
+
+      final startDateStr = prefs.getString('ramadhan_start_date');
+      if (startDateStr != null) {
+        _startDate = DateTime.tryParse(startDateStr);
+      }
 
       final shalatJson = prefs.getString('ramadhan_shalat_logs');
       if (shalatJson != null) {
@@ -148,13 +185,6 @@ class RamadhanViewModel extends ChangeNotifier {
 
       final infaqJson = jsonEncode(_infaqLogs.map((e) => e.toJson()).toList());
       await _secureStorage.write(key: 'ramadhan_infaq_logs', value: infaqJson);
-
-      if (_currentUserId != null && _firestoreSyncRepository != null) {
-        await _firestoreSyncRepository!.saveRamadhanShalatLogs(
-          _currentUserId!,
-          _shalatLogs.map((e) => e.toJson()).toList(),
-        );
-      }
     } catch (e) {
       AppLogger.warningLazy(() => 'Error saving Ramadhan logs: $e');
     }
@@ -164,6 +194,18 @@ class RamadhanViewModel extends ChangeNotifier {
     if (_firestoreSyncRepository == null) return;
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Sync Ramadhan Start Date
+      final cloudStartDate = await _firestoreSyncRepository!.loadRamadhanStartDate(userId);
+      if (cloudStartDate != null) {
+        _startDate = cloudStartDate;
+        await prefs.setString('ramadhan_start_date', cloudStartDate.toIso8601String());
+        notifyListeners();
+      } else if (_startDate != null) {
+        await _firestoreSyncRepository!.saveRamadhanStartDate(userId, _startDate!);
+      }
+
       // 1. Shalat Logs Sync
       final cloudShalat = await _firestoreSyncRepository!.loadRamadhanShalatLogs(userId);
       if (cloudShalat == null) {
@@ -214,7 +256,9 @@ class RamadhanViewModel extends ChangeNotifier {
         try {
           final log = CeramahLog.fromJson(map);
           mergedCeramah[log.id] = log;
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warningLazy(() => 'Error parsing cloud Ceramah log: $e');
+        }
       }
       _ceramahLogs = mergedCeramah.values.toList()..sort((a, b) => b.date.compareTo(a.date));
 
@@ -236,7 +280,9 @@ class RamadhanViewModel extends ChangeNotifier {
         try {
           final log = InfaqLog.fromJson(map);
           mergedInfaq[log.id] = log;
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warningLazy(() => 'Error parsing cloud Infaq log: $e');
+        }
       }
       _infaqLogs = mergedInfaq.values.toList()..sort((a, b) => b.date.compareTo(a.date));
 
@@ -248,7 +294,9 @@ class RamadhanViewModel extends ChangeNotifier {
 
       notifyListeners();
       await _saveLogs();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error syncing Ramadhan data with Firestore: $e');
+    }
   }
 
   void togglePrayer(int day, String prayerName) {
@@ -260,6 +308,12 @@ class RamadhanViewModel extends ChangeNotifier {
 
     notifyListeners();
     unawaited(_saveLogs());
+    if (_currentUserId != null && _firestoreSyncRepository != null) {
+      unawaited(_firestoreSyncRepository!.saveRamadhanShalatLogs(
+        _currentUserId!,
+        _shalatLogs.map((e) => e.toJson()).toList(),
+      ));
+    }
   }
 
   void addCeramahLog({
@@ -500,13 +554,17 @@ class RamadhanViewModel extends ChangeNotifier {
     _initializeDefaultShalatLogs();
     _ceramahLogs = [];
     _infaqLogs = [];
+    _startDate = null;
     notifyListeners();
 
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('ramadhan_shalat_logs');
       await prefs.remove('ramadhan_ceramah_logs');
+      await prefs.remove('ramadhan_start_date');
       await _secureStorage.delete(key: 'ramadhan_infaq_logs');
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warningLazy(() => 'Error clearing local Ramadhan data: $e');
+    }
   }
 }
