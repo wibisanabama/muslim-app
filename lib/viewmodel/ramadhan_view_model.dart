@@ -44,6 +44,8 @@ class RamadhanViewModel extends ChangeNotifier {
       _firestoreSyncRepository = syncRepo;
       if (userId != null) {
         unawaited(syncWithFirestore(userId));
+      } else {
+        unawaited(clearAllLocal());
       }
     }
   }
@@ -492,5 +494,19 @@ class RamadhanViewModel extends ChangeNotifier {
     if (_currentUserId != null && _firestoreSyncRepository != null) {
       unawaited(_firestoreSyncRepository!.saveInfaqLog(_currentUserId!, log.toJson()));
     }
+  }
+
+  Future<void> clearAllLocal() async {
+    _initializeDefaultShalatLogs();
+    _ceramahLogs = [];
+    _infaqLogs = [];
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('ramadhan_shalat_logs');
+      await prefs.remove('ramadhan_ceramah_logs');
+      await _secureStorage.delete(key: 'ramadhan_infaq_logs');
+    } catch (_) {}
   }
 }

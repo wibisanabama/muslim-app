@@ -31,6 +31,8 @@ class HadisViewModel extends ChangeNotifier {
       if (userId != null) {
         // Sync when user logs in
         unawaited(syncWithFirestore(userId));
+      } else {
+        unawaited(clearAllLocal());
       }
     }
   }

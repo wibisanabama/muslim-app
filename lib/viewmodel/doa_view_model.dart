@@ -30,6 +30,8 @@ class DoaViewModel extends ChangeNotifier {
       _firestoreSyncRepository = syncRepo;
       if (userId != null) {
         unawaited(syncWithFirestore(userId));
+      } else {
+        unawaited(clearAllLocal());
       }
     }
   }
@@ -102,5 +104,15 @@ class DoaViewModel extends ChangeNotifier {
 
   List<Doa> getSavedDoas() {
     return _doas.where((d) => _savedDoaIds.contains(d.id)).toList();
+  }
+
+  Future<void> clearAllLocal() async {
+    _savedDoaIds = [];
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('saved_doa_ids');
+    } catch (_) {}
   }
 }

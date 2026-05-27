@@ -45,6 +45,8 @@ class QuranViewModel extends ChangeNotifier {
       _firestoreSyncRepository = syncRepo;
       if (userId != null) {
         unawaited(syncWithFirestore(userId));
+      } else {
+        unawaited(clearLastRead());
       }
     }
   }
