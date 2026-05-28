@@ -8,7 +8,6 @@ const rateLimitMap = new Map();
 const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
-const ALLOWED_BODY_FIELDS = new Set(["contents"]);
 const MAX_BODY_SIZE_BYTES = 100 * 1024;
 
 exports.generateChatResponse = onRequest({ cors: false }, async (req, res) => {
@@ -66,10 +65,8 @@ exports.generateChatResponse = onRequest({ cors: false }, async (req, res) => {
     }
 
     const sanitizedBody = {};
-    for (const key of Object.keys(body)) {
-      if (ALLOWED_BODY_FIELDS.has(key)) {
-        sanitizedBody[key] = body[key];
-      }
+    if (body.contents !== undefined) {
+      sanitizedBody.contents = body.contents;
     }
 
     if (!sanitizedBody.contents || !Array.isArray(sanitizedBody.contents)) {
