@@ -2,13 +2,10 @@ String formatError(dynamic error) {
   if (error == null) return '';
   String msg = error.toString();
 
-  // Strip common technical prefix wrappers
   msg = msg.replaceAll(RegExp(r'^(SocketException|HandshakeException|TlsException|TimeoutException|ClientException|HttpException|Exception|Error):\s*', caseSensitive: false), '');
 
-  // Strip lingering technical exception patterns anywhere in the string
   msg = msg.replaceAll(RegExp(r'\b(SocketException|HandshakeException|TlsException|TimeoutException|ClientException|HttpException|Exception|Error)\b\s*:?\s*', caseSensitive: false), '');
 
-  // Map known technical messages to highly user-friendly Indonesian messages
   if (msg.contains('Failed host lookup') ||
       msg.contains('OS Error') ||
       msg.contains('Network is unreachable') ||
