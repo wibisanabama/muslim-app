@@ -6,7 +6,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/logger.dart';
-import '../utils/error_formatter.dart';
 
 class KiblatPage extends StatefulWidget {
   const KiblatPage({super.key});
@@ -22,7 +21,6 @@ class _KiblatPageState extends State<KiblatPage> {
   double _qiblaAngleDegrees = 295.0;
   String _locationName = 'Indonesia';
   bool _isLoadingLocation = false;
-  String? _errorMessage;
   bool _hasLoadedOnce = false;
 
   @override
@@ -82,7 +80,6 @@ class _KiblatPageState extends State<KiblatPage> {
 
     setState(() {
       _isLoadingLocation = true;
-      _errorMessage = null;
     });
 
     try {
@@ -160,8 +157,6 @@ class _KiblatPageState extends State<KiblatPage> {
     } catch (e) {
       AppLogger.warningLazy(() => 'Qibla location acquisition error: $e');
       setState(() {
-        _errorMessage = formatError(e);
-
         if (!_hasLoadedOnce) {
           _qiblaAngleDegrees = 295.0;
           _locationName = 'Indonesia (Default)';
@@ -219,37 +214,6 @@ class _KiblatPageState extends State<KiblatPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (_errorMessage != null) ...[
-                Card.filled(
-                  color: theme.colorScheme.errorContainer,
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 12.0,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: theme.colorScheme.error,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: TextStyle(
-                              color: theme.colorScheme.onErrorContainer,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
               StreamBuilder<CompassEvent>(
                 stream: FlutterCompass.events,
                 builder: (context, snapshot) {
