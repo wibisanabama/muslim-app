@@ -540,7 +540,7 @@ class _RamadhanPageState extends State<RamadhanPage> {
           final fardhuPrayers = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
 
           final activeDays = <int>[];
-          for (int i = 0; i < 30; i++) {
+          for (int i = 29; i >= 0; i--) {
             final log = viewModel.shalatLogs[i];
             final hasAnyChecked = log.prayers.values.any(
               (checked) => checked == true,
@@ -610,8 +610,11 @@ class _RamadhanPageState extends State<RamadhanPage> {
                             controller: scrollController,
                             padding: const EdgeInsets.all(24),
                             itemCount: activeDays.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(height: 12),
+                            separatorBuilder: (context, index) => Divider(
+                              height: 1,
+                              color: theme.colorScheme.surface,
+                              thickness: 1.5,
+                            ),
                             itemBuilder: (context, index) {
                               final day = activeDays[index];
                               final log = viewModel.shalatLogs[day - 1];
@@ -619,17 +622,24 @@ class _RamadhanPageState extends State<RamadhanPage> {
                                 Duration(days: day - 1),
                               );
 
+                              final isFirst = index == 0;
+                              final isLast = index == activeDays.length - 1;
+                              final borderRadius = BorderRadius.only(
+                                topLeft: Radius.circular(isFirst ? 16 : 0),
+                                topRight: Radius.circular(isFirst ? 16 : 0),
+                                bottomLeft: Radius.circular(isLast ? 16 : 0),
+                                bottomRight: Radius.circular(isLast ? 16 : 0),
+                              );
+
                               return Theme(
                                 data: theme.copyWith(
                                   dividerColor: Colors.transparent,
                                 ),
-                                child: Card(
-                                  margin: EdgeInsets.zero,
+                                child: Material(
+                                  color: theme.colorScheme.primaryContainer
+                                      .withValues(alpha: 0.25),
+                                  borderRadius: borderRadius,
                                   clipBehavior: Clip.antiAlias,
-                                  color: theme.colorScheme.surfaceContainerLow,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
                                   child: ExpansionTile(
                                     collapsedBackgroundColor:
                                         Colors.transparent,
