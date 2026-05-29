@@ -200,4 +200,24 @@ class FirestoreSyncRepository {
     if (snapshot.docs.isEmpty) return null;
     return snapshot.docs.map((doc) => doc.data()).toList();
   }
+
+  Future<void> clearRamadhanLogs(String userId) async {
+    final ceramahSnapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('ceramah_logs')
+        .get();
+    for (final doc in ceramahSnapshot.docs) {
+      await doc.reference.delete();
+    }
+
+    final infaqSnapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('infaq_logs')
+        .get();
+    for (final doc in infaqSnapshot.docs) {
+      await doc.reference.delete();
+    }
+  }
 }

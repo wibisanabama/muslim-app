@@ -106,63 +106,91 @@ class RamadhanViewModel extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
 
       final startDateStr = prefs.getString('ramadhan_start_date');
+      DateTime? loadedStartDate;
       if (startDateStr != null) {
-        _startDate = DateTime.tryParse(startDateStr);
+        loadedStartDate = DateTime.tryParse(startDateStr);
       }
 
-      final shalatJson = prefs.getString('ramadhan_shalat_logs');
-      if (shalatJson != null) {
-        final List<dynamic> decoded = jsonDecode(shalatJson);
-        final loadedLogs = decoded
-            .map((e) {
-              try {
-                return ShalatDayLog.fromJson(e as Map<String, dynamic>);
-              } catch (_) {
-                return null;
-              }
-            })
-            .whereType<ShalatDayLog>()
-            .toList();
+      final now = DateTime.now();
+      final todayStart = DateTime(now.year, now.month, now.day);
 
-        for (var log in loadedLogs) {
-          if (log.day >= 1 && log.day <= 30) {
-            _shalatLogs[log.day - 1] = log;
+      if (loadedStartDate != null &&
+          (loadedStartDate.month != now.month || loadedStartDate.year != now.year)) {
+        _startDate = todayStart;
+        _initializeDefaultShalatLogs();
+        _ceramahLogs = [];
+        _infaqLogs = [];
+
+        await prefs.setString('ramadhan_start_date', todayStart.toIso8601String());
+        await _saveLogs();
+
+        if (_currentUserId != null && _firestoreSyncRepository != null) {
+          await _firestoreSyncRepository!.saveRamadhanStartDate(_currentUserId!, todayStart);
+          await _firestoreSyncRepository!.saveRamadhanShalatLogs(_currentUserId!, _shalatLogs.map((e) => e.toJson()).toList());
+          await _firestoreSyncRepository!.clearRamadhanLogs(_currentUserId!);
+        }
+      } else {
+        if (loadedStartDate != null) {
+          _startDate = loadedStartDate;
+        } else {
+          _startDate = todayStart;
+          await prefs.setString('ramadhan_start_date', todayStart.toIso8601String());
+        }
+
+        final shalatJson = prefs.getString('ramadhan_shalat_logs');
+        if (shalatJson != null) {
+          final List<dynamic> decoded = jsonDecode(shalatJson);
+          final loadedLogs = decoded
+              .map((e) {
+                try {
+                  return ShalatDayLog.fromJson(e as Map<String, dynamic>);
+                } catch (_) {
+                  return null;
+                }
+              })
+              .whereType<ShalatDayLog>()
+              .toList();
+
+          for (var log in loadedLogs) {
+            if (log.day >= 1 && log.day <= 30) {
+              _shalatLogs[log.day - 1] = log;
+            }
           }
         }
-      }
 
-      final ceramahJson = prefs.getString('ramadhan_ceramah_logs');
-      if (ceramahJson != null) {
-        final List<dynamic> decoded = jsonDecode(ceramahJson);
-        _ceramahLogs = decoded
-            .map((e) {
-              try {
-                return CeramahLog.fromJson(e as Map<String, dynamic>);
-              } catch (_) {
-                return null;
-              }
-            })
-            .whereType<CeramahLog>()
-            .toList();
+        final ceramahJson = prefs.getString('ramadhan_ceramah_logs');
+        if (ceramahJson != null) {
+          final List<dynamic> decoded = jsonDecode(ceramahJson);
+          _ceramahLogs = decoded
+              .map((e) {
+                try {
+                  return CeramahLog.fromJson(e as Map<String, dynamic>);
+                } catch (_) {
+                  return null;
+                }
+              })
+              .whereType<CeramahLog>()
+              .toList();
 
-        _ceramahLogs.sort((a, b) => b.date.compareTo(a.date));
-      }
+          _ceramahLogs.sort((a, b) => b.date.compareTo(a.date));
+        }
 
-      final infaqJson = await _secureStorage.read(key: 'ramadhan_infaq_logs');
-      if (infaqJson != null) {
-        final List<dynamic> decoded = jsonDecode(infaqJson);
-        _infaqLogs = decoded
-            .map((e) {
-              try {
-                return InfaqLog.fromJson(e as Map<String, dynamic>);
-              } catch (_) {
-                return null;
-              }
-            })
-            .whereType<InfaqLog>()
-            .toList();
+        final infaqJson = await _secureStorage.read(key: 'ramadhan_infaq_logs');
+        if (infaqJson != null) {
+          final List<dynamic> decoded = jsonDecode(infaqJson);
+          _infaqLogs = decoded
+              .map((e) {
+                try {
+                  return InfaqLog.fromJson(e as Map<String, dynamic>);
+                } catch (_) {
+                  return null;
+                }
+              })
+              .whereType<InfaqLog>()
+              .toList();
 
-        _infaqLogs.sort((a, b) => b.date.compareTo(a.date));
+          _infaqLogs.sort((a, b) => b.date.compareTo(a.date));
+        }
       }
     } catch (e) {
       AppLogger.warningLazy(() => 'Error loading Ramadhan logs: $e');
@@ -201,13 +229,31 @@ class RamadhanViewModel extends ChangeNotifier {
 
       final cloudStartDate = await _firestoreSyncRepository!
           .loadRamadhanStartDate(userId);
+      final now = DateTime.now();
+      final todayStart = DateTime(now.year, now.month, now.day);
+
       if (cloudStartDate != null) {
-        _startDate = cloudStartDate;
-        await prefs.setString(
-          'ramadhan_start_date',
-          cloudStartDate.toIso8601String(),
-        );
-        notifyListeners();
+        if (cloudStartDate.month != now.month || cloudStartDate.year != now.year) {
+          _startDate = todayStart;
+          await prefs.setString('ramadhan_start_date', todayStart.toIso8601String());
+          _initializeDefaultShalatLogs();
+          _ceramahLogs = [];
+          _infaqLogs = [];
+          await _saveLogs();
+
+          await _firestoreSyncRepository!.saveRamadhanStartDate(userId, todayStart);
+          await _firestoreSyncRepository!.saveRamadhanShalatLogs(userId, _shalatLogs.map((e) => e.toJson()).toList());
+          await _firestoreSyncRepository!.clearRamadhanLogs(userId);
+          notifyListeners();
+          return;
+        } else {
+          _startDate = cloudStartDate;
+          await prefs.setString(
+            'ramadhan_start_date',
+            cloudStartDate.toIso8601String(),
+          );
+          notifyListeners();
+        }
       } else if (_startDate != null) {
         await _firestoreSyncRepository!.saveRamadhanStartDate(
           userId,
