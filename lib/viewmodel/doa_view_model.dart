@@ -5,6 +5,7 @@ import '../model/doa.dart';
 import '../repository/doa_repository.dart';
 import '../repository/firestore_sync_repository.dart';
 import '../utils/logger.dart';
+import '../utils/error_formatter.dart';
 
 class DoaViewModel extends ChangeNotifier {
   final DoaRepository _repo;
@@ -45,7 +46,7 @@ class DoaViewModel extends ChangeNotifier {
     try {
       _doas = await _repo.getDoaList();
     } catch (e) {
-      _error = e.toString();
+      _error = formatError(e);
       _doas = [];
     } finally {
       _isLoading = false;

@@ -11,6 +11,7 @@ import 'ramadhan_page.dart';
 import 'hadis_page.dart';
 import 'auth_dialogs.dart';
 import 'chat_page.dart';
+import '../utils/error_formatter.dart';
 
 import 'shalat_detail_page.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -728,9 +729,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  message
-                      .replaceAll('Exception: ', '')
-                      .replaceAll('SocketException: ', ''),
+                  formatError(message),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

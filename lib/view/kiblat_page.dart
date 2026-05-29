@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/logger.dart';
+import '../utils/error_formatter.dart';
 
 class KiblatPage extends StatefulWidget {
   const KiblatPage({super.key});
@@ -159,7 +160,7 @@ class _KiblatPageState extends State<KiblatPage> {
     } catch (e) {
       AppLogger.warningLazy(() => 'Qibla location acquisition error: $e');
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = formatError(e);
 
         if (!_hasLoadedOnce) {
           _qiblaAngleDegrees = 295.0;

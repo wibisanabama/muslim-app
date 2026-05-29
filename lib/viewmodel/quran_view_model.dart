@@ -6,6 +6,7 @@ import '../model/surah_detail.dart';
 import '../repository/quran_repository.dart';
 import '../repository/firestore_sync_repository.dart';
 import '../utils/logger.dart';
+import '../utils/error_formatter.dart';
 
 class QuranViewModel extends ChangeNotifier {
   final QuranRepository _repo;
@@ -176,7 +177,7 @@ class QuranViewModel extends ChangeNotifier {
     try {
       _surahs = await _repo.getSurahList();
     } catch (e) {
-      _error = e.toString();
+      _error = formatError(e);
       _surahs = [];
     } finally {
       _isLoading = false;
@@ -193,7 +194,7 @@ class QuranViewModel extends ChangeNotifier {
     try {
       _surahDetail = await _repo.getSurahDetail(nomor);
     } catch (e) {
-      _detailError = e.toString();
+      _detailError = formatError(e);
       _surahDetail = null;
     } finally {
       _isDetailLoading = false;

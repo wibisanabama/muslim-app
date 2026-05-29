@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../repository/auth_repository.dart';
+import '../utils/error_formatter.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthRepository _repository;
@@ -49,7 +50,7 @@ class AuthViewModel extends ChangeNotifier {
       return true;
     } catch (e) {
       _isLoading = false;
-      _error = e.toString().replaceAll('Exception: ', '');
+      _error = formatError(e);
       notifyListeners();
       return false;
     }

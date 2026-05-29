@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/logger.dart';
+import '../utils/error_formatter.dart';
 
 import '../model/shalat_schedule_response.dart';
 import '../repository/shalat_repository.dart';
@@ -46,7 +47,7 @@ class ShalatViewModel extends ChangeNotifier {
       );
       _schedules = res.schedules;
     } catch (e) {
-      _error = e.toString();
+      _error = formatError(e);
       _schedules = [];
     } finally {
       _isLoading = false;
@@ -195,7 +196,7 @@ class ShalatViewModel extends ChangeNotifier {
         month: now.month,
       );
     } catch (e) {
-      _error = e.toString();
+      _error = formatError(e);
       notifyListeners();
     }
   }
